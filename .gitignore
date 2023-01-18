@@ -9,3 +9,5 @@ ipch/
 *.opensdf
 .vs
 Cache/
+launch.json
+tasks.json
