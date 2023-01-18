@@ -21,6 +21,7 @@
             <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)"/>
             <Button Command="{Binding OnLoginSelectedClick}" Content="Login Selected"/>
             <Button Command="{Binding OnFindWAClick}" Content="Find WA"/>
+            <Button Command="{Binding OnSelectNationsClick}" Content="Select/Unselect All"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
               <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Target Region:</TextBlock>
               <TextBox Name="regionTextBox" MinWidth="200"></TextBox>

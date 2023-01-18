@@ -2,6 +2,7 @@ using Henson.Models;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ReactiveUI;
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
@@ -30,6 +31,17 @@ namespace Henson.ViewModels
             new Nation("b", "b", "b", "b", false),
             new Nation("c", "c", "c", "c", false),
             new Nation("d", "d", "d", "d", false),
+            new Nation("d", "d", "d", "d", false),
+            new Nation("d", "d", "d", "d", false),
+            new Nation("d", "d", "d", "d", false),
+            new Nation("d", "d", "d", "d", false),
+            new Nation("d", "d", "d", "d", false),
+            new Nation("d", "d", "d", "d", false),
+            new Nation("d", "d", "d", "d", false),
+            new Nation("d", "d", "d", "d", false),
+            new Nation("d", "d", "d", "d", false),
+            new Nation("d", "d", "d", "d", false),
+            new Nation("d", "d", "d", "d", false),
         };
 
         public ICommand AddNationCommand { get; }
@@ -49,6 +61,16 @@ namespace Henson.ViewModels
         public void OnFindWAClick()
         {
             System.Diagnostics.Debug.WriteLine("OnFindWAClick");
+        }
+
+        public void OnSelectNationsClick()
+        {
+            bool OppositeAllTrueOrFalse = !Nations.All(x => x.IsChecked);
+            for(int i = 0; i < Nations.Count; i++)
+            {
+                Console.WriteLine(Nations[i].Name + " changed from "+ Nations[i].IsChecked.ToString() + " to " + OppositeAllTrueOrFalse.ToString());
+                Nations[i].IsChecked = OppositeAllTrueOrFalse;
+            }
         }
     }
 }
