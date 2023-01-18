@@ -22,7 +22,7 @@ namespace Henson.Models
         public string FlagUrl { get; set; }
         public string Region { get; set; }
         public bool IsChecked { get; set; }
-        private string CachePath => $"./Cache/{Name}";
+        private string FlagCachePath => $"./Cache/{Name}";
 
         public void Login()
         {

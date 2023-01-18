@@ -1,14 +1,29 @@
 using Henson.Models;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Windows.Input;
 
 namespace Henson.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        public MainWindowViewModel()
+        {
+            ShowDialog = new Interaction<AddNationWindowViewModel, AddNationOptionViewModel?>();
+
+            AddNationCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var dialog = new AddNationWindowViewModel();
+
+                var result = await ShowDialog.Handle(dialog);
+            });
+        }
+
         public List<Nation> Nations => new()
         {
             new Nation("a", "a", "a", "a", true),
@@ -16,6 +31,10 @@ namespace Henson.ViewModels
             new Nation("c", "c", "c", "c", false),
             new Nation("d", "d", "d", "d", false),
         };
+
+        public ICommand AddNationCommand { get; }
+
+        public Interaction<AddNationWindowViewModel, AddNationOptionViewModel?> ShowDialog { get; }
 
         public void OnAddNationClick()
         {

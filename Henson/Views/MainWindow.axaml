@@ -7,7 +7,8 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Henson.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Henson">
+        Title="Henson"
+        WindowStartupLocation="CenterScreen">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
@@ -17,7 +18,7 @@
       <TabItem Header="Quick View">
         <StackPanel>
           <DockPanel>
-            <Button Command="{Binding OnAddNationClick}" Content="Add Nation(s)"/>
+            <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)"/>
             <Button Command="{Binding OnLoginSelectedClick}" Content="Login Selected"/>
             <Button Command="{Binding OnFindWAClick}" Content="Find WA"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
