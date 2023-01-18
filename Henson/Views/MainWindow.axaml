@@ -18,42 +18,45 @@
         <StackPanel>
           <DockPanel>
             <Button Command="{Binding OnAddNationClick}" Content="Add Nation(s)"/>
-            <Button Command="{Binding OnLoginClick}" Content="Login Selected"/>
+            <Button Command="{Binding OnLoginSelectedClick}" Content="Login Selected"/>
             <Button Command="{Binding OnFindWAClick}" Content="Find WA"/>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
               <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Target Region:</TextBlock>
-              <TextBox MinWidth="200"></TextBox>
+              <TextBox Name="regionTextBox" MinWidth="200"></TextBox>
             </StackPanel>
           </DockPanel>
           <Grid>
             <DataGrid Name="NationList" Items="{Binding Nations}" IsReadOnly="False" CanUserResizeColumns="True" AutoGenerateColumns="False">
               <DataGrid.Columns>
-                <DataGridCheckBoxColumn Binding="{Binding IsChecked}">
-                  <DataGridCheckBoxColumn.Header>
+                <DataGridTemplateColumn>
+                  <!--<DataGridCheckBoxColumn.Header>
                       <CheckBox IsThreeState="True"/>
-                  </DataGridCheckBoxColumn.Header>
-                </DataGridCheckBoxColumn>
+                  </DataGridCheckBoxColumn.Header> this doesn't work-->
+                  <DataTemplate>
+                    <CheckBox IsChecked="{Binding IsChecked}"/>
+                  </DataTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn IsReadOnly="True" Header="Flag" Binding="{Binding FlagUrl}"/>
                 <DataGridTextColumn IsReadOnly="True" Header="Nation" Width="*" Binding="{Binding Name}"/>
                 <DataGridTextColumn IsReadOnly="True" Header="Current region" Binding="{Binding Region}"/>
                 <DataGridTemplateColumn Header="Login">
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate DataType="m:Nation">
-                      <Button HorizontalAlignment="Center" Background="Transparent">Login</Button>
+                      <Button HorizontalAlignment="Center" Command="{Binding Login}" Background="Transparent">Login</Button>
                     </DataTemplate>
                   </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Apply to WA">
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate DataType="m:Nation">
-                      <Button HorizontalAlignment="Center" Background="Transparent">Apply</Button>
+                      <Button HorizontalAlignment="Center" Command="{Binding ApplyWA}" Background="Transparent">Apply</Button>
                     </DataTemplate>
                   </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Move to region">
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate DataType="m:Nation">
-                      <Button HorizontalAlignment="Center" Background="Transparent">Move</Button>
+                      <Button HorizontalAlignment="Center" Command="{Binding MoveTo}" CommandParameter="{Binding ElementName=regionTextBox, Path=Text}" Background="Transparent">Move</Button>
                     </DataTemplate>
                   </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

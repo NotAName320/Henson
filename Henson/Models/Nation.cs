@@ -23,5 +23,20 @@ namespace Henson.Models
         public string Region { get; set; }
         public bool IsChecked { get; set; }
         private string CachePath => $"./Cache/{Name}";
+
+        public void Login()
+        {
+            System.Diagnostics.Debug.WriteLine("Login " + Name + " " + Pass);
+        }
+
+        public void ApplyWA()
+        {
+            System.Diagnostics.Debug.WriteLine("Apply WA " + Name + " " + Pass);
+        }
+
+        public void MoveTo(string region)
+        {
+            System.Diagnostics.Debug.WriteLine("MoveTo " + region);
+        }
     }
 }
