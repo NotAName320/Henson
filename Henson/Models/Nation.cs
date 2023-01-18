@@ -8,16 +8,20 @@ namespace Henson.Models
 {
     public class Nation
     {
-        public Nation(string name, string pass, string flagUrl)
+        public Nation(string name, string pass, string flagUrl, string region, bool isChecked)
         {
             Name = name;
             Pass = pass;
             FlagUrl = flagUrl;
+            Region = region;
+            IsChecked = isChecked;
         }
 
         public string Name { get; set; }
         public string Pass { get; set; }
         public string FlagUrl { get; set; }
+        public string Region { get; set; }
+        public bool IsChecked { get; set; }
         private string CachePath => $"./Cache/{Name}";
     }
 }
