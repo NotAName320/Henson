@@ -6,13 +6,15 @@
         x:Class="Henson.Views.AddNationWindow"
         Title="Add Nation(s)"
         WindowStartupLocation="CenterOwner"
-        Width="500" Height="250" CanResize="False">
+        Width="500" Height="250" CanResize="False"
+        MinWidth="500" MinHeight="250"
+        MaxWidth="500" MaxHeight="250"> <!-- CanResize doesn't work on some Linux WMs https://github.com/AvaloniaUI/Avalonia/issues/8329 -->
 
     <DockPanel HorizontalAlignment="Center"
                VerticalAlignment="Center">
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
         <TextBlock Margin="0,6,20,0">Import Swarm config:</TextBlock>
-        <Button>Browse...</Button>
+        <Button Command="{Binding FilePickerCommand}">Browse...</Button>
       </StackPanel>
       <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
         <TextBlock Margin="0,18,20,0">Import with login info:</TextBlock>
