@@ -11,7 +11,7 @@ namespace Henson.Views
         public MainWindow()
         {
             InitializeComponent();
-            this.WhenActivated(d => d(ViewModel!.ShowDialog.RegisterHandler(DoShowDialogAsync)));
+            this.WhenActivated(d => d(ViewModel!.ShowAddNationDialog.RegisterHandler(DoShowDialogAsync)));
         }
 
         private async Task DoShowDialogAsync(InteractionContext<AddNationWindowViewModel, AddNationOptionViewModel?> interaction)

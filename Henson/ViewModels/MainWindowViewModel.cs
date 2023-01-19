@@ -8,6 +8,9 @@ using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Input;
+using DynamicData;
+using System.Reactive.Concurrency;
+using System.Collections.ObjectModel;
 
 namespace Henson.ViewModels
 {
@@ -15,42 +18,44 @@ namespace Henson.ViewModels
     {
         public MainWindowViewModel()
         {
-            ShowDialog = new Interaction<AddNationWindowViewModel, AddNationOptionViewModel?>();
+            RxApp.MainThreadScheduler.Schedule(LoadNations);
+
+            ShowAddNationDialog = new Interaction<AddNationWindowViewModel, AddNationOptionViewModel?>();
 
             AddNationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 var dialog = new AddNationWindowViewModel();
 
-                var result = await ShowDialog.Handle(dialog);
+                var result = await ShowAddNationDialog.Handle(dialog);
             });
         }
 
-        public List<Nation> Nations => new()
+        private async void LoadNations()
         {
-            new Nation("a", "a", "a", "a", true),
-            new Nation("b", "b", "b", "b", false),
-            new Nation("c", "c", "c", "c", false),
-            new Nation("d", "d", "d", "d", false),
-            new Nation("d", "d", "d", "d", false),
-            new Nation("d", "d", "d", "d", false),
-            new Nation("d", "d", "d", "d", false),
-            new Nation("d", "d", "d", "d", false),
-            new Nation("d", "d", "d", "d", false),
-            new Nation("d", "d", "d", "d", false),
-            new Nation("d", "d", "d", "d", false),
-            new Nation("d", "d", "d", "d", false),
-            new Nation("d", "d", "d", "d", false),
-            new Nation("d", "d", "d", "d", false),
-            new Nation("d", "d", "d", "d", false),
-        };
+            var nations = new List<NationGridViewModel>
+            {
+                new NationGridViewModel(new Nation("a", "a", "a", "a"), true),
+                new NationGridViewModel(new Nation("a", "a", "a", "a"), false),
+                new NationGridViewModel(new Nation("a", "a", "a", "a"), false),
+                new NationGridViewModel(new Nation("a", "a", "a", "a"), false),
+                new NationGridViewModel(new Nation("a", "a", "a", "a"), false),
+            };
+
+            foreach(var nation in nations)
+            {
+                Nations.Add(nation);
+            }
+        }
+
+        public ObservableCollection<NationGridViewModel> Nations { get; } = new();
 
         public ICommand AddNationCommand { get; }
 
-        public Interaction<AddNationWindowViewModel, AddNationOptionViewModel?> ShowDialog { get; }
+        public Interaction<AddNationWindowViewModel, AddNationOptionViewModel?> ShowAddNationDialog { get; }
 
-        public void OnAddNationClick()
+        public void OnRemoveNationClick()
         {
-            System.Diagnostics.Debug.WriteLine("OnAddNationClick");
+            System.Diagnostics.Debug.WriteLine("OnRemoveNationClick");
         }
 
         public void OnLoginSelectedClick()
@@ -65,11 +70,10 @@ namespace Henson.ViewModels
 
         public void OnSelectNationsClick()
         {
-            bool OppositeAllTrueOrFalse = !Nations.All(x => x.IsChecked);
-            for(int i = 0; i < Nations.Count; i++)
+            bool OppositeAllTrueOrFalse = !Nations.All(x => x.Checked);
+            foreach(var nation in Nations)
             {
-                Console.WriteLine(Nations[i].Name + " changed from "+ Nations[i].IsChecked.ToString() + " to " + OppositeAllTrueOrFalse.ToString());
-                Nations[i].IsChecked = OppositeAllTrueOrFalse;
+                nation.Checked = OppositeAllTrueOrFalse;
             }
         }
     }
