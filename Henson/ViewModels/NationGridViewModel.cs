@@ -3,6 +3,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,6 +22,7 @@ namespace Henson.ViewModels
         public string Name => _nation.Name;
         public string FlagUrl => _nation.FlagUrl;
         public string Pass => _nation.Pass;
+        public string Region => _nation.Region;
 
         public void OnCheckboxClick() //Saved for adding checkbox to header later
         {
