@@ -23,6 +23,22 @@ namespace Henson.Views
             dialog.Filters.Add(new FileDialogFilter() { Name = "All Files", Extensions = { "*" } });
 
             var result = await dialog.ShowAsync(this);
+            
+            if(result == null) //If no file is selected, cancel window closing action
+            {
+                this.Closing += (s, e) =>
+                {
+                    e.Cancel = true;
+                };
+            }
+            else
+            {
+                this.Closing += (s, e) =>
+                {
+                    e.Cancel = false;
+                };
+            }
+
             interaction.SetOutput(result);
         }
     }

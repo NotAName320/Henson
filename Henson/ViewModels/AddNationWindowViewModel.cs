@@ -30,16 +30,33 @@ namespace Henson.ViewModels
                     {
                         retVal.Add(new NationLoginViewModel(keyValue.Key, keyValue.Value));
                     }
+                    return retVal;
                 }
 
-                return retVal;
+                return null;
             });
         }
 
-        public ReactiveCommand<Unit, List<NationLoginViewModel>> FilePickerCommand { get; }
+        public string ImportOneUser { get; } = "";
+        public string ImportOnePass { get; } = "";
+        public string ImportManyUser { get; } = "";
+        public string ImportManyPass { get; } = "";
+        public string ImportManyRange { get; } = "";
+
+        public ReactiveCommand<Unit, List<NationLoginViewModel>?> FilePickerCommand { get; }
 
         public Interaction<FilePickerViewModel, string[]?> ShowFilePickerDialog { get; }
-
+ 
         public List<NationLoginViewModel> retVal = new();
+
+        public void ImportOne()
+        {
+            Console.WriteLine($"ImportOne {ImportOneUser} {ImportOnePass}");
+        }
+
+        public void ImportMany()
+        {
+            Console.WriteLine($"ImportMany {ImportManyUser} {ImportManyPass} {ImportManyRange}");
+        }
     }
 }

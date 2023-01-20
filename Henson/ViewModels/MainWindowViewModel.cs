@@ -33,6 +33,7 @@ namespace Henson.ViewModels
                     foreach(NationLoginViewModel n in result)
                     {
                         System.Diagnostics.Debug.WriteLine(n.Name + " " + n.Pass);
+                        Nations.Add(new NationGridViewModel(new Nation("b", "b", "b", "b"), true));
                     }
                 }
             });
