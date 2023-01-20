@@ -2,9 +2,7 @@ using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 using Henson.ViewModels;
 using ReactiveUI;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
+using System;
 using System.Threading.Tasks;
 
 namespace Henson.Views
@@ -15,8 +13,9 @@ namespace Henson.Views
         {
             InitializeComponent();
             this.WhenActivated(d => d(ViewModel!.ShowFilePickerDialog.RegisterHandler(GetConfigJson)));
+            this.WhenActivated(d => d(ViewModel!.FilePickerCommand.Subscribe(Close)));
         }
-
+        
         private async Task GetConfigJson(InteractionContext<FilePickerViewModel, string[]?> interaction)
         {
             var dialog = new OpenFileDialog();
@@ -24,20 +23,6 @@ namespace Henson.Views
             dialog.Filters.Add(new FileDialogFilter() { Name = "All Files", Extensions = { "*" } });
 
             var result = await dialog.ShowAsync(this);
-            if(result != null)
-            {
-                string fileName = result[0];
-                string jsonString = File.ReadAllText(fileName);
-                using var doc = JsonDocument.Parse(jsonString);
-                    JsonElement root = doc.RootElement;
-                var accounts = root.EnumerateArray();
-
-                while(accounts.MoveNext())
-                {
-                    var account = accounts.Current;
-                    System.Diagnostics.Debug.WriteLine(account);
-                }
-            }
             interaction.SetOutput(result);
         }
     }

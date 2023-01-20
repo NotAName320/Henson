@@ -20,13 +20,21 @@ namespace Henson.ViewModels
         {
             RxApp.MainThreadScheduler.Schedule(LoadNations);
 
-            ShowAddNationDialog = new Interaction<AddNationWindowViewModel, AddNationOptionViewModel?>();
+            ShowAddNationDialog = new Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?>();
 
             AddNationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 var dialog = new AddNationWindowViewModel();
 
                 var result = await ShowAddNationDialog.Handle(dialog);
+
+                if (result != null)
+                {
+                    foreach(NationLoginViewModel n in result)
+                    {
+                        System.Diagnostics.Debug.WriteLine(n.Name + " " + n.Pass);
+                    }
+                }
             });
         }
 
@@ -51,7 +59,7 @@ namespace Henson.ViewModels
 
         public ICommand AddNationCommand { get; }
 
-        public Interaction<AddNationWindowViewModel, AddNationOptionViewModel?> ShowAddNationDialog { get; }
+        public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> ShowAddNationDialog { get; }
 
         public void OnRemoveNationClick()
         {
