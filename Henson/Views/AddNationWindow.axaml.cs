@@ -20,10 +20,10 @@ namespace Henson.Views
         public AddNationWindow()
         {
             InitializeComponent();
-            this.WhenActivated(d => d(ViewModel!.ShowFilePickerDialog.RegisterHandler(GetConfigJson)));
-            this.WhenActivated(d => d(ViewModel!.ShowInvalidImportOneBoxDialog.RegisterHandler(InvalidImportOneInput)));
-            this.WhenActivated(d => d(ViewModel!.ShowInvalidImportManyBoxDialog.RegisterHandler(InvalidImportManyInput)));
-            this.WhenActivated(d => d(ViewModel!.ShowInvalidImportManyRangeBoxDialog.RegisterHandler(InvalidImportManyRangeInput)));
+            this.WhenActivated(d => d(ViewModel!.FilePickerDialog.RegisterHandler(GetConfigJson)));
+            this.WhenActivated(d => d(ViewModel!.InvalidImportOneErrorDialog.RegisterHandler(ShowInvalidImportOneInputError)));
+            this.WhenActivated(d => d(ViewModel!.InvalidImportManyErrorDialog.RegisterHandler(ShowInvalidImportManyInputError)));
+            this.WhenActivated(d => d(ViewModel!.InvalidImportManyRangeErrorDialog.RegisterHandler(ShowInvalidImportManyRangeInputError)));
             this.WhenActivated(d => d(ViewModel!.FilePickerCommand.Subscribe(Close)));
             this.WhenActivated(d => d(ViewModel!.ImportOneCommand.Subscribe(Close)));
             this.WhenActivated(d => d(ViewModel!.ImportManyCommand.Subscribe(Close)));
@@ -31,6 +31,7 @@ namespace Henson.Views
         
         private async Task GetConfigJson(InteractionContext<FilePickerViewModel, string[]?> interaction)
         {
+            //Need to write an error handler for this sometime
             var dialog = new OpenFileDialog();
             dialog.Filters!.Add(new FileDialogFilter() { Name = "JSON Files", Extensions = { "json" } });
             dialog.Filters.Add(new FileDialogFilter() { Name = "All Files", Extensions = { "*" } });
@@ -40,7 +41,7 @@ namespace Henson.Views
             interaction.SetOutput(result);
         }
 
-        private async Task InvalidImportOneInput(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
+        private async Task ShowInvalidImportOneInputError(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
         {
             var messageBox = MessageBox.Avalonia.MessageBoxManager
               .GetMessageBoxStandardWindow(new MessageBoxStandardParams
@@ -54,7 +55,7 @@ namespace Henson.Views
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 
-        private async Task InvalidImportManyInput(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
+        private async Task ShowInvalidImportManyInputError(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
         {
             var messageBox = MessageBox.Avalonia.MessageBoxManager
                 .GetMessageBoxStandardWindow(new MessageBoxStandardParams
@@ -68,7 +69,7 @@ namespace Henson.Views
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 
-        private async Task InvalidImportManyRangeInput(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
+        private async Task ShowInvalidImportManyRangeInputError(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
         {
             var messageBox = MessageBox.Avalonia.MessageBoxManager
                 .GetMessageBoxStandardWindow(new MessageBoxStandardParams

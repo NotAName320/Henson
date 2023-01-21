@@ -19,7 +19,7 @@ namespace Henson.ViewModels
             FilePickerCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 var dialog = new FilePickerViewModel();
-                var result = await ShowFilePickerDialog.Handle(dialog);
+                var result = await FilePickerDialog.Handle(dialog);
 
                 if (result != null)
                 {
@@ -39,7 +39,7 @@ namespace Henson.ViewModels
                 if(string.IsNullOrWhiteSpace(ImportOneUser) || string.IsNullOrWhiteSpace(ImportOnePass))
                 {
                     var dialog = new MessageBoxViewModel();
-                    await ShowInvalidImportOneBoxDialog.Handle(dialog);
+                    await InvalidImportOneErrorDialog.Handle(dialog);
 
                     return null;
                 }
@@ -52,7 +52,7 @@ namespace Henson.ViewModels
                 var dialog = new MessageBoxViewModel();
                 if (string.IsNullOrWhiteSpace(ImportManyUser) || string.IsNullOrWhiteSpace(ImportManyPass) || string.IsNullOrEmpty(ImportManyRange))
                 {
-                    await ShowInvalidImportManyBoxDialog.Handle(dialog);
+                    await InvalidImportManyErrorDialog.Handle(dialog);
 
                     return null;
                 }
@@ -69,7 +69,7 @@ namespace Henson.ViewModels
                     return retVal;
                 }
 
-                await ShowInvalidImportManyRangeBoxDialog.Handle(dialog);
+                await InvalidImportManyRangeErrorDialog.Handle(dialog);
 
                 return null;
             });
@@ -85,10 +85,10 @@ namespace Henson.ViewModels
         public ReactiveCommand<Unit, List<NationLoginViewModel>?> ImportOneCommand { get; }
         public ReactiveCommand<Unit, List<NationLoginViewModel>?> ImportManyCommand { get; }
 
-        public Interaction<FilePickerViewModel, string[]?> ShowFilePickerDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> ShowInvalidImportOneBoxDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> ShowInvalidImportManyBoxDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> ShowInvalidImportManyRangeBoxDialog { get; } = new();
+        public Interaction<FilePickerViewModel, string[]?> FilePickerDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> InvalidImportOneErrorDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> InvalidImportManyErrorDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> InvalidImportManyRangeErrorDialog { get; } = new();
 
         public List<NationLoginViewModel> retVal = new();
     }

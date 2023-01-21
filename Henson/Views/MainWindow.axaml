@@ -18,7 +18,7 @@
         <DockPanel>
           <DockPanel DockPanel.Dock="Top">
             <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)"/>
-            <Button Command="{Binding OnRemoveNationClick}" Content="Remove Selected"/>
+            <Button Command="{Binding RemoveNationCommand}" Content="Remove Selected"/>
             <Button Command="{Binding OnLoginSelectedClick}" Content="Login Selected"/>
             <Button Command="{Binding OnFindWAClick}" Content="Find WA"/>
             <Button Command="{Binding OnSelectNationsClick}" Content="Select/Unselect All"/>

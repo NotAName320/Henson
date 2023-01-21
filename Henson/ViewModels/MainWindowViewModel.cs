@@ -11,6 +11,7 @@ using System.Windows.Input;
 using DynamicData;
 using System.Reactive.Concurrency;
 using System.Collections.ObjectModel;
+using MessageBox.Avalonia.Enums;
 
 namespace Henson.ViewModels
 {
@@ -20,20 +21,34 @@ namespace Henson.ViewModels
         {
             RxApp.MainThreadScheduler.Schedule(LoadNations);
 
-            ShowAddNationDialog = new Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?>();
-
             AddNationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 var dialog = new AddNationWindowViewModel();
+                var result = await AddNationDialog.Handle(dialog);
 
-                var result = await ShowAddNationDialog.Handle(dialog);
-
-                if (result != null)
+                if(result != null)
                 {
                     foreach(NationLoginViewModel n in result)
                     {
                         //System.Diagnostics.Debug.WriteLine(n.Name + " " + n.Pass);
                         Nations.Add(new NationGridViewModel(new Nation("Placeholder", "Placeholder", "Placeholder", "Placeholder"), true));
+                    }
+                }
+            });
+
+            RemoveNationCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var dialog = new MessageBoxViewModel();
+                var result = await RemoveNationConfirmationDialog.Handle(dialog);
+
+                if(result == ButtonResult.Yes)
+                {
+                    for(int i = Nations.Count - 1; i >= 0; i--)
+                    {
+                        if(Nations[i].Checked)
+                        {
+                            Nations.RemoveAt(i);
+                        }
                     }
                 }
             });
@@ -50,22 +65,19 @@ namespace Henson.ViewModels
                 new NationGridViewModel(new Nation("a", "a", "a", "a"), false),
             };
 
-            foreach(var nation in nations)
+            foreach(var n in nations)
             {
-                Nations.Add(nation);
+                Nations.Add(n);
             }
         }
 
         public ObservableCollection<NationGridViewModel> Nations { get; } = new();
 
         public ICommand AddNationCommand { get; }
+        public ICommand RemoveNationCommand { get; }
 
-        public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> ShowAddNationDialog { get; }
-
-        public void OnRemoveNationClick()
-        {
-            System.Diagnostics.Debug.WriteLine("OnRemoveNationClick");
-        }
+        public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> AddNationDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> RemoveNationConfirmationDialog { get; } = new();
 
         public void OnLoginSelectedClick()
         {
