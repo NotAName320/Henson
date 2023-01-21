@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace Henson.Models
 {
-    public class JsonReader
+    public class ConfigJsonReader
     {
-        public JsonReader(string filePath)
+        public ConfigJsonReader(string filePath)
         {
             using (StreamReader r = new StreamReader(filePath))
             {
