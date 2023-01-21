@@ -12,6 +12,8 @@ using DynamicData;
 using System.Reactive.Concurrency;
 using System.Collections.ObjectModel;
 using MessageBox.Avalonia.Enums;
+using System.Reactive;
+using System.Threading.Tasks;
 
 namespace Henson.ViewModels
 {
@@ -28,11 +30,20 @@ namespace Henson.ViewModels
 
                 if(result != null)
                 {
-                    foreach(NationLoginViewModel n in result)
+                    FooterText = "Loading nations... this may take a while.";
+                    await Task.Delay(100);
+                    var (nations, authFailedOnSome) = _client.AuthenticateAndReturnInfo(result);
+                    foreach (Nation n in nations)
                     {
-                        //System.Diagnostics.Debug.WriteLine(n.Name + " " + n.Pass);
-                        Nations.Add(new NationGridViewModel(new Nation("Placeholder", "Placeholder", "Placeholder", "Placeholder"), true));
+                        Nations.Add(new NationGridViewModel(n, true));
                     }
+
+                    if(authFailedOnSome)
+                    {
+                        var messageDialog = new MessageBoxViewModel();
+                        await SomeNationsFailedToAddDialog.Handle(messageDialog);
+                    }
+                    FooterText = "Finished loading!";
                 }
             });
 
@@ -50,25 +61,29 @@ namespace Henson.ViewModels
                             Nations.RemoveAt(i);
                         }
                     }
+                    FooterText = "Nations removed!";
                 }
             });
         }
 
         private async void LoadNations()
         {
-            var nations = new List<NationGridViewModel>
-            {
-                new NationGridViewModel(new Nation("a", "a", "a", "a"), true),
-                new NationGridViewModel(new Nation("a", "a", "a", "a"), false),
-                new NationGridViewModel(new Nation("a", "a", "a", "a"), false),
-                new NationGridViewModel(new Nation("a", "a", "a", "a"), false),
-                new NationGridViewModel(new Nation("a", "a", "a", "a"), false),
-            };
+            var nations = new List<NationGridViewModel>();
 
             foreach(var n in nations)
             {
                 Nations.Add(n);
             }
+        }
+
+
+        private NSClient _client { get; } = new("Notanam");
+
+        private string footerText = "Welcome to Henson!";
+        public string FooterText
+        {
+            get => footerText;
+            set => this.RaiseAndSetIfChanged(ref footerText, value);
         }
 
         public ObservableCollection<NationGridViewModel> Nations { get; } = new();
@@ -78,6 +93,7 @@ namespace Henson.ViewModels
 
         public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> AddNationDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> RemoveNationConfirmationDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> SomeNationsFailedToAddDialog { get; } = new();
 
         public void OnLoginSelectedClick()
         {

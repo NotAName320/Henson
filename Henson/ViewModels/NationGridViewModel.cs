@@ -20,7 +20,6 @@ namespace Henson.ViewModels
         }
 
         public string Name => _nation.Name;
-        public string FlagUrl => _nation.FlagUrl;
         public string Pass => _nation.Pass;
         public string Region => _nation.Region;
 

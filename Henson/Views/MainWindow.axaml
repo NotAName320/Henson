@@ -3,7 +3,7 @@
         xmlns:vm="using:Henson.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="675"
         x:Class="Henson.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Title="Henson"
@@ -15,32 +15,32 @@
 
     <TabControl>
       <TabItem Header="Quick View">
-        <DockPanel>
+        <DockPanel Width="1180">
           <DockPanel DockPanel.Dock="Top">
             <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)"/>
             <Button Command="{Binding RemoveNationCommand}" Content="Remove Selected"/>
             <Button Command="{Binding OnLoginSelectedClick}" Content="Login Selected"/>
             <Button Command="{Binding OnFindWAClick}" Content="Find WA"/>
             <Button Command="{Binding OnSelectNationsClick}" Content="Select/Unselect All"/>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <DockPanel HorizontalAlignment="Right">
               <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Target Region:</TextBlock>
               <TextBox Name="regionTextBox" MinWidth="200" MaxWidth="400"/>
-            </StackPanel>
+            </DockPanel>
           </DockPanel>
-          <Grid Margin="0,0,0,10">
-            <DataGrid Name="NationList" Items="{Binding Nations}" IsReadOnly="False" CanUserResizeColumns="True" AutoGenerateColumns="False">
+          <Grid DockPanel.Dock="Top">
+            <DataGrid Name="NationList" Items="{Binding Nations}" IsReadOnly="False"
+                      CanUserResizeColumns="True" AutoGenerateColumns="False">
               <DataGrid.Columns>
-                <DataGridTemplateColumn>
+                <DataGridTemplateColumn SortMemberPath="CB">
                   <!--<DataGridCheckBoxColumn.Header>
                       <CheckBox IsThreeState="True"/>
                   </DataGridCheckBoxColumn.Header> this doesn't work-->
                   <DataTemplate DataType="vm:NationGridViewModel">
-                    <CheckBox IsChecked="{Binding Checked}" Command="{Binding OnCheckboxClick}"/>
+                    <CheckBox Name="CB" IsChecked="{Binding Checked}" Command="{Binding OnCheckboxClick}"/>
                   </DataTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn IsReadOnly="True" Header="Flag" Binding="{Binding FlagUrl}"/>
                 <DataGridTextColumn IsReadOnly="True" Header="Nation" Width="*" Binding="{Binding Name}"/>
-                <DataGridTextColumn IsReadOnly="True" Header="Current region" Binding="{Binding Region}"/>
+                <DataGridTextColumn IsReadOnly="True" Header="Current region" Width=".35*" Binding="{Binding Region}"/>
                 <DataGridTemplateColumn Header="Login">
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate DataType="vm:NationGridViewModel">
@@ -58,14 +58,15 @@
                 <DataGridTemplateColumn Header="Move to region">
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate DataType="vm:NationGridViewModel">
-                      <Button HorizontalAlignment="Center" Command="{Binding MoveTo}" CommandParameter="{Binding ElementName=regionTextBox, Path=Text}" Background="Transparent">Move</Button>
-                    </DataTemplate>
-                  </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-              </DataGrid.Columns>
-            </DataGrid>
+                     <Button HorizontalAlignment="Center" Command="{Binding MoveTo}" CommandParameter="{Binding ElementName=regionTextBox, Path=Text}" Background="Transparent">Move</Button>
+                   </DataTemplate>  
+                 </DataGridTemplateColumn.CellTemplate>
+               </DataGridTemplateColumn>
+             </DataGrid.Columns>
+           </DataGrid>
           </Grid>
         </DockPanel>
+          <!--<TextBlock Margin="0,0,0,10" DockPanel.Dock="Bottom" Text="{Binding FooterText}" Canvas.Bottom="0"/>-->
       </TabItem>
       <TabItem Header="Individual View">
           <TextBlock Text="WIP. Soon, you'll be able to edit individual nation settings here!"/>
