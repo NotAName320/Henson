@@ -53,21 +53,23 @@ namespace Henson.Models
             return (retVal, didAuthFail);
         }
 
-        public bool Login(NationLoginViewModel login)
+        public bool Ping(NationLoginViewModel login)
         {
-            NameValueCollection nvc = new();
-            nvc.Add("nation", login.Name);
-            nvc.Add("q", "ping");
+            NameValueCollection nvc = new()
+            {
+                { "nation", login.Name },
+                { "q", "ping" }
+            };
 
             return Utilities.API(nvc, login.Pass, 0, Client.UserAgent).IsSuccessStatusCode;
         }
 
-        public List<bool> LoginMany(List<NationLoginViewModel> logins)
+        public List<bool> PingMany(List<NationLoginViewModel> logins)
         {
             List<bool> loginSuccesses = new();
             foreach(var n in logins)
             {
-                loginSuccesses.Add(Login(n));
+                loginSuccesses.Add(Ping(n));
                 Thread.Sleep(MultipleRequestsWaitTime);
             }
 
@@ -76,9 +78,11 @@ namespace Henson.Models
 
         public string? FindWA(List<NationGridViewModel> nations)
         {
-            NameValueCollection nvc = new();
-            nvc.Add("wa", "1");
-            nvc.Add("q", "members");
+            NameValueCollection nvc = new()
+            {
+                { "wa", "1" },
+                { "q", "members" }
+            };
 
             var response = Utilities.API(nvc, null, 0, Client.UserAgent);
 

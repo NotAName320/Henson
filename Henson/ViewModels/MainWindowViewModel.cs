@@ -67,16 +67,16 @@ namespace Henson.ViewModels
                 }
             });
 
-            LoginSelectedCommand = ReactiveCommand.CreateFromTask(async () =>
+            PingSelectedCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 var dialog = new MessageBoxViewModel();
                 var selectedNations = Nations.Where(x => x.Checked).ToList();
                 var nationLogins = selectedNations.Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
 
-                FooterText = "Logging nations in...";
+                FooterText = "Pinging nations...";
                 await Task.Delay(100);
 
-                var successes = _client.LoginMany(nationLogins);
+                var successes = _client.PingMany(nationLogins);
                 if(!successes.All(x => x))
                 {
                     for(int i = 0; i < selectedNations.Count; i++)
@@ -84,15 +84,15 @@ namespace Henson.ViewModels
                         selectedNations[i].Checked = successes[i];
                     }
                     
-                    FooterText = "Nations logged in (some failed)!";
+                    FooterText = "Nations pinged (some failed)!";
 
-                    await SomeNationsFailedToLoginDialog.Handle(dialog);
+                    await SomeNationsFailedToPingDialog.Handle(dialog);
                 }
                 else
                 {
-                    FooterText = "Nations logged in!";
+                    FooterText = "Nations pinged!";
 
-                    await NationLoginSuccessDialog.Handle(dialog);
+                    await NationPingSuccessDialog.Handle(dialog);
                 }
             });
 
@@ -143,14 +143,14 @@ namespace Henson.ViewModels
 
         public ICommand AddNationCommand { get; }
         public ICommand RemoveSelectedCommand { get; }
-        public ICommand LoginSelectedCommand { get; }
+        public ICommand PingSelectedCommand { get; }
         public ICommand FindWACommand { get; }
 
         public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> AddNationDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> RemoveNationConfirmationDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> SomeNationsFailedToAddDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> SomeNationsFailedToLoginDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> NationLoginSuccessDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> SomeNationsFailedToPingDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> NationPingSuccessDialog { get; } = new();
         public Interaction<FindWASuccessViewModel, ButtonResult> FindWASuccessDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> WANotFoundDialog { get; } = new();
 
