@@ -15,12 +15,17 @@
 
     <TabControl>
       <TabItem Header="Quick View">
-        <DockPanel Width="1180">
+      <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height=".97*"/>
+        <RowDefinition Height=".03*"/>
+      </Grid.RowDefinitions>
+        <DockPanel Grid.Row="0">
           <DockPanel DockPanel.Dock="Top">
             <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)"/>
-            <Button Command="{Binding RemoveNationCommand}" Content="Remove Selected"/>
-            <Button Command="{Binding OnLoginSelectedClick}" Content="Login Selected"/>
-            <Button Command="{Binding OnFindWAClick}" Content="Find WA"/>
+            <Button Command="{Binding RemoveSelectedCommand}" Content="Remove Selected"/>
+            <Button Command="{Binding LoginSelectedCommand}" Content="Login Selected"/>
+            <Button Command="{Binding FindWACommand}" Content="Find WA"/>
             <Button Command="{Binding OnSelectNationsClick}" Content="Select/Unselect All"/>
             <DockPanel HorizontalAlignment="Right">
               <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Target Region:</TextBlock>
@@ -59,14 +64,15 @@
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate DataType="vm:NationGridViewModel">
                      <Button HorizontalAlignment="Center" Command="{Binding MoveTo}" CommandParameter="{Binding ElementName=regionTextBox, Path=Text}" Background="Transparent">Move</Button>
-                   </DataTemplate>  
+                   </DataTemplate>
                  </DataGridTemplateColumn.CellTemplate>
                </DataGridTemplateColumn>
              </DataGrid.Columns>
            </DataGrid>
           </Grid>
         </DockPanel>
-          <!--<TextBlock Margin="0,0,0,10" DockPanel.Dock="Bottom" Text="{Binding FooterText}" Canvas.Bottom="0"/>-->
+          <TextBlock Margin="0,0,0,10" Grid.Row="1" DockPanel.Dock="Bottom" Text="{Binding FooterText}"/>
+        </Grid>
       </TabItem>
       <TabItem Header="Individual View">
           <TextBlock Text="WIP. Soon, you'll be able to edit individual nation settings here!"/>

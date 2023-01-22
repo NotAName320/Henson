@@ -5,6 +5,7 @@ Debug/
 Release/
 CodeAnalyst/
 ipch/
+.vscode/
 *.sdf
 *.opensdf
 .vs

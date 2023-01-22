@@ -12,6 +12,7 @@ using System.Linq;
 using System.Media;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Henson.Views
@@ -53,7 +54,7 @@ namespace Henson.Views
                   WindowStartupLocation = WindowStartupLocation.CenterOwner,
               });
             SetClosing(true);
-            SystemSounds.Beep.Play();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 
@@ -68,7 +69,7 @@ namespace Henson.Views
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
             SetClosing(true);
-            SystemSounds.Beep.Play();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 
@@ -83,7 +84,7 @@ namespace Henson.Views
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
             SetClosing(true);
-            SystemSounds.Beep.Play();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 

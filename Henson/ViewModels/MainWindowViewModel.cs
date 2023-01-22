@@ -8,7 +8,6 @@ using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Input;
-using DynamicData;
 using System.Reactive.Concurrency;
 using System.Collections.ObjectModel;
 using MessageBox.Avalonia.Enums;
@@ -32,6 +31,7 @@ namespace Henson.ViewModels
                 {
                     FooterText = "Loading nations... this may take a while.";
                     await Task.Delay(100);
+
                     var (nations, authFailedOnSome) = _client.AuthenticateAndReturnInfo(result);
                     foreach (Nation n in nations)
                     {
@@ -43,11 +43,12 @@ namespace Henson.ViewModels
                         var messageDialog = new MessageBoxViewModel();
                         await SomeNationsFailedToAddDialog.Handle(messageDialog);
                     }
+
                     FooterText = "Finished loading!";
                 }
             });
 
-            RemoveNationCommand = ReactiveCommand.CreateFromTask(async () =>
+            RemoveSelectedCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 var dialog = new MessageBoxViewModel();
                 var result = await RemoveNationConfirmationDialog.Handle(dialog);
@@ -61,12 +62,65 @@ namespace Henson.ViewModels
                             Nations.RemoveAt(i);
                         }
                     }
+
                     FooterText = "Nations removed!";
+                }
+            });
+
+            LoginSelectedCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var dialog = new MessageBoxViewModel();
+                var selectedNations = Nations.Where(x => x.Checked).ToList();
+                var nationLogins = selectedNations.Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
+
+                FooterText = "Logging nations in...";
+                await Task.Delay(100);
+
+                var successes = _client.LoginMany(nationLogins);
+                if(!successes.All(x => x))
+                {
+                    for(int i = 0; i < selectedNations.Count; i++)
+                    {
+                        selectedNations[i].Checked = successes[i];
+                    }
+                    
+                    FooterText = "Nations logged in (some failed)!";
+
+                    await SomeNationsFailedToLoginDialog.Handle(dialog);
+                }
+                else
+                {
+                    FooterText = "Nations logged in!";
+
+                    await NationLoginSuccessDialog.Handle(dialog);
+                }
+            });
+
+            FindWACommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                FooterText = "Finding WA nation...";
+                await Task.Delay(100);
+
+                var result = _client.FindWA(Nations.ToList());
+
+                if(result != null)
+                {
+                    FooterText = $"WA nation found: {result}";
+
+                    var dialog = new FindWASuccessViewModel(result);
+                    await FindWASuccessDialog.Handle(dialog);
+                }
+                else
+                {
+                    FooterText = $"WA nation not found.";
+
+                    var dialog = new MessageBoxViewModel();
+                    await WANotFoundDialog.Handle(dialog);
                 }
             });
         }
 
-        private async void LoadNations()
+        private void LoadNations()
         {
             var nations = new List<NationGridViewModel>();
 
@@ -75,7 +129,6 @@ namespace Henson.ViewModels
                 Nations.Add(n);
             }
         }
-
 
         private NSClient _client { get; } = new("Notanam");
 
@@ -89,21 +142,17 @@ namespace Henson.ViewModels
         public ObservableCollection<NationGridViewModel> Nations { get; } = new();
 
         public ICommand AddNationCommand { get; }
-        public ICommand RemoveNationCommand { get; }
+        public ICommand RemoveSelectedCommand { get; }
+        public ICommand LoginSelectedCommand { get; }
+        public ICommand FindWACommand { get; }
 
         public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> AddNationDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> RemoveNationConfirmationDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> SomeNationsFailedToAddDialog { get; } = new();
-
-        public void OnLoginSelectedClick()
-        {
-            System.Diagnostics.Debug.WriteLine("OnLoginSelectedClick");
-        }
-
-        public void OnFindWAClick()
-        {
-            System.Diagnostics.Debug.WriteLine("OnFindWAClick");
-        }
+        public Interaction<MessageBoxViewModel, ButtonResult> SomeNationsFailedToLoginDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> NationLoginSuccessDialog { get; } = new();
+        public Interaction<FindWASuccessViewModel, ButtonResult> FindWASuccessDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> WANotFoundDialog { get; } = new();
 
         public void OnSelectNationsClick()
         {

@@ -19,7 +19,7 @@ namespace Henson.Models
 
                 var allNations = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(jsonString);
 
-                Items = allNations.Values.First();
+                Items = allNations!.Values.First();
             }
         }
 
