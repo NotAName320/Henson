@@ -120,7 +120,7 @@ namespace Henson.Models
             if(response.IsSuccessStatusCode)
             {
                 var pin = response.Headers!.Where(x => x.Name == "Set-Cookie").ElementAt(0).Value
-                                 !.ToString()!.Split("; ")[0][4..]; //string fuckery, shoutout sweeze
+                                 !.ToString()!.Split("; ")[0][4..]; //string fuckery basically copied 1:1 from swarm, shoutout sweeze
 
                 var htmlDoc = new HtmlDocument();
                 htmlDoc.LoadHtml(response.Content);
