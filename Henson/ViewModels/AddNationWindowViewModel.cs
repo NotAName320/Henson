@@ -64,7 +64,8 @@ namespace Henson.ViewModels
                 {
                     for(int i = start; i <= end; i++)
                     {
-                        retVal.Add(new NationLoginViewModel($"{ImportManyUser} {i}", ImportManyPass));
+                        var user = ImportManyUser.Contains('*') ? ImportManyUser.Replace("*", i.ToString()) : $"{ImportManyUser} {i}";
+                        retVal.Add(new NationLoginViewModel(user, ImportManyPass));
                     }
                     return retVal;
                 }

@@ -27,6 +27,8 @@
             <Button Command="{Binding PingSelectedCommand}" Content="Ping Selected"/>
             <Button Command="{Binding FindWACommand}" Content="Find WA"/>
             <Button Command="{Binding OnSelectNationsClick}" Content="Select/Unselect All"/>
+            <TextBlock VerticalAlignment="Center" Margin="10,0,0,0" Text="Current login: "/>
+            <TextBlock VerticalAlignment="Center" Text="{Binding CurrentLoginUser}"/>
             <DockPanel HorizontalAlignment="Right">
               <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Target Region:</TextBlock>
               <TextBox Name="regionTextBox" MinWidth="200" MaxWidth="400"/>
@@ -48,7 +50,7 @@
                 <DataGridTextColumn IsReadOnly="True" Header="Current region" Width=".35*" Binding="{Binding Region}"/>
                 <DataGridTemplateColumn Header="Login">
                   <DataGridTemplateColumn.CellTemplate>
-                    <DataTemplate DataType="vm:NationGridViewModel">
+                    <DataTemplate>
                       <Button HorizontalAlignment="Center" Command="{Binding Login}" Background="Transparent">Login</Button>
                     </DataTemplate>
                   </DataGridTemplateColumn.CellTemplate>

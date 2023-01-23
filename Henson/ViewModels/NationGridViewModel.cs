@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 
 namespace Henson.ViewModels
 {
@@ -13,23 +14,27 @@ namespace Henson.ViewModels
     {
         private readonly Nation _nation;
 
-        public NationGridViewModel(Nation nation, bool _checked)
+        public NationGridViewModel(Nation nation, bool _checked, MainWindowViewModel parent)
         {
             _nation = nation;
             this._checked = _checked;
+            Parent = parent; //This is a dumb solution to a dumb problem: not being able to access parent VMs in a DataGrid.
+
+            Login = ReactiveCommand.CreateFromTask(async () =>
+            {
+                await Parent.OnNationLoginClick(this);
+            });
         }
 
         public string Name => _nation.Name;
         public string Pass => _nation.Pass;
         public string Region => _nation.Region;
+        public (string, string) PinChk { get; set; }
+
+        public ICommand Login { get; }
 
         public void OnCheckboxClick() //Saved for adding checkbox to header later
         {
-        }
-
-        public void Login()
-        {
-            System.Diagnostics.Debug.WriteLine("Login " + Name + " " + Pass);
         }
 
         public void ApplyWA()
@@ -49,5 +54,6 @@ namespace Henson.ViewModels
             set => this.RaiseAndSetIfChanged(ref _checked, value);
         }
 
+        public MainWindowViewModel Parent { get; set; }
     }
 }

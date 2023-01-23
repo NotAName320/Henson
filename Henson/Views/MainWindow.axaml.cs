@@ -23,6 +23,7 @@ namespace Henson.Views
             this.WhenActivated(d => d(ViewModel!.NationPingSuccessDialog.RegisterHandler(ShowNationPingSuccessDialog)));
             this.WhenActivated(d => d(ViewModel!.FindWASuccessDialog.RegisterHandler(ShowFindWASuccessDialog)));
             this.WhenActivated(d => d(ViewModel!.WANotFoundDialog.RegisterHandler(ShowWANotFoundDialog)));
+            this.WhenActivated(d => d(ViewModel!.LoginFailedDialog.RegisterHandler(ShowLoginFailedDialog)));
         }
 
         private async Task ShowAddNationDialog(InteractionContext<AddNationWindowViewModel, List<NationLoginViewModel>?> interaction)
@@ -115,6 +116,20 @@ namespace Henson.Views
                     ContentTitle = "WA Nation Not Found",
                     ContentMessage = "Your WA nation was not found.",
                     Icon = MessageBox.Avalonia.Enums.Icon.Warning,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            interaction.SetOutput(await messageBox.ShowDialog(this));
+        }
+
+        private async Task ShowLoginFailedDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
+        {
+            var messageBox = MessageBox.Avalonia.MessageBoxManager
+                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Login Failed",
+                    ContentMessage = "The login failed, probably due to an invalid username/password combination.",
+                    Icon = MessageBox.Avalonia.Enums.Icon.Error,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();

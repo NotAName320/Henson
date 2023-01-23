@@ -1,12 +1,8 @@
 using Henson.Models;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ReactiveUI;
-using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Reactive.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Windows.Input;
 using System.Reactive.Concurrency;
 using System.Collections.ObjectModel;
@@ -32,10 +28,10 @@ namespace Henson.ViewModels
                     FooterText = "Loading nations... this may take a while.";
                     await Task.Delay(100);
 
-                    var (nations, authFailedOnSome) = _client.AuthenticateAndReturnInfo(result);
+                    var (nations, authFailedOnSome) = Client.AuthenticateAndReturnInfo(result);
                     foreach (Nation n in nations)
                     {
-                        Nations.Add(new NationGridViewModel(n, true));
+                        Nations.Add(new NationGridViewModel(n, true, this));
                     }
 
                     if(authFailedOnSome)
@@ -76,7 +72,7 @@ namespace Henson.ViewModels
                 FooterText = "Pinging nations...";
                 await Task.Delay(100);
 
-                var successes = _client.PingMany(nationLogins);
+                var successes = Client.PingMany(nationLogins);
                 if(!successes.All(x => x))
                 {
                     for(int i = 0; i < selectedNations.Count; i++)
@@ -101,7 +97,7 @@ namespace Henson.ViewModels
                 FooterText = "Finding WA nation...";
                 await Task.Delay(100);
 
-                var result = _client.FindWA(Nations.ToList());
+                var result = Client.FindWA(Nations.ToList());
 
                 if(result != null)
                 {
@@ -130,7 +126,20 @@ namespace Henson.ViewModels
             }
         }
 
-        private NSClient _client { get; } = new("Notanam");
+        public NSClient Client { get; } = new("Notanam");
+
+        private NationGridViewModel? currentLogin = null;
+        public NationGridViewModel? CurrentLogin
+        {
+            get => currentLogin;
+            set => this.RaiseAndSetIfChanged(ref currentLogin, value);
+        }
+        private string? currentLoginUser = null; //This can probably be simplified into one thing with the above. To do later.
+        public string CurrentLoginUser
+        {
+            get => currentLoginUser ?? "";
+            set => this.RaiseAndSetIfChanged(ref currentLoginUser, value);
+        }
 
         private string footerText = "Welcome to Henson!";
         public string FooterText
@@ -153,6 +162,7 @@ namespace Henson.ViewModels
         public Interaction<MessageBoxViewModel, ButtonResult> NationPingSuccessDialog { get; } = new();
         public Interaction<FindWASuccessViewModel, ButtonResult> FindWASuccessDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> WANotFoundDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> LoginFailedDialog { get; } = new();
 
         public void OnSelectNationsClick()
         {
@@ -160,6 +170,32 @@ namespace Henson.ViewModels
             foreach(var nation in Nations)
             {
                 nation.Checked = OppositeAllTrueOrFalse;
+            }
+        }
+
+        public async Task OnNationLoginClick(NationGridViewModel nation)
+        {
+            var nationLogin = new NationLoginViewModel(nation.Name, nation.Pass);
+
+            FooterText = $"Logging in to {nation.Name}...";
+            await Task.Delay(100);
+
+            var result = Client.Login(nationLogin);
+            if (result != null)
+            {
+                nation.PinChk = result ?? default;
+
+                CurrentLogin = nation;
+                CurrentLoginUser = nation.Name;
+                FooterText = $"Logged in to {nation.Name}";
+            }
+            else
+            {
+                FooterText = $"Failed to log in to {nation.Name}";
+                await Task.Delay(100);
+
+                var dialog = new MessageBoxViewModel();
+                await LoginFailedDialog.Handle(dialog);
             }
         }
     }
