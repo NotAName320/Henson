@@ -133,9 +133,22 @@ namespace Henson.Models
             return null;
         }
 
-        public void ApplyWA(string pin, string chk)
+        public bool ApplyWA(string pin, string chk)
         {
-            return;
+            var request = new RestRequest("/template-overall=none/page=UN_status");
+            request.AddHeader("User-Agent", APIClient.UserAgent);
+            request.AddParameter("userclick", UserClick);
+            HttpClient.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            NameValueCollection nvc = new()
+            {
+                { "action", "join_UN" },
+                { "chk", chk },
+                { "submit", "1"}
+            };
+            request.AddJsonBody(nvc);
+
+            return HttpClient.Post(request).IsSuccessStatusCode;
         }
 
         public string? GetLocalID(string pin)

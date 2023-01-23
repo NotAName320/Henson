@@ -24,6 +24,11 @@ namespace Henson.ViewModels
             {
                 await Parent.OnNationLoginClick(this);
             });
+
+            ApplyWA = ReactiveCommand.CreateFromTask(async () =>
+            {
+                await Parent.OnNationApplyWAClick(this);
+            });
         }
 
         public string Name => _nation.Name;
@@ -32,14 +37,10 @@ namespace Henson.ViewModels
         public (string, string) PinChk { get; set; }
 
         public ICommand Login { get; }
+        public ICommand ApplyWA { get; }
 
         public void OnCheckboxClick() //Saved for adding checkbox to header later
         {
-        }
-
-        public void ApplyWA()
-        {
-            System.Diagnostics.Debug.WriteLine("Apply WA " + Name + " " + Pass);
         }
 
         public void MoveTo(string region)

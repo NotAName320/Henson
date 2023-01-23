@@ -128,13 +128,7 @@ namespace Henson.ViewModels
 
         public NSClient Client { get; } = new("Notanam");
 
-        private NationGridViewModel? currentLogin = null;
-        public NationGridViewModel? CurrentLogin
-        {
-            get => currentLogin;
-            set => this.RaiseAndSetIfChanged(ref currentLogin, value);
-        }
-        private string? currentLoginUser = null; //This can probably be simplified into one thing with the above. To do later.
+        private string? currentLoginUser = null;
         public string CurrentLoginUser
         {
             get => currentLoginUser ?? "";
@@ -163,6 +157,7 @@ namespace Henson.ViewModels
         public Interaction<FindWASuccessViewModel, ButtonResult> FindWASuccessDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> WANotFoundDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> LoginFailedDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> NotCurrentLoginDialog { get; } = new();
 
         public void OnSelectNationsClick()
         {
@@ -185,7 +180,6 @@ namespace Henson.ViewModels
             {
                 nation.PinChk = result ?? default;
 
-                CurrentLogin = nation;
                 CurrentLoginUser = nation.Name;
                 FooterText = $"Logged in to {nation.Name}";
             }
@@ -197,6 +191,32 @@ namespace Henson.ViewModels
                 var dialog = new MessageBoxViewModel();
                 await LoginFailedDialog.Handle(dialog);
             }
+        }
+
+        private async Task<bool> nationEqualsLogin(NationGridViewModel nation)
+        {
+            if(nation.Name != currentLoginUser)
+            {
+                var dialog = new MessageBoxViewModel();
+                await NotCurrentLoginDialog.Handle(dialog);
+                return false;
+            }
+            return true;
+        }
+
+        public async Task OnNationApplyWAClick(NationGridViewModel nation)
+        {
+            if(!await nationEqualsLogin(nation)) return;
+        }
+
+        public async Task OnNationGetLocalIDClick(NationGridViewModel nation)
+        {
+            if(!await nationEqualsLogin(nation)) return;
+        }
+
+        public async Task OnNationMoveRegionClick(NationGridViewModel nation, string region)
+        {
+            if(!await nationEqualsLogin(nation)) return;
         }
     }
 }
