@@ -137,8 +137,8 @@ namespace Henson.Models
         {
             var request = new RestRequest("/template-overall=none/page=UN_status");
             request.AddHeader("User-Agent", APIClient.UserAgent);
+            request.AddHeader("Cookie", $"pin={pin}");
             request.AddParameter("userclick", UserClick);
-            HttpClient.AddCookie("pin", pin, "/", ".nationstates.net");
 
             NameValueCollection nvc = new()
             {
@@ -148,7 +148,11 @@ namespace Henson.Models
             };
             request.AddJsonBody(nvc);
 
-            return HttpClient.Post(request).IsSuccessStatusCode;
+            var response = HttpClient.Post(request);
+
+            Console.WriteLine(response.Content);
+
+            return response.IsSuccessStatusCode;
         }
 
         public string? GetLocalID(string pin)

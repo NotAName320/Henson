@@ -25,6 +25,7 @@ namespace Henson.Views
             this.WhenActivated(d => d(ViewModel!.WANotFoundDialog.RegisterHandler(ShowWANotFoundDialog)));
             this.WhenActivated(d => d(ViewModel!.LoginFailedDialog.RegisterHandler(ShowLoginFailedDialog)));
             this.WhenActivated(d => d(ViewModel!.NotCurrentLoginDialog.RegisterHandler(ShowNotCurrentLoginDialog)));
+            this.WhenActivated(d => d(ViewModel!.WAApplicationFailedDialog.RegisterHandler(ShowWAApplicationFailedDialog)));
         }
 
         private async Task ShowAddNationDialog(InteractionContext<AddNationWindowViewModel, List<NationLoginViewModel>?> interaction)
@@ -47,7 +48,7 @@ namespace Henson.Views
                     ButtonDefinitions = ButtonEnum.YesNo,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 
@@ -61,7 +62,7 @@ namespace Henson.Views
                     Icon = MessageBox.Avalonia.Enums.Icon.Warning,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 
@@ -75,7 +76,7 @@ namespace Henson.Views
                     Icon = MessageBox.Avalonia.Enums.Icon.Warning,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 
@@ -89,7 +90,7 @@ namespace Henson.Views
                     Icon = MessageBox.Avalonia.Enums.Icon.Info,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 
@@ -105,7 +106,7 @@ namespace Henson.Views
                     Icon = MessageBox.Avalonia.Enums.Icon.Info,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 
@@ -119,7 +120,7 @@ namespace Henson.Views
                     Icon = MessageBox.Avalonia.Enums.Icon.Warning,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 
@@ -133,7 +134,7 @@ namespace Henson.Views
                     Icon = MessageBox.Avalonia.Enums.Icon.Error,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 
@@ -147,7 +148,21 @@ namespace Henson.Views
                     Icon = MessageBox.Avalonia.Enums.Icon.Error,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            interaction.SetOutput(await messageBox.ShowDialog(this));
+        }
+
+        private async Task ShowWAApplicationFailedDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
+        {
+            var messageBox = MessageBox.Avalonia.MessageBoxManager
+                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
+                {
+                    ContentTitle = "WA Application Failed",
+                    ContentMessage = "Please log in again.",
+                    Icon = MessageBox.Avalonia.Enums.Icon.Error,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
     }

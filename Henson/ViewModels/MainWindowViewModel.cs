@@ -128,10 +128,10 @@ namespace Henson.ViewModels
 
         public NSClient Client { get; } = new("Notanam");
 
-        private string? currentLoginUser = null;
+        private string currentLoginUser = "";
         public string CurrentLoginUser
         {
-            get => currentLoginUser ?? "";
+            get => currentLoginUser;
             set => this.RaiseAndSetIfChanged(ref currentLoginUser, value);
         }
 
@@ -158,6 +158,7 @@ namespace Henson.ViewModels
         public Interaction<MessageBoxViewModel, ButtonResult> WANotFoundDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> LoginFailedDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> NotCurrentLoginDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> WAApplicationFailedDialog { get; } = new();
 
         public void OnSelectNationsClick()
         {
@@ -207,6 +208,25 @@ namespace Henson.ViewModels
         public async Task OnNationApplyWAClick(NationGridViewModel nation)
         {
             if(!await nationEqualsLogin(nation)) return;
+
+            FooterText = $"Applying to the WA with nation {nation.Name}...";
+            await Task.Delay(100);
+
+            var (pin, chk) = nation.PinChk;
+
+            if(Client.ApplyWA(pin, chk))
+            {
+                FooterText = $"{nation.Name} WA application successful!";
+            }
+            else
+            {
+                CurrentLoginUser = "";
+                FooterText = $"{nation.Name} WA application failed... please log in again.";
+                await Task.Delay(100);
+
+                var dialog = new MessageBoxViewModel();
+                await WAApplicationFailedDialog.Handle(dialog);
+            }
         }
 
         public async Task OnNationGetLocalIDClick(NationGridViewModel nation)

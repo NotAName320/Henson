@@ -54,7 +54,7 @@ namespace Henson.Views
                   WindowStartupLocation = WindowStartupLocation.CenterOwner,
               });
             SetClosing(true);
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 
@@ -69,7 +69,7 @@ namespace Henson.Views
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
             SetClosing(true);
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 
@@ -84,7 +84,7 @@ namespace Henson.Views
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
             SetClosing(true);
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }
 
