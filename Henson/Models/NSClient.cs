@@ -164,7 +164,7 @@ namespace Henson.Models
             return null;
         }
 
-        public void MoveToJP(string targetRegion, string pin, string localID)
+        public void MoveToJP(string targetRegion, string localID)
         {
             return;
         }
