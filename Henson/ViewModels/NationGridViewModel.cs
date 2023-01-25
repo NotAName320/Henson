@@ -29,15 +29,22 @@ namespace Henson.ViewModels
             {
                 await Parent.OnNationApplyWAClick(this);
             });
+
+            GetLocalID = ReactiveCommand.CreateFromTask(async () =>
+            {
+                await Parent.OnNationGetLocalIDClick(this);
+            });
         }
 
         public string Name => _nation.Name;
         public string Pass => _nation.Pass;
         public string Region => _nation.Region;
-        public (string, string) PinChk { get; set; }
+        public string Chk { get; set; }
+        public string LocalID { get; set; }
 
         public ICommand Login { get; }
         public ICommand ApplyWA { get; }
+        public ICommand GetLocalID { get; }
 
         public void OnCheckboxClick() //Saved for adding checkbox to header later
         {

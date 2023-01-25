@@ -62,6 +62,13 @@
                     </DataTemplate>
                   </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
+                <DataGridTemplateColumn Header="Get local ID">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate DataType="vm:NationGridViewModel">
+                      <Button HorizontalAlignment="Center" Command="{Binding GetLocalID}" Background="Transparent">Get</Button>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Move to region">
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate DataType="vm:NationGridViewModel">

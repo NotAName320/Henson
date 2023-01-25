@@ -159,6 +159,7 @@ namespace Henson.ViewModels
         public Interaction<MessageBoxViewModel, ButtonResult> LoginFailedDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> NotCurrentLoginDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> WAApplicationFailedDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> LocalIDNotFoundDialog { get; } = new();
 
         public void OnSelectNationsClick()
         {
@@ -179,7 +180,7 @@ namespace Henson.ViewModels
             var result = Client.Login(nationLogin);
             if (result != null)
             {
-                nation.PinChk = result ?? default;
+                nation.Chk = result;
 
                 CurrentLoginUser = nation.Name;
                 FooterText = $"Logged in to {nation.Name}";
@@ -194,7 +195,7 @@ namespace Henson.ViewModels
             }
         }
 
-        private async Task<bool> nationEqualsLogin(NationGridViewModel nation)
+        private async Task<bool> NationEqualsLogin(NationGridViewModel nation)
         {
             if(nation.Name != currentLoginUser)
             {
@@ -207,14 +208,14 @@ namespace Henson.ViewModels
 
         public async Task OnNationApplyWAClick(NationGridViewModel nation)
         {
-            if(!await nationEqualsLogin(nation)) return;
+            if(!await NationEqualsLogin(nation)) return;
 
             FooterText = $"Applying to the WA with nation {nation.Name}...";
             await Task.Delay(100);
 
-            var (pin, chk) = nation.PinChk;
+            var chk = nation.Chk;
 
-            if(Client.ApplyWA(pin, chk))
+            if(Client.ApplyWA(chk))
             {
                 FooterText = $"{nation.Name} WA application successful!";
             }
@@ -231,12 +232,32 @@ namespace Henson.ViewModels
 
         public async Task OnNationGetLocalIDClick(NationGridViewModel nation)
         {
-            if(!await nationEqualsLogin(nation)) return;
+            if(!await NationEqualsLogin(nation)) return;
+
+            FooterText = $"Getting local ID of {nation.Name}...";
+            await Task.Delay(100);
+
+            var localID = Client.GetLocalID();
+
+            if(localID != null)
+            {
+                nation.LocalID = localID;
+                FooterText = $"Got local ID of {nation.Name}, ready to move regions!";
+            }
+            else
+            {
+                CurrentLoginUser = "";
+                FooterText = $"Getting local ID failed... please log in again.";
+                await Task.Delay(100);
+
+                var dialog = new MessageBoxViewModel();
+                await LocalIDNotFoundDialog.Handle(dialog);
+            }
         }
 
         public async Task OnNationMoveRegionClick(NationGridViewModel nation, string region)
         {
-            if(!await nationEqualsLogin(nation)) return;
+            if(!await NationEqualsLogin(nation)) return;
         }
     }
 }

@@ -106,58 +106,62 @@ namespace Henson.Models
             return null;
         }
 
-        public (string pin, string chk)? Login(NationLoginViewModel login)
+        public string? Login(NationLoginViewModel login)
         {
-            var request = new RestRequest("/template-overall=none/page=un");
+            var request = new RestRequest("/template-overall=none/page=un", Method.Get);
             request.AddHeader("User-Agent", APIClient.UserAgent);
             request.AddParameter("nation", login.Name);
             request.AddParameter("password", login.Pass);
             request.AddParameter("logging_in", "1");
             request.AddParameter("userclick", UserClick);
 
-            var response = HttpClient.Get(request);
+            var response = HttpClient.Execute(request);
 
             if(response.IsSuccessStatusCode)
             {
-                var pin = response.Headers!.Where(x => x.Name == "Set-Cookie").ElementAt(0).Value
-                                 !.ToString()!.Split("; ")[0][4..]; //string fuckery basically copied 1:1 from swarm, shoutout sweeze
-
                 var htmlDoc = new HtmlDocument();
                 htmlDoc.LoadHtml(response.Content);
 
                 var chk = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='chk']").Attributes["value"].Value;
 
-                return (pin, chk);
+                return chk;
             }
 
             return null;
         }
 
-        public bool ApplyWA(string pin, string chk)
+        public bool ApplyWA(string chk)
         {
-            var request = new RestRequest("/template-overall=none/page=UN_status");
+            var request = new RestRequest("/template-overall=none/page=UN_status", Method.Post);
             request.AddHeader("User-Agent", APIClient.UserAgent);
-            request.AddHeader("Cookie", $"pin={pin}");
+            request.AddParameter("action", "join_UN");
+            request.AddParameter("chk", chk);
+            request.AddParameter("submit", "1");
             request.AddParameter("userclick", UserClick);
 
-            NameValueCollection nvc = new()
-            {
-                { "action", "join_UN" },
-                { "chk", chk },
-                { "submit", "1"}
-            };
-            request.AddJsonBody(nvc);
-
-            var response = HttpClient.Post(request);
-
-            Console.WriteLine(response.Content);
+            var response = HttpClient.Execute(request);
 
             return response.IsSuccessStatusCode;
         }
 
-        public string? GetLocalID(string pin)
+        public string? GetLocalID()
         {
-            return "";
+            var request = new RestRequest("/template-overall=none/page=settings", Method.Get);
+            request.AddHeader("User-Agent", APIClient.UserAgent);
+
+            var response = HttpClient.Execute(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var htmlDoc = new HtmlDocument();
+                htmlDoc.LoadHtml(response.Content);
+
+                var localID = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='localid']").Attributes["value"].Value;
+
+                return localID;
+            }
+
+            return null;
         }
 
         public void MoveToJP(string targetRegion, string pin, string localID)
