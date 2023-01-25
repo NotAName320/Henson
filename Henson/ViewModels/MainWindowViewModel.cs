@@ -135,6 +135,8 @@ namespace Henson.ViewModels
             set => this.RaiseAndSetIfChanged(ref currentLoginUser, value);
         }
 
+        private string? currentLocalID = null;
+
         private string footerText = "Welcome to Henson!";
         public string FooterText
         {
@@ -160,6 +162,7 @@ namespace Henson.ViewModels
         public Interaction<MessageBoxViewModel, ButtonResult> NotCurrentLoginDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> WAApplicationFailedDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> LocalIDNotFoundDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> LocalIDNeededDialog { get; } = new();
 
         public void OnSelectNationsClick()
         {
@@ -183,6 +186,7 @@ namespace Henson.ViewModels
                 nation.Chk = result;
 
                 CurrentLoginUser = nation.Name;
+                currentLocalID = null;
                 FooterText = $"Logged in to {nation.Name}";
             }
             else
@@ -222,6 +226,7 @@ namespace Henson.ViewModels
             else
             {
                 CurrentLoginUser = "";
+                currentLocalID = null;
                 FooterText = $"{nation.Name} WA application failed... please log in again.";
                 await Task.Delay(100);
 
@@ -241,12 +246,13 @@ namespace Henson.ViewModels
 
             if(localID != null)
             {
-                nation.LocalID = localID;
+                currentLocalID = localID;
                 FooterText = $"Got local ID of {nation.Name}, ready to move regions!";
             }
             else
             {
                 CurrentLoginUser = "";
+                currentLocalID = null;
                 FooterText = $"Getting local ID failed... please log in again.";
                 await Task.Delay(100);
 
@@ -258,6 +264,12 @@ namespace Henson.ViewModels
         public async Task OnNationMoveRegionClick(NationGridViewModel nation, string region)
         {
             if(!await NationEqualsLogin(nation)) return;
+            if(currentLocalID == null)
+            {
+                var dialog = new MessageBoxViewModel();
+                await LocalIDNeededDialog.Handle(dialog);
+                return;
+            }
         }
     }
 }

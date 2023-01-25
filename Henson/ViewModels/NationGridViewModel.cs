@@ -40,7 +40,6 @@ namespace Henson.ViewModels
         public string Pass => _nation.Pass;
         public string Region => _nation.Region;
         public string Chk { get; set; }
-        public string LocalID { get; set; }
 
         public ICommand Login { get; }
         public ICommand ApplyWA { get; }

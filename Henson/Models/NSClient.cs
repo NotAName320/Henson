@@ -117,7 +117,7 @@ namespace Henson.Models
 
             var response = HttpClient.Execute(request);
 
-            if(response.IsSuccessStatusCode)
+            try
             {
                 var htmlDoc = new HtmlDocument();
                 htmlDoc.LoadHtml(response.Content);
@@ -126,8 +126,11 @@ namespace Henson.Models
 
                 return chk;
             }
-
-            return null;
+            catch (Exception)
+            {
+                return null;
+            }
+            
         }
 
         public bool ApplyWA(string chk)
@@ -141,7 +144,9 @@ namespace Henson.Models
 
             var response = HttpClient.Execute(request);
 
-            return response.IsSuccessStatusCode;
+            System.Diagnostics.Debug.WriteLine(response.Content);
+
+            return response.Content != null && response.Content.Contains("has been recieved!");
         }
 
         public string? GetLocalID()
@@ -164,9 +169,18 @@ namespace Henson.Models
             return null;
         }
 
-        public void MoveToJP(string targetRegion, string localID)
+        public bool MoveToJP(string targetRegion, string localID)
         {
-            return;
+            var request = new RestRequest("/template-overall=none/page=change_region", Method.Post);
+            request.AddHeader("User-Agent", APIClient.UserAgent);
+            request.AddParameter("localid", localID);
+            request.AddParameter("region_name", targetRegion);
+            request.AddParameter("move_region", "1");
+            request.AddParameter("userclick", UserClick);
+
+            var response = HttpClient.Execute(request);
+
+            return response.Content != null && response.Content.Contains("Success!");
         }
     }
 }

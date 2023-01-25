@@ -27,6 +27,7 @@ namespace Henson.Views
             this.WhenActivated(d => d(ViewModel!.NotCurrentLoginDialog.RegisterHandler(ShowNotCurrentLoginDialog)));
             this.WhenActivated(d => d(ViewModel!.WAApplicationFailedDialog.RegisterHandler(ShowWAApplicationFailedDialog)));
             this.WhenActivated(d => d(ViewModel!.LocalIDNotFoundDialog.RegisterHandler(ShowLocalIDNotFoundDialog)));
+            this.WhenActivated(d => d(ViewModel!.LocalIDNeededDialog.RegisterHandler(ShowLocalIDNeededDialog)));
         }
 
         private async Task ShowAddNationDialog(InteractionContext<AddNationWindowViewModel, List<NationLoginViewModel>?> interaction)
@@ -174,6 +175,20 @@ namespace Henson.Views
                 {
                     ContentTitle = "Local ID Not Found",
                     ContentMessage = "Please log in again.",
+                    Icon = MessageBox.Avalonia.Enums.Icon.Error,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            interaction.SetOutput(await messageBox.ShowDialog(this));
+        }
+
+        private async Task ShowLocalIDNeededDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
+        {
+            var messageBox = MessageBox.Avalonia.MessageBoxManager
+                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Local ID Needed",
+                    ContentMessage = "Please get the local ID before jumping region.",
                     Icon = MessageBox.Avalonia.Enums.Icon.Error,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
