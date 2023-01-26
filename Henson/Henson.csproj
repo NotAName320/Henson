@@ -33,6 +33,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="RestSharp" Version="108.0.3" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.117" />
+    <PackageReference Include="Tomlyn" Version="0.16.2" />
     <PackageReference Include="XamlNameReferenceGenerator" Version="1.5.1" />
   </ItemGroup>
   <ItemGroup>
