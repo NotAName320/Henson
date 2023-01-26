@@ -189,7 +189,7 @@ namespace Henson.Views
                 {
                     ContentTitle = "Local ID Needed",
                     ContentMessage = "Please get the local ID before jumping region.",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Error,
+                    Icon = MessageBox.Avalonia.Enums.Icon.Warning,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();

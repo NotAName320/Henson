@@ -151,7 +151,7 @@ namespace Henson.ViewModels
         public ICommand PingSelectedCommand { get; }
         public ICommand FindWACommand { get; }
 
-        public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> AddNationDialog { get; } = new();
+        public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> AddNationDialog { get; } = new(); //I will simplify all of this eventually
         public Interaction<MessageBoxViewModel, ButtonResult> RemoveNationConfirmationDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> SomeNationsFailedToAddDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> SomeNationsFailedToPingDialog { get; } = new();
@@ -163,6 +163,7 @@ namespace Henson.ViewModels
         public Interaction<MessageBoxViewModel, ButtonResult> WAApplicationFailedDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> LocalIDNotFoundDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> LocalIDNeededDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> MoveRegionFailedDialog { get; } = new();
 
         public void OnSelectNationsClick()
         {
@@ -217,7 +218,7 @@ namespace Henson.ViewModels
             FooterText = $"Applying to the WA with nation {nation.Name}...";
             await Task.Delay(100);
 
-            var chk = nation.Chk;
+            var chk = nation.Chk!;
 
             if(Client.ApplyWA(chk))
             {
@@ -263,12 +264,25 @@ namespace Henson.ViewModels
 
         public async Task OnNationMoveRegionClick(NationGridViewModel nation, string region)
         {
+            var dialog = new MessageBoxViewModel();
             if(!await NationEqualsLogin(nation)) return;
             if(currentLocalID == null)
             {
-                var dialog = new MessageBoxViewModel();
                 await LocalIDNeededDialog.Handle(dialog);
                 return;
+            }
+
+            if(Client.MoveToJP(region, currentLocalID))
+            {
+                FooterText = $"{nation.Name} moved to {region}!";
+                nation.Region = char.ToUpper(region[0]) + region[1..];
+            }
+            else
+            {
+                FooterText = $"Moving {nation.Name} to region {region} failed!";
+                await Task.Delay(100);
+
+                await MoveRegionFailedDialog.Handle(dialog);
             }
         }
     }

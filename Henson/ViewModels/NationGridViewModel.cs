@@ -3,6 +3,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,24 +35,36 @@ namespace Henson.ViewModels
             {
                 await Parent.OnNationGetLocalIDClick(this);
             });
+
+            MoveTo = ReactiveCommand.CreateFromTask<string>(MoveToTask);
         }
 
         public string Name => _nation.Name;
         public string Pass => _nation.Pass;
-        public string Region => _nation.Region;
-        public string Chk { get; set; }
+        public string Region
+        {
+            get => _nation.Region;
+            set
+            {
+                if(value == _nation.Region) return;
+                _nation.Region = value;
+                this.RaisePropertyChanged();
+            }
+        }
+        public string? Chk { get; set; } = null;
 
         public ICommand Login { get; }
         public ICommand ApplyWA { get; }
         public ICommand GetLocalID { get; }
+        public ReactiveCommand<string, Unit> MoveTo { get; }
 
         public void OnCheckboxClick() //Saved for adding checkbox to header later
         {
         }
 
-        public void MoveTo(string region)
+        public async Task MoveToTask(string region)
         {
-            System.Diagnostics.Debug.WriteLine("MoveTo " + region);
+            await Parent.OnNationMoveRegionClick(this, region);
         }
 
         private bool _checked;
