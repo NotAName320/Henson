@@ -138,7 +138,7 @@ namespace Henson.ViewModels
         private static ProgramSettings LoadSettings()
         {
             var workingPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!;
-            var path = Path.Combine(workingPath, "Settings.xml");
+            var path = Path.Combine(workingPath, "settings.toml");
 
             if(!File.Exists(path))
             {
