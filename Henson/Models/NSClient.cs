@@ -16,17 +16,19 @@ namespace Henson.Models
 {
     public class NSClient
     {
-        public NSClient(string userAgent)
-        {
-            APIClient.UserAgent = Uri.EscapeDataString($"Henson v{GetType().Assembly.GetName().Version} developed by nation: Notanam in use by nation: {userAgent}");
-        }
-
         public DotNS APIClient { get; } = new();
         public RestClient HttpClient = new("https://www.nationstates.net");
+        public string UserAgent
+        {
+            get => APIClient.UserAgent;
+            set
+            {
+                APIClient.UserAgent = Uri.EscapeDataString($"Henson v{GetType().Assembly.GetName().Version} developed by nation: Notanam in use by nation: {value}");
+            }
+        }
+        private static string UserClick => DateTimeOffset.Now.ToUnixTimeSeconds().ToString();
 
         private const int MultipleRequestsWaitTime = 600;
-
-        private static string UserClick => DateTimeOffset.Now.ToUnixTimeSeconds().ToString();
 
         public (List<Nation> nations, bool authFailedOnSome) AuthenticateAndReturnInfo(List<NationLoginViewModel> logins)
         {
@@ -66,7 +68,7 @@ namespace Henson.Models
                 { "q", "ping" }
             };
 
-            return Utilities.API(nvc, login.Pass, 0, APIClient.UserAgent).IsSuccessStatusCode;
+            return Utilities.API(nvc, login.Pass, 0, UserAgent).IsSuccessStatusCode;
         }
 
         public List<bool> PingMany(List<NationLoginViewModel> logins)
@@ -89,7 +91,7 @@ namespace Henson.Models
                 { "q", "members" }
             };
 
-            var response = Utilities.API(nvc, null, 0, APIClient.UserAgent);
+            var response = Utilities.API(nvc, null, 0, UserAgent);
 
             XmlNodeList nodelist = Utilities.Parse(Utilities.StrResp(response), "*");
 
@@ -109,7 +111,7 @@ namespace Henson.Models
         public string? Login(NationLoginViewModel login)
         {
             var request = new RestRequest("/template-overall=none/page=un", Method.Get);
-            request.AddHeader("User-Agent", APIClient.UserAgent);
+            request.AddHeader("User-Agent", UserAgent);
             request.AddParameter("nation", login.Name);
             request.AddParameter("password", login.Pass);
             request.AddParameter("logging_in", "1");
@@ -136,7 +138,7 @@ namespace Henson.Models
         public bool ApplyWA(string chk)
         {
             var request = new RestRequest("/template-overall=none/page=UN_status", Method.Post);
-            request.AddHeader("User-Agent", APIClient.UserAgent);
+            request.AddHeader("User-Agent", UserAgent);
             request.AddParameter("action", "join_UN");
             request.AddParameter("chk", chk);
             request.AddParameter("submit", "1");
@@ -152,7 +154,7 @@ namespace Henson.Models
         public string? GetLocalID()
         {
             var request = new RestRequest("/template-overall=none/page=settings", Method.Get);
-            request.AddHeader("User-Agent", APIClient.UserAgent);
+            request.AddHeader("User-Agent", UserAgent);
 
             var response = HttpClient.Execute(request);
 
@@ -172,7 +174,7 @@ namespace Henson.Models
         public bool MoveToJP(string targetRegion, string localID)
         {
             var request = new RestRequest("/template-overall=none/page=change_region", Method.Post);
-            request.AddHeader("User-Agent", APIClient.UserAgent);
+            request.AddHeader("User-Agent", UserAgent);
             request.AddParameter("localid", localID);
             request.AddParameter("region_name", targetRegion);
             request.AddParameter("move_region", "1");

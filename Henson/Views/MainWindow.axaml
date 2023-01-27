@@ -9,18 +9,18 @@
         Title="Henson"
         WindowStartupLocation="CenterScreen">
 
-    <Design.DataContext>
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
 
-    <TabControl>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height=".97*"/>
+      <RowDefinition Height=".03*"/>
+    </Grid.RowDefinitions>
+    <TabControl Grid.Row="0">
       <TabItem Header="Quick View">
-      <Grid>
-      <Grid.RowDefinitions>
-        <RowDefinition Height=".97*"/>
-        <RowDefinition Height=".03*"/>
-      </Grid.RowDefinitions>
-        <DockPanel Grid.Row="0">
+        <DockPanel>
           <DockPanel DockPanel.Dock="Top">
             <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)"/>
             <Button Command="{Binding RemoveSelectedCommand}" Content="Remove Selected"/>
@@ -72,24 +72,31 @@
                 <DataGridTemplateColumn Header="Move to region">
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate DataType="vm:NationGridViewModel">
-                     <Button HorizontalAlignment="Center" Command="{Binding MoveTo}" CommandParameter="{Binding ElementName=regionTextBox, Path=Text}" Background="Transparent">Move</Button>
-                   </DataTemplate>
-                 </DataGridTemplateColumn.CellTemplate>
-               </DataGridTemplateColumn>
-             </DataGrid.Columns>
-           </DataGrid>
+                      <Button HorizontalAlignment="Center" Command="{Binding MoveTo}" CommandParameter="{Binding ElementName=regionTextBox, Path=Text}" Background="Transparent">Move</Button>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+              </DataGrid.Columns>
+            </DataGrid>
           </Grid>
         </DockPanel>
-          <TextBlock Margin="0,0,0,10" Grid.Row="1" DockPanel.Dock="Bottom" Text="{Binding FooterText}"/>
-        </Grid>
       </TabItem>
       <TabItem Header="Individual View">
-          <TextBlock Text="WIP. Soon, you'll be able to edit individual nation settings here!"/>
+        <TextBlock Text="WIP. Soon, you'll be able to edit individual nation settings here!"/>
       </TabItem>
       <TabItem Header="Puppet Creator">
-          <TextBlock Text="WIP. Soon, you'll be able to create multiple puppets here, with default settings of your liking!"/>
+        <TextBlock Text="WIP. Soon, you'll be able to create multiple puppets here, with default settings of your liking!"/>
       </TabItem>
-      <TabItem Header="Settings">WIP</TabItem>
+      <TabItem Header="Settings">
+        <DockPanel>
+          <StackPanel Orientation="Horizontal">
+            <TextBlock>User Agent:</TextBlock>
+            <TextBox></TextBox>
+          </StackPanel>
+        </DockPanel>
+      </TabItem>
     </TabControl>
+    <TextBlock Margin="10,0,0,10" Grid.Row="1" DockPanel.Dock="Bottom" Text="{Binding FooterText}"/>
+  </Grid>
 
 </Window>

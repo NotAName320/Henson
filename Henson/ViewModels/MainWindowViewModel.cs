@@ -1,5 +1,6 @@
 using Henson.Models;
 using ReactiveUI;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Reactive.Linq;
@@ -9,6 +10,8 @@ using System.Collections.ObjectModel;
 using MessageBox.Avalonia.Enums;
 using System.Reactive;
 using System.Threading.Tasks;
+using System.IO;
+using Tomlyn;
 
 namespace Henson.ViewModels
 {
@@ -16,10 +19,14 @@ namespace Henson.ViewModels
     {
         public MainWindowViewModel()
         {
+            Settings = LoadSettings();
+            Client.UserAgent = Settings.UserAgent;
+
             RxApp.MainThreadScheduler.Schedule(LoadNations);
 
             AddNationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
+                if(await UserAgentNotSet()) return;
                 var dialog = new AddNationWindowViewModel();
                 var result = await AddNationDialog.Handle(dialog);
 
@@ -65,6 +72,7 @@ namespace Henson.ViewModels
 
             PingSelectedCommand = ReactiveCommand.CreateFromTask(async () =>
             {
+                if(await UserAgentNotSet()) return;
                 var dialog = new MessageBoxViewModel();
                 var selectedNations = Nations.Where(x => x.Checked).ToList();
                 var nationLogins = selectedNations.Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
@@ -94,6 +102,7 @@ namespace Henson.ViewModels
 
             FindWACommand = ReactiveCommand.CreateFromTask(async () =>
             {
+                if(await UserAgentNotSet()) return;
                 FooterText = "Finding WA nation...";
                 await Task.Delay(100);
 
@@ -126,7 +135,22 @@ namespace Henson.ViewModels
             }
         }
 
-        public NSClient Client { get; } = new("Notanam");
+        private static ProgramSettings LoadSettings()
+        {
+            string path = "settings.toml";
+
+            if(!File.Exists("settings.toml"))
+            {
+                File.WriteAllText(path, "user_agent = \"\"");
+            }
+
+            string setTomlString = File.ReadAllText("settings.toml");
+            return Toml.ToModel<ProgramSettings>(setTomlString); //This will work for now-later, find solution for interversion compatibility
+        }
+
+        public ObservableCollection<NationGridViewModel> Nations { get; } = new();
+        public ProgramSettings Settings { get; set; }
+        public NSClient Client { get; } = new();
 
         private string currentLoginUser = "";
         public string CurrentLoginUser
@@ -143,9 +167,7 @@ namespace Henson.ViewModels
             get => footerText;
             set => this.RaiseAndSetIfChanged(ref footerText, value);
         }
-
-        public ObservableCollection<NationGridViewModel> Nations { get; } = new();
-
+        
         public ICommand AddNationCommand { get; }
         public ICommand RemoveSelectedCommand { get; }
         public ICommand PingSelectedCommand { get; }
@@ -164,6 +186,7 @@ namespace Henson.ViewModels
         public Interaction<MessageBoxViewModel, ButtonResult> LocalIDNotFoundDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> LocalIDNeededDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> MoveRegionFailedDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> UserAgentNotSetDialog { get; } = new();
 
         public void OnSelectNationsClick()
         {
@@ -176,6 +199,7 @@ namespace Henson.ViewModels
 
         public async Task OnNationLoginClick(NationGridViewModel nation)
         {
+            if(await UserAgentNotSet()) return;
             var nationLogin = new NationLoginViewModel(nation.Name, nation.Pass);
 
             FooterText = $"Logging in to {nation.Name}...";
@@ -211,8 +235,20 @@ namespace Henson.ViewModels
             return true;
         }
 
+        private async Task<bool> UserAgentNotSet()
+        {
+            if(Settings.UserAgent == "")
+            {
+                var dialog = new MessageBoxViewModel();
+                await UserAgentNotSetDialog.Handle(dialog);
+                return true;
+            }
+            return false;
+        }
+
         public async Task OnNationApplyWAClick(NationGridViewModel nation)
         {
+            if(await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
 
             FooterText = $"Applying to the WA with nation {nation.Name}...";
@@ -238,6 +274,7 @@ namespace Henson.ViewModels
 
         public async Task OnNationGetLocalIDClick(NationGridViewModel nation)
         {
+            if(await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
 
             FooterText = $"Getting local ID of {nation.Name}...";
@@ -264,8 +301,10 @@ namespace Henson.ViewModels
 
         public async Task OnNationMoveRegionClick(NationGridViewModel nation, string region)
         {
-            var dialog = new MessageBoxViewModel();
+            if(await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
+
+            var dialog = new MessageBoxViewModel();
             if(currentLocalID == null)
             {
                 await LocalIDNeededDialog.Handle(dialog);

@@ -8,36 +8,37 @@
         WindowStartupLocation="CenterOwner"
         Width="500" Height="250" CanResize="False"
         MinWidth="500" MinHeight="250"
-        MaxWidth="500" MaxHeight="250"> <!-- CanResize doesn't work on some Linux WMs https://github.com/AvaloniaUI/Avalonia/issues/8329 -->
+        MaxWidth="500" MaxHeight="250">
+  <!-- CanResize doesn't work on some Linux WMs https://github.com/AvaloniaUI/Avalonia/issues/8329 -->
 
-    <DockPanel HorizontalAlignment="Center"
-               VerticalAlignment="Center">
-      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-        <TextBlock Margin="0,6,20,0">Import Swarm config:</TextBlock>
-        <Button Command="{Binding FilePickerCommand}">Browse...</Button>
-      </StackPanel>
-      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-        <TextBlock Margin="0,18,20,0">Import with login info:</TextBlock>
-        <TextBox Margin="0,10,0,10" MinWidth="140" MaxWidth="140"
-                 Text="{Binding ImportOneUser}" Watermark="Username..."/>
-        <TextBox Margin="10,10,0,10" MinWidth="140" MaxWidth="140"
-                 Text="{Binding ImportOnePass}"
-                 PasswordChar="•" Watermark="Password..."/>
-      </StackPanel>
-      <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-        <TextBlock Margin="0,18,20,0">Mass import puppets:</TextBlock>
-        <TextBox Margin="0,10,0,10" MinWidth="110" MaxWidth="110"
-                 Text="{Binding ImportManyUser}" Watermark="Username..."/>
-        <TextBox Margin="10,10,0,10" MinWidth="110" MaxWidth="110"
-                 Text="{Binding ImportManyPass}"
-                 PasswordChar="•" Watermark="Password..."/>
-        <TextBox Margin="10,10,0,10" MinWidth="50" MaxWidth="50"
-                 Text="{Binding ImportManyRange}" Watermark="1-50"/>
-      </StackPanel>
-      <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-        <Button Margin="0,0,5,0" Command="{Binding ImportOneCommand}">Import</Button>
-        <Button Margin="5,0,0,0" Command="{Binding ImportManyCommand}">Mass Import</Button>
-      </StackPanel>
-    </DockPanel>
-  
+  <DockPanel HorizontalAlignment="Center"
+             VerticalAlignment="Center">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+      <TextBlock Margin="0,6,20,0">Import Swarm config:</TextBlock>
+      <Button Command="{Binding FilePickerCommand}">Browse...</Button>
+    </StackPanel>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+      <TextBlock Margin="0,18,20,0">Import with login info:</TextBlock>
+      <TextBox Margin="0,10,0,10" MinWidth="140" MaxWidth="140"
+               Text="{Binding ImportOneUser}" Watermark="Username..."/>
+      <TextBox Margin="10,10,0,10" MinWidth="140" MaxWidth="140"
+               Text="{Binding ImportOnePass}"
+               PasswordChar="•" Watermark="Password..."/>
+    </StackPanel>
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+      <TextBlock Margin="0,18,20,0">Mass import puppets:</TextBlock>
+      <TextBox Margin="0,10,0,10" MinWidth="110" MaxWidth="110"
+               Text="{Binding ImportManyUser}" Watermark="Username..."/>
+      <TextBox Margin="10,10,0,10" MinWidth="110" MaxWidth="110"
+               Text="{Binding ImportManyPass}"
+               PasswordChar="•" Watermark="Password..."/>
+      <TextBox Margin="10,10,0,10" MinWidth="50" MaxWidth="50"
+               Text="{Binding ImportManyRange}" Watermark="1-50"/>
+    </StackPanel>
+    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+      <Button Margin="0,0,5,0" Command="{Binding ImportOneCommand}">Import</Button>
+      <Button Margin="5,0,0,0" Command="{Binding ImportManyCommand}">Mass Import</Button>
+    </StackPanel>
+  </DockPanel>
+
 </Window>

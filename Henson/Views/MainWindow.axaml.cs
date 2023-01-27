@@ -28,6 +28,7 @@ namespace Henson.Views
             this.WhenActivated(d => d(ViewModel!.WAApplicationFailedDialog.RegisterHandler(ShowWAApplicationFailedDialog)));
             this.WhenActivated(d => d(ViewModel!.LocalIDNotFoundDialog.RegisterHandler(ShowLocalIDNotFoundDialog)));
             this.WhenActivated(d => d(ViewModel!.LocalIDNeededDialog.RegisterHandler(ShowLocalIDNeededDialog)));
+            this.WhenActivated(d => d(ViewModel!.UserAgentNotSetDialog.RegisterHandler(ShowUserAgentNotSetDialog)));
         }
 
         private async Task ShowAddNationDialog(InteractionContext<AddNationWindowViewModel, List<NationLoginViewModel>?> interaction)
@@ -190,6 +191,20 @@ namespace Henson.Views
                     ContentTitle = "Local ID Needed",
                     ContentMessage = "Please get the local ID before jumping region.",
                     Icon = MessageBox.Avalonia.Enums.Icon.Warning,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            interaction.SetOutput(await messageBox.ShowDialog(this));
+        }
+
+        private async Task ShowUserAgentNotSetDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
+        {
+            var messageBox = MessageBox.Avalonia.MessageBoxManager
+                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
+                {
+                    ContentTitle = "User Agent Not Set",
+                    ContentMessage = "Please go to the Settings tab to set the User Agent.",
+                    Icon = MessageBox.Avalonia.Enums.Icon.Error,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
