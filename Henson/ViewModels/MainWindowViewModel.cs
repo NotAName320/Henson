@@ -137,14 +137,15 @@ namespace Henson.ViewModels
 
         private static ProgramSettings LoadSettings()
         {
-            string path = "settings.toml";
+            var workingPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!;
+            var path = System.IO.Path.Combine(workingPath, "Settings.xml");
 
-            if(!File.Exists("settings.toml"))
+            if(!File.Exists(path))
             {
                 File.WriteAllText(path, "user_agent = \"\"");
             }
 
-            string setTomlString = File.ReadAllText("settings.toml");
+            string setTomlString = File.ReadAllText(path);
             return Toml.ToModel<ProgramSettings>(setTomlString); //This will work for now-later, find solution for interversion compatibility
         }
 
