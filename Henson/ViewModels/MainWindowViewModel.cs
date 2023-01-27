@@ -137,8 +137,8 @@ namespace Henson.ViewModels
 
         private static ProgramSettings LoadSettings()
         {
-            var workingPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!;
-            var path = System.IO.Path.Combine(workingPath, "Settings.xml");
+            var workingPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!;
+            var path = Path.Combine(workingPath, "Settings.xml");
 
             if(!File.Exists(path))
             {
