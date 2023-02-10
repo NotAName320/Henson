@@ -1,6 +1,5 @@
 using Henson.Models;
 using ReactiveUI;
-using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Reactive.Linq;
@@ -135,7 +134,7 @@ namespace Henson.ViewModels
             }
         }
 
-        private static ProgramSettings LoadSettings()
+        private static ProgramSettingsViewModel LoadSettings()
         {
             var workingPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!;
             var path = Path.Combine(workingPath, "settings.toml");
@@ -146,11 +145,11 @@ namespace Henson.ViewModels
             }
 
             string setTomlString = File.ReadAllText(path);
-            return Toml.ToModel<ProgramSettings>(setTomlString); //This will work for now-later, find solution for interversion compatibility
+            return Toml.ToModel<ProgramSettingsViewModel>(setTomlString); //This will work for now-later, find solution for interversion compatibility
         }
 
         public ObservableCollection<NationGridViewModel> Nations { get; } = new();
-        public ProgramSettings Settings { get; set; }
+        public ProgramSettingsViewModel Settings { get; set; }
         public NSClient Client { get; } = new();
 
         private string currentLoginUser = "";
