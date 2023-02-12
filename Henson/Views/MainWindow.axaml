@@ -91,7 +91,7 @@
           <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,Auto,Auto">
               <TextBlock VerticalAlignment="Center" Grid.Row="0" Grid.Column="0">User Agent:</TextBlock>
               <TextBox Margin="10,0,0,0" Grid.Row="0" Grid.Column="1" MinWidth="150" MaxWidth="150" Text="{Binding Settings.UserAgent}"/>
-            <Button Grid.Row="1">Save</Button>
+            <Button Grid.Row="1" Command="{Binding OnSaveSettingsClick}">Save</Button>
           </Grid>
       </TabItem>
     </TabControl>

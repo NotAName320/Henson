@@ -1,15 +1,16 @@
 using Henson.Models;
-using ReactiveUI;
-using System.Linq;
-using System.Collections.Generic;
-using System.Reactive.Linq;
-using System.Windows.Input;
-using System.Reactive.Concurrency;
-using System.Collections.ObjectModel;
 using MessageBox.Avalonia.Enums;
-using System.Reactive;
-using System.Threading.Tasks;
+using ReactiveUI;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using System.Windows.Input;
 using Tomlyn;
 
 namespace Henson.ViewModels
@@ -19,7 +20,7 @@ namespace Henson.ViewModels
         public MainWindowViewModel()
         {
             Settings = LoadSettings();
-            Client.UserAgent = Settings.UserAgent;
+            SetSettings();
 
             RxApp.MainThreadScheduler.Schedule(LoadNations);
 
@@ -136,7 +137,7 @@ namespace Henson.ViewModels
 
         private static ProgramSettingsViewModel LoadSettings()
         {
-            var workingPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)!;
+            var workingPath = Path.GetDirectoryName(AppContext.BaseDirectory)!;
             var path = Path.Combine(workingPath, "settings.toml");
 
             if(!File.Exists(path))
@@ -146,6 +147,11 @@ namespace Henson.ViewModels
 
             string setTomlString = File.ReadAllText(path);
             return Toml.ToModel<ProgramSettingsViewModel>(setTomlString); //This will work for now-later, find solution for interversion compatibility
+        }
+
+        private void SetSettings()
+        {
+            Client.UserAgent = Settings.UserAgent;
         }
 
         public ObservableCollection<NationGridViewModel> Nations { get; } = new();
@@ -195,6 +201,16 @@ namespace Henson.ViewModels
             {
                 nation.Checked = OppositeAllTrueOrFalse;
             }
+        }
+
+        public void OnSaveSettingsClick()
+        {
+            var workingPath = Path.GetDirectoryName(AppContext.BaseDirectory)!;
+            var path = Path.Combine(workingPath, "settings.toml");
+            File.WriteAllText(path, Toml.FromModel(Settings));
+
+            SetSettings();
+            FooterText = $"Settings updated.";
         }
 
         public async Task OnNationLoginClick(NationGridViewModel nation)

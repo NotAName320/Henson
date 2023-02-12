@@ -33,8 +33,10 @@ namespace Henson.Views
 
         private async Task ShowAddNationDialog(InteractionContext<AddNationWindowViewModel, List<NationLoginViewModel>?> interaction)
         {
-            var dialog = new AddNationWindow();
-            dialog.DataContext = interaction.Input;
+            var dialog = new AddNationWindow
+            {
+                DataContext = interaction.Input
+            };
 
             var result = await dialog.ShowDialog<List<NationLoginViewModel>?>(this);
             interaction.SetOutput(result);
