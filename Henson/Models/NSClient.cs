@@ -146,8 +146,6 @@ namespace Henson.Models
 
             var response = HttpClient.Execute(request);
 
-            Debug.WriteLine(response.Content);
-
             return response.Content != null && response.Content.Contains("has been received!");
         }
 
