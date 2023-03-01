@@ -18,3 +18,6 @@ possibility of abuse by safeguarding the program from performing illegal actions
 if used maliciously.
 4. To be fun. Henson should never take the fun out of NationStates, no matter 
 what players use it for.
+
+Got questions? DM me on Discord at NotAName#0591 or Telegram on NationStates at 
+https://www.nationstates.net/nation=notanam.
