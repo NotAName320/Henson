@@ -1,18 +1,18 @@
 ﻿using dotNS;
-using dotNS.Classes;
 using Henson.ViewModels;
 using HtmlAgilityPack;
 using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Xml;
 
 namespace Henson.Models
 {
-    public class NSClient
+    public class NsClient
     {
         public DotNS APIClient { get; } = new();
         public RestClient HttpClient = new("https://www.nationstates.net");
@@ -26,7 +26,7 @@ namespace Henson.Models
         }
         private static string UserClick => DateTimeOffset.Now.ToUnixTimeSeconds().ToString();
 
-        private const int MultipleRequestsWaitTime = 600;
+        private const int MultipleRequestsWaitTime = 750;
 
         public (List<Nation> nations, bool authFailedOnSome) AuthenticateAndReturnInfo(List<NationLoginViewModel> logins)
         {
@@ -34,24 +34,21 @@ namespace Henson.Models
             bool didAuthFail = false;
             foreach(NationLoginViewModel login in logins)
             {
+                NameValueCollection nvc = new()
+                {
+                    { "nation", login.Name },
+                    { "q", "ping+name+flag+region" }
+                };
+
                 try
                 {
-                    if(APIClient.UpdatePin(login.Name, login.Pass))
-                    {
-                        string[] nationInfo = APIClient.PublicShard(login.Name, new Shards.PublicShard[] { Shards.PublicShard.Name, Shards.PublicShard.Flag, Shards.PublicShard.Region });
-                        nationInfo[2] = char.ToUpper(nationInfo[2][0]) + nationInfo[2][1..]; //API doesn't capitalize region names
-                        retVal.Add(new Nation(nationInfo[0], login.Pass, nationInfo[1], nationInfo[2]));
-                        Thread.Sleep(MultipleRequestsWaitTime);
-                    }
-                    else
-                    {
-                        didAuthFail = true;
-                    }
+                    var response = Utilities.API(nvc, login.Pass, 0, UserAgent); //why is this a thing that even throws an exception???
+                    XmlNodeList xmlResp = Utilities.Parse(Utilities.StrResp(response));
+
+                    var region = char.ToUpper(xmlResp.FindProperty("region")[0]) + xmlResp.FindProperty("region")[1..];
+                    retVal.Add(new Nation(xmlResp.FindProperty("name"), login.Pass, xmlResp.FindProperty("flag"), region));
                 }
-                catch (Exception)
-                {
-                    didAuthFail = true;
-                }
+                catch (Exception) { didAuthFail = true; }
                 Thread.Sleep(MultipleRequestsWaitTime); //avoid ratelimits
             }
 
@@ -66,7 +63,12 @@ namespace Henson.Models
                 { "q", "ping" }
             };
 
-            return Utilities.API(nvc, login.Pass, 0, UserAgent).IsSuccessStatusCode;
+            try
+            {
+                Utilities.API(nvc, login.Pass, 0, UserAgent);
+            }
+            catch (Exception) { return false; }
+            return true;
         }
 
         public List<bool> PingMany(List<NationLoginViewModel> logins)
@@ -144,9 +146,9 @@ namespace Henson.Models
 
             var response = HttpClient.Execute(request);
 
-            System.Diagnostics.Debug.WriteLine(response.Content);
+            Debug.WriteLine(response.Content);
 
-            return response.Content != null && response.Content.Contains("has been recieved!");
+            return response.Content != null && response.Content.Contains("has been received!");
         }
 
         public string? GetLocalID()

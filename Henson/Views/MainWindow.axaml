@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="675"
         x:Class="Henson.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="Henson"
+        Icon="/Assets/henson-icon.ico"
+        Title="Henson 1.0.0"
         WindowStartupLocation="CenterScreen">
 
   <Design.DataContext>
@@ -38,12 +38,12 @@
             <DataGrid Name="NationList" Items="{Binding Nations}" IsReadOnly="False"
                       CanUserResizeColumns="True" AutoGenerateColumns="False">
               <DataGrid.Columns>
-                <DataGridTemplateColumn SortMemberPath="CB">
+                <DataGridTemplateColumn SortMemberPath=".">
                   <!--<DataGridCheckBoxColumn.Header>
                       <CheckBox IsThreeState="True"/>
                   </DataGridCheckBoxColumn.Header> this doesn't work-->
                   <DataTemplate DataType="vm:NationGridViewModel">
-                    <CheckBox Name="CB" IsChecked="{Binding Checked}" Command="{Binding OnCheckboxClick}"/>
+                    <CheckBox Name="CB" HorizontalAlignment="Center" IsChecked="{Binding Checked}" Command="{Binding OnCheckboxClick}"/>
                   </DataTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn IsReadOnly="True" Header="Nation" Width="*" Binding="{Binding Name}"/>

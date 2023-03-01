@@ -6,9 +6,11 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Tomlyn;
@@ -21,6 +23,8 @@ namespace Henson.ViewModels
         {
             Settings = LoadSettings();
             SetSettings();
+
+            DbClient.CreateDbIfNotExists();
 
             RxApp.MainThreadScheduler.Schedule(LoadNations);
 
@@ -36,9 +40,12 @@ namespace Henson.ViewModels
                     await Task.Delay(100);
 
                     var (nations, authFailedOnSome) = Client.AuthenticateAndReturnInfo(result);
-                    foreach (Nation n in nations)
+                    foreach(Nation n in nations)
                     {
+                        if(Nations.Select(x => x.Name).Contains(n.Name)) continue;
+
                         Nations.Add(new NationGridViewModel(n, true, this));
+                        DbClient.InsertNation(n);
                     }
 
                     if(authFailedOnSome)
@@ -47,6 +54,7 @@ namespace Henson.ViewModels
                         await SomeNationsFailedToAddDialog.Handle(messageDialog);
                     }
 
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
                     FooterText = "Finished loading!";
                 }
             });
@@ -62,6 +70,7 @@ namespace Henson.ViewModels
                     {
                         if(Nations[i].Checked)
                         {
+                            DbClient.DeleteNation(Nations[i].Name);
                             Nations.RemoveAt(i);
                         }
                     }
@@ -127,11 +136,11 @@ namespace Henson.ViewModels
 
         private void LoadNations()
         {
-            var nations = new List<NationGridViewModel>();
+            var nations = DbClient.GetNations();
 
             foreach(var n in nations)
             {
-                Nations.Add(n);
+                Nations.Add(new NationGridViewModel(n, false, this));
             }
         }
 
@@ -156,7 +165,7 @@ namespace Henson.ViewModels
 
         public ObservableCollection<NationGridViewModel> Nations { get; } = new();
         public ProgramSettingsViewModel Settings { get; set; }
-        public NSClient Client { get; } = new();
+        public NsClient Client { get; } = new();
 
         private string currentLoginUser = "";
         public string CurrentLoginUser
@@ -193,6 +202,7 @@ namespace Henson.ViewModels
         public Interaction<MessageBoxViewModel, ButtonResult> LocalIDNeededDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> MoveRegionFailedDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> UserAgentNotSetDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> TargetRegionNotSetDialog { get; } = new();
 
         public void OnSelectNationsClick()
         {
@@ -210,6 +220,7 @@ namespace Henson.ViewModels
             File.WriteAllText(path, Toml.FromModel(Settings));
 
             SetSettings();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             FooterText = $"Settings updated.";
         }
 
@@ -267,9 +278,6 @@ namespace Henson.ViewModels
             if(await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
 
-            FooterText = $"Applying to the WA with nation {nation.Name}...";
-            await Task.Delay(100);
-
             var chk = nation.Chk!;
 
             if(Client.ApplyWA(chk))
@@ -293,9 +301,6 @@ namespace Henson.ViewModels
             if(await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
 
-            FooterText = $"Getting local ID of {nation.Name}...";
-            await Task.Delay(100);
-
             var localID = Client.GetLocalID();
 
             if(localID != null)
@@ -317,20 +322,31 @@ namespace Henson.ViewModels
 
         public async Task OnNationMoveRegionClick(NationGridViewModel nation, string region)
         {
-            if(await UserAgentNotSet()) return;
+            var dialog = new MessageBoxViewModel();
+
+            if (await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
 
-            var dialog = new MessageBoxViewModel();
+            if(region == null)
+            {
+                await TargetRegionNotSetDialog.Handle(dialog);
+                return;
+            }
+            
             if(currentLocalID == null)
             {
                 await LocalIDNeededDialog.Handle(dialog);
                 return;
             }
 
-            if(Client.MoveToJP(region, currentLocalID))
+            FooterText = $"Moving {nation.Name} to {region}... this may take a while.";
+            await Task.Delay(100);
+
+            if (Client.MoveToJP(region, currentLocalID))
             {
                 FooterText = $"{nation.Name} moved to {region}!";
                 nation.Region = char.ToUpper(region[0]) + region[1..];
+                DbClient.ExecuteNonQuery($"UPDATE nations SET region = '{region}' WHERE name = '{nation.Name}'");
             }
             else
             {
