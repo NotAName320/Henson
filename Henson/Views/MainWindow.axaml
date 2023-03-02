@@ -6,7 +6,7 @@
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="675"
         x:Class="Henson.Views.MainWindow"
         Icon="/Assets/henson-icon.ico"
-        Title="Henson 1.0.0"
+        Title="Henson 1.0.1"
         WindowStartupLocation="CenterScreen">
 
   <Design.DataContext>

@@ -16,7 +16,7 @@ namespace Henson.ViewModels
         {
             FilePickerCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                var dialog = new FilePickerViewModel();
+                var dialog = new ViewModelBase();
                 var result = await FilePickerDialog.Handle(dialog);
 
                 if (result != null)
@@ -103,7 +103,7 @@ namespace Henson.ViewModels
         public ReactiveCommand<Unit, List<NationLoginViewModel>?> ImportOneCommand { get; }
         public ReactiveCommand<Unit, List<NationLoginViewModel>?> ImportManyCommand { get; }
 
-        public Interaction<FilePickerViewModel, string[]?> FilePickerDialog { get; } = new();
+        public Interaction<ViewModelBase, string[]?> FilePickerDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
 
         public List<NationLoginViewModel> retVal = new();

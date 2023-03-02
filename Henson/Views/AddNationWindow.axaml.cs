@@ -27,7 +27,7 @@ namespace Henson.Views
             this.WhenActivated(d => d(ViewModel!.ImportManyCommand.Subscribe(Close)));
         }
         
-        private async Task GetConfigJson(InteractionContext<FilePickerViewModel, string[]?> interaction)
+        private async Task GetConfigJson(InteractionContext<ViewModelBase, string[]?> interaction)
         {
             //Need to write an error handler for this sometime
             var dialog = new OpenFileDialog();
