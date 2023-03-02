@@ -53,10 +53,6 @@ namespace Henson.ViewModels
         public ICommand GetLocalID { get; }
         public ReactiveCommand<string, Unit> MoveTo { get; }
 
-        public void OnCheckboxClick() //Saved for adding checkbox to header later
-        {
-        }
-
         public async Task MoveToTask(string region)
         {
             await Parent.OnNationMoveRegionClick(this, region);

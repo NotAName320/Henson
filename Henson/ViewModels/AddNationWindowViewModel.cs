@@ -1,4 +1,6 @@
-﻿using Henson.Models;
+﻿using Avalonia.Controls;
+using Henson.Models;
+using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using System;
@@ -34,8 +36,14 @@ namespace Henson.ViewModels
             {
                 if(string.IsNullOrWhiteSpace(ImportOneUser) || string.IsNullOrWhiteSpace(ImportOnePass))
                 {
-                    var dialog = new MessageBoxViewModel();
-                    await InvalidImportOneErrorDialog.Handle(dialog);
+                    MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Error",
+                        ContentMessage = "Please enter a username and/or password.",
+                        Icon = Icon.Error,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
 
                     return null;
                 }
@@ -45,10 +53,16 @@ namespace Henson.ViewModels
 
             ImportManyCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                var dialog = new MessageBoxViewModel();
                 if (string.IsNullOrWhiteSpace(ImportManyUser) || string.IsNullOrWhiteSpace(ImportManyPass) || string.IsNullOrEmpty(ImportManyRange))
                 {
-                    await InvalidImportManyErrorDialog.Handle(dialog);
+                    MessageBoxViewModel errorDialog = new(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Error",
+                        ContentMessage = "Please enter a username, password, and/or range (e.g. 1-50).",
+                        Icon = Icon.Error,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    });
+                    await MessageBoxDialog.Handle(errorDialog);
 
                     return null;
                 }
@@ -66,7 +80,14 @@ namespace Henson.ViewModels
                     return retVal;
                 }
 
-                await InvalidImportManyRangeErrorDialog.Handle(dialog);
+                MessageBoxViewModel rangeDialog = new(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Error",
+                    ContentMessage = "Please enter a valid range format (e.g. 1-50).",
+                    Icon = Icon.Error,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+                await MessageBoxDialog.Handle(rangeDialog);
 
                 return null;
             });
@@ -83,9 +104,7 @@ namespace Henson.ViewModels
         public ReactiveCommand<Unit, List<NationLoginViewModel>?> ImportManyCommand { get; }
 
         public Interaction<FilePickerViewModel, string[]?> FilePickerDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> InvalidImportOneErrorDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> InvalidImportManyErrorDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> InvalidImportManyRangeErrorDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
 
         public List<NationLoginViewModel> retVal = new();
     }

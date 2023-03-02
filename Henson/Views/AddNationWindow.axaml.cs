@@ -1,7 +1,9 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.ReactiveUI;
 using Henson.ViewModels;
-using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using System;
@@ -19,9 +21,7 @@ namespace Henson.Views
         {
             InitializeComponent();
             this.WhenActivated(d => d(ViewModel!.FilePickerDialog.RegisterHandler(GetConfigJson)));
-            this.WhenActivated(d => d(ViewModel!.InvalidImportOneErrorDialog.RegisterHandler(ShowInvalidImportOneInputError)));
-            this.WhenActivated(d => d(ViewModel!.InvalidImportManyErrorDialog.RegisterHandler(ShowInvalidImportManyInputError)));
-            this.WhenActivated(d => d(ViewModel!.InvalidImportManyRangeErrorDialog.RegisterHandler(ShowInvalidImportManyRangeInputError)));
+            this.WhenActivated(d => d(ViewModel!.MessageBoxDialog.RegisterHandler(ShowMessageBoxDialog)));
             this.WhenActivated(d => d(ViewModel!.FilePickerCommand.Subscribe(Close)));
             this.WhenActivated(d => d(ViewModel!.ImportOneCommand.Subscribe(Close)));
             this.WhenActivated(d => d(ViewModel!.ImportManyCommand.Subscribe(Close)));
@@ -39,46 +39,14 @@ namespace Henson.Views
             interaction.SetOutput(result);
         }
 
-        private async Task ShowInvalidImportOneInputError(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
+        private async Task ShowMessageBoxDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
         {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-              .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-              {
-                  ContentTitle = "Error",
-                  ContentMessage = "Please enter a username and/or password.",
-                  Icon = MessageBox.Avalonia.Enums.Icon.Error,
-                  WindowStartupLocation = WindowStartupLocation.CenterOwner,
-              });
-            SetClosing(true);
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
-        }
+            var parameters = interaction.Input.Params;
 
-        private async Task ShowInvalidImportManyInputError(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
-        {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Error",
-                    ContentMessage = "Please enter a username, password, and/or range (e.g. 1-50).",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
-            SetClosing(true);
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
-        }
+            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            parameters.WindowIcon = new WindowIcon(new Bitmap(assets!.Open(new Uri("avares://Henson/Assets/henson-icon.ico"))));
 
-        private async Task ShowInvalidImportManyRangeInputError(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
-        {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Error",
-                    ContentMessage = "Please enter a valid range format (e.g. 1-50).",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
+            var messageBox = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(parameters);
             SetClosing(true);
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));

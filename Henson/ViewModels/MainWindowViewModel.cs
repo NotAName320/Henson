@@ -1,4 +1,6 @@
+using Avalonia.Controls;
 using Henson.Models;
+using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using System;
@@ -50,8 +52,14 @@ namespace Henson.ViewModels
 
                     if(authFailedOnSome)
                     {
-                        var messageDialog = new MessageBoxViewModel();
-                        await SomeNationsFailedToAddDialog.Handle(messageDialog);
+                        var messageBoxDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                        {
+                            ContentTitle = "Warning",
+                            ContentMessage = "One or more nation(s) failed to add, probably due to an invalid username/password combo.",
+                            Icon = Icon.Warning,
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        });
+                        await MessageBoxDialog.Handle(messageBoxDialog);
                     }
 
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
@@ -61,8 +69,15 @@ namespace Henson.ViewModels
 
             RemoveSelectedCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                var dialog = new MessageBoxViewModel();
-                var result = await RemoveNationConfirmationDialog.Handle(dialog);
+                var dialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Remove Selected Nations",
+                    ContentMessage = "Are you sure you want to remove the selected nations' logins from Henson?",
+                    Icon = Icon.Info,
+                    ButtonDefinitions = ButtonEnum.YesNo,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+                var result = await MessageBoxDialog.Handle(dialog);
 
                 if(result == ButtonResult.Yes)
                 {
@@ -82,7 +97,7 @@ namespace Henson.ViewModels
             PingSelectedCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if(await UserAgentNotSet()) return;
-                var dialog = new MessageBoxViewModel();
+                
                 var selectedNations = Nations.Where(x => x.Checked).ToList();
                 var nationLogins = selectedNations.Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
 
@@ -99,13 +114,27 @@ namespace Henson.ViewModels
                     
                     FooterText = "Nations pinged (some failed)!";
 
-                    await SomeNationsFailedToPingDialog.Handle(dialog);
+                    var dialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Warning",
+                        ContentMessage = "One or more nation(s) failed to ping, probably due to an invalid username/password combo. They have been selected.",
+                        Icon = Icon.Warning,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
                 }
                 else
                 {
                     FooterText = "Nations pinged!";
 
-                    await NationPingSuccessDialog.Handle(dialog);
+                    var dialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Success",
+                        ContentMessage = "All nations pinged successfully.",
+                        Icon = Icon.Info,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
                 }
             });
 
@@ -121,15 +150,27 @@ namespace Henson.ViewModels
                 {
                     FooterText = $"WA nation found: {result}";
 
-                    var dialog = new FindWASuccessViewModel(result);
-                    await FindWASuccessDialog.Handle(dialog);
+                    var dialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "WA Nation Found",
+                        ContentMessage = $"Your WA nation is {result}.",
+                        Icon = Icon.Info,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
                 }
                 else
                 {
                     FooterText = $"WA nation not found.";
 
-                    var dialog = new MessageBoxViewModel();
-                    await WANotFoundDialog.Handle(dialog);
+                    var dialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "WA Nation Not Found",
+                        ContentMessage = "Your WA nation was not found.",
+                        Icon = Icon.Warning,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
                 }
             });
         }
@@ -189,20 +230,7 @@ namespace Henson.ViewModels
         public ICommand FindWACommand { get; }
 
         public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> AddNationDialog { get; } = new(); //I will simplify all of this eventually
-        public Interaction<MessageBoxViewModel, ButtonResult> RemoveNationConfirmationDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> SomeNationsFailedToAddDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> SomeNationsFailedToPingDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> NationPingSuccessDialog { get; } = new();
-        public Interaction<FindWASuccessViewModel, ButtonResult> FindWASuccessDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> WANotFoundDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> LoginFailedDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> NotCurrentLoginDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> WAApplicationFailedDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> LocalIDNotFoundDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> LocalIDNeededDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> MoveRegionFailedDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> UserAgentNotSetDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> TargetRegionNotSetDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
 
         public void OnSelectNationsClick()
         {
@@ -246,8 +274,14 @@ namespace Henson.ViewModels
                 FooterText = $"Failed to log in to {nation.Name}";
                 await Task.Delay(100);
 
-                var dialog = new MessageBoxViewModel();
-                await LoginFailedDialog.Handle(dialog);
+                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Login Failed",
+                    ContentMessage = "The login failed, probably due to an invalid username/password combination.",
+                    Icon = Icon.Error,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+                await MessageBoxDialog.Handle(dialog);
             }
         }
 
@@ -255,8 +289,14 @@ namespace Henson.ViewModels
         {
             if(nation.Name != currentLoginUser)
             {
-                var dialog = new MessageBoxViewModel();
-                await NotCurrentLoginDialog.Handle(dialog);
+                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Current Login Doesn't Match",
+                    ContentMessage = "Please log in with the the account you are trying to perform this action with.",
+                    Icon = Icon.Error,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+                await MessageBoxDialog.Handle(dialog);
                 return false;
             }
             return true;
@@ -266,8 +306,14 @@ namespace Henson.ViewModels
         {
             if(Settings.UserAgent == "")
             {
-                var dialog = new MessageBoxViewModel();
-                await UserAgentNotSetDialog.Handle(dialog);
+                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                {
+                    ContentTitle = "User Agent Not Set",
+                    ContentMessage = "Please go to the Settings tab to set the User Agent.",
+                    Icon = Icon.Error,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+                await MessageBoxDialog.Handle(dialog);
                 return true;
             }
             return false;
@@ -291,8 +337,14 @@ namespace Henson.ViewModels
                 FooterText = $"{nation.Name} WA application failed... please log in again.";
                 await Task.Delay(100);
 
-                var dialog = new MessageBoxViewModel();
-                await WAApplicationFailedDialog.Handle(dialog);
+                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                {
+                    ContentTitle = "WA Application Failed",
+                    ContentMessage = "Please log in again.",
+                    Icon = Icon.Error,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+                await MessageBoxDialog.Handle(dialog);
             }
         }
 
@@ -315,27 +367,45 @@ namespace Henson.ViewModels
                 FooterText = $"Getting local ID failed... please log in again.";
                 await Task.Delay(100);
 
-                var dialog = new MessageBoxViewModel();
-                await LocalIDNotFoundDialog.Handle(dialog);
+                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Local ID Not Found",
+                    ContentMessage = "Please log in again.",
+                    Icon = Icon.Error,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+                await MessageBoxDialog.Handle(dialog);
             }
         }
 
         public async Task OnNationMoveRegionClick(NationGridViewModel nation, string region)
         {
-            var dialog = new MessageBoxViewModel();
-
-            if (await UserAgentNotSet()) return;
+            if(await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
 
             if(region == null)
             {
-                await TargetRegionNotSetDialog.Handle(dialog);
+                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Target Region Not Set",
+                    ContentMessage = "Please set a target region.",
+                    Icon = Icon.Error,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+                await MessageBoxDialog.Handle(dialog);
                 return;
             }
             
             if(currentLocalID == null)
             {
-                await LocalIDNeededDialog.Handle(dialog);
+                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Local ID Needed",
+                    ContentMessage = "Please get the local ID before jumping region.",
+                    Icon = Icon.Warning,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+                await MessageBoxDialog.Handle(dialog);
                 return;
             }
 
@@ -353,7 +423,14 @@ namespace Henson.ViewModels
                 FooterText = $"Moving {nation.Name} to region {region} failed!";
                 await Task.Delay(100);
 
-                await MoveRegionFailedDialog.Handle(dialog);
+                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Moving region failed",
+                    ContentMessage = "Moving to the region failed.",
+                    Icon = Icon.Error,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+                await MessageBoxDialog.Handle(dialog);
             }
         }
     }

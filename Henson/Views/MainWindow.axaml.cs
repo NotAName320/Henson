@@ -1,9 +1,12 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using Avalonia.ReactiveUI;
 using Henson.ViewModels;
-using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
+using System;
 using System.Collections.Generic;
 using System.Media;
 using System.Runtime.InteropServices;
@@ -17,19 +20,7 @@ namespace Henson.Views
         {
             InitializeComponent();
             this.WhenActivated(d => d(ViewModel!.AddNationDialog.RegisterHandler(ShowAddNationDialog)));
-            this.WhenActivated(d => d(ViewModel!.RemoveNationConfirmationDialog.RegisterHandler(ShowRemoveNationConfirmationDialog)));
-            this.WhenActivated(d => d(ViewModel!.SomeNationsFailedToAddDialog.RegisterHandler(ShowSomeNationsFailedToAddDialog)));
-            this.WhenActivated(d => d(ViewModel!.SomeNationsFailedToPingDialog.RegisterHandler(ShowSomeNationsFailedToPingDialog)));
-            this.WhenActivated(d => d(ViewModel!.NationPingSuccessDialog.RegisterHandler(ShowNationPingSuccessDialog)));
-            this.WhenActivated(d => d(ViewModel!.FindWASuccessDialog.RegisterHandler(ShowFindWASuccessDialog)));
-            this.WhenActivated(d => d(ViewModel!.WANotFoundDialog.RegisterHandler(ShowWANotFoundDialog)));
-            this.WhenActivated(d => d(ViewModel!.LoginFailedDialog.RegisterHandler(ShowLoginFailedDialog)));
-            this.WhenActivated(d => d(ViewModel!.NotCurrentLoginDialog.RegisterHandler(ShowNotCurrentLoginDialog)));
-            this.WhenActivated(d => d(ViewModel!.WAApplicationFailedDialog.RegisterHandler(ShowWAApplicationFailedDialog)));
-            this.WhenActivated(d => d(ViewModel!.LocalIDNotFoundDialog.RegisterHandler(ShowLocalIDNotFoundDialog)));
-            this.WhenActivated(d => d(ViewModel!.LocalIDNeededDialog.RegisterHandler(ShowLocalIDNeededDialog)));
-            this.WhenActivated(d => d(ViewModel!.UserAgentNotSetDialog.RegisterHandler(ShowUserAgentNotSetDialog)));
-            this.WhenActivated(d => d(ViewModel!.TargetRegionNotSetDialog.RegisterHandler(ShowTargetRegionNotSetDialog)));
+            this.WhenActivated(d => d(ViewModel!.MessageBoxDialog.RegisterHandler(ShowMessageBoxDialog)));
         }
 
         private async Task ShowAddNationDialog(InteractionContext<AddNationWindowViewModel, List<NationLoginViewModel>?> interaction)
@@ -43,187 +34,14 @@ namespace Henson.Views
             interaction.SetOutput(result);
         }
 
-        private async Task ShowRemoveNationConfirmationDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
+        private async Task ShowMessageBoxDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
         {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Remove Selected Nations",
-                    ContentMessage = "Are you sure you want to remove the selected nations' logins from Henson?",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Info,
-                    ButtonDefinitions = ButtonEnum.YesNo,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
-        }
+            var parameters = interaction.Input.Params;
 
-        private async Task ShowSomeNationsFailedToAddDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
-        {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Warning",
-                    ContentMessage = "One or more nation(s) failed to add, probably due to an invalid username/password combo.",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Warning,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
-        }
+            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
+            parameters.WindowIcon = new WindowIcon(new Bitmap(assets!.Open(new Uri("avares://Henson/Assets/henson-icon.ico"))));
 
-        private async Task ShowSomeNationsFailedToPingDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
-        {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Warning",
-                    ContentMessage = "One or more nation(s) failed to ping, probably due to an invalid username/password combo. They have been selected.",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Warning,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
-        }
-
-        private async Task ShowNationPingSuccessDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
-        {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Success",
-                    ContentMessage = "All nations pinged successfully.",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Info,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
-        }
-
-        private async Task ShowFindWASuccessDialog(InteractionContext<FindWASuccessViewModel, ButtonResult> interaction)
-        {
-            var WANation = interaction.Input.Nation;
-
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "WA Nation Found",
-                    ContentMessage = $"Your WA nation is {WANation}.",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Info,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
-        }
-
-        private async Task ShowWANotFoundDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
-        {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "WA Nation Not Found",
-                    ContentMessage = "Your WA nation was not found.",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Warning,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
-        }
-
-        private async Task ShowLoginFailedDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
-        {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Login Failed",
-                    ContentMessage = "The login failed, probably due to an invalid username/password combination.",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
-        }
-
-        private async Task ShowNotCurrentLoginDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
-        {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Current Login Doesn't Match",
-                    ContentMessage = "Please log in with the the account you are trying to perform this action with.",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
-        }
-
-        private async Task ShowWAApplicationFailedDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
-        {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "WA Application Failed",
-                    ContentMessage = "Please log in again.",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
-        }
-
-        private async Task ShowLocalIDNotFoundDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
-        {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Local ID Not Found",
-                    ContentMessage = "Please log in again.",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
-        }
-
-        private async Task ShowLocalIDNeededDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
-        {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Local ID Needed",
-                    ContentMessage = "Please get the local ID before jumping region.",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Warning,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
-        }
-
-        private async Task ShowUserAgentNotSetDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
-        {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "User Agent Not Set",
-                    ContentMessage = "Please go to the Settings tab to set the User Agent.",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
-        }
-
-        private async Task ShowTargetRegionNotSetDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
-        {
-            var messageBox = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Target Region Not Set",
-                    ContentMessage = "Please set a target region.",
-                    Icon = MessageBox.Avalonia.Enums.Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                });
+            var messageBox = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(interaction.Input.Params);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             interaction.SetOutput(await messageBox.ShowDialog(this));
         }

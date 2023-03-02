@@ -43,7 +43,7 @@
                       <CheckBox IsThreeState="True"/>
                   </DataGridCheckBoxColumn.Header> this doesn't work-->
                   <DataTemplate DataType="vm:NationGridViewModel">
-                    <CheckBox Name="CB" HorizontalAlignment="Center" IsChecked="{Binding Checked}" Command="{Binding OnCheckboxClick}"/>
+                    <CheckBox Name="CB" HorizontalAlignment="Center" IsChecked="{Binding Checked}"/>
                   </DataTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTextColumn IsReadOnly="True" Header="Nation" Width="*" Binding="{Binding Name}"/>
