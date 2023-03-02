@@ -131,7 +131,6 @@ namespace Henson.Models
             {
                 return null;
             }
-            
         }
 
         public bool ApplyWA(string chk)
