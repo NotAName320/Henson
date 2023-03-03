@@ -1,4 +1,6 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Themes.Fluent;
 using Henson.Models;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
@@ -192,7 +194,7 @@ namespace Henson.ViewModels
 
             if(!File.Exists(path))
             {
-                File.WriteAllText(path, "user_agent = \"\"");
+                File.WriteAllText(path, "user_agent = \"\"\ntheme = \"light\"");
             }
 
             string setTomlString = File.ReadAllText(path);
@@ -202,6 +204,7 @@ namespace Henson.ViewModels
         private void SetSettings()
         {
             Client.UserAgent = Settings.UserAgent;
+            //Application.Current.Styles.Add(new FluentTheme(new URI))
         }
 
         public ObservableCollection<NationGridViewModel> Nations { get; } = new();
