@@ -8,6 +8,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Media;
@@ -17,6 +18,7 @@ using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Xaml.Permissions;
 using Tomlyn;
 
 namespace Henson.ViewModels
@@ -194,17 +196,51 @@ namespace Henson.ViewModels
 
             if(!File.Exists(path))
             {
-                File.WriteAllText(path, "user_agent = \"\"\ntheme = \"light\"");
+                File.Create(path);
             }
 
             string setTomlString = File.ReadAllText(path);
-            return Toml.ToModel<ProgramSettingsViewModel>(setTomlString); //This will work for now-later, find solution for interversion compatibility
+            var model = Toml.ToModel(setTomlString);
+
+            ProgramSettingsViewModel retVal = new();
+            try
+            {
+                retVal.UserAgent = (string)model["user_agent"];
+            }
+            catch(KeyNotFoundException) { model["user_agent"] = ""; }
+
+            try
+            {
+                retVal.Theme = ((string)model["theme"]).ToLower() == "dark" ? 1 : 0;
+            }
+            catch(KeyNotFoundException) { model["theme"] = "light"; }
+
+            File.WriteAllText(path, Toml.FromModel(model));
+
+            return retVal;
         }
 
         private void SetSettings()
         {
             Client.UserAgent = Settings.UserAgent;
-            //Application.Current.Styles.Add(new FluentTheme(new URI))
+
+            var theme = (FluentTheme)Application.Current!.Styles[0]; //yes we are fishing blindly for the FluentTheme within Styles
+            if(Settings.Theme == 1)
+            {
+                theme.Mode = FluentThemeMode.Dark;
+            }
+            else
+            {
+                theme.Mode = FluentThemeMode.Light;
+            }
+
+            //force the application to reload DataGrid theming otherwise it follows existing theme
+            //yes this is stupid
+            var uri = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml");
+            Application.Current.Styles[1] = new Avalonia.Markup.Xaml.Styling.StyleInclude(uri)
+            {
+                Source = uri
+            };
         }
 
         public ObservableCollection<NationGridViewModel> Nations { get; } = new();
@@ -246,9 +282,14 @@ namespace Henson.ViewModels
 
         public void OnSaveSettingsClick()
         {
+            var model = Toml.ToModel("");
+
+            model["user_agent"] = Settings.UserAgent;
+            model["theme"] = Settings.Theme == 1 ? "dark" : "light";
+
             var workingPath = Path.GetDirectoryName(AppContext.BaseDirectory)!;
             var path = Path.Combine(workingPath, "settings.toml");
-            File.WriteAllText(path, Toml.FromModel(Settings));
+            File.WriteAllText(path, Toml.FromModel(model));
 
             SetSettings();
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
