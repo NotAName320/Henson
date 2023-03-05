@@ -466,6 +466,20 @@ namespace Henson.ViewModels
                 return;
             }
 
+            if(region.ToLower() == nation.Region.ToLower())
+            {
+                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Nation Already In Region",
+                    ContentMessage = $"Your nation is already in the region {nation.Region}.",
+                    Icon = Icon.Info,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                });
+
+                await MessageBoxDialog.Handle(dialog);
+                return;
+            }
+
             FooterText = $"Moving {nation.Name} to {region}... this may take a while.";
             await Task.Delay(100);
 
