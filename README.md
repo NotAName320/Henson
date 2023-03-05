@@ -54,4 +54,4 @@ for creating awesome open-source software
 stuff for me
 - rootabeta for being an early adopter of Henson and giving me lots of 
 suggestions on how to improve it
-- Qekitor because of dumb raid chat challenges on 3/4/23
+- qekitor because of dumb raid chat challenges on 3/4/23
