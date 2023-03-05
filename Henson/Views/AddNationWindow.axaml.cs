@@ -45,6 +45,7 @@ namespace Henson.Views
 
             var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
             parameters.WindowIcon = new WindowIcon(new Bitmap(assets!.Open(new Uri("avares://Henson/Assets/henson-icon.ico"))));
+            parameters.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
             var messageBox = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(parameters);
             SetClosing(true);

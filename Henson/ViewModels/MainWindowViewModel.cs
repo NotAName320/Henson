@@ -59,7 +59,6 @@ namespace Henson.ViewModels
                             ContentTitle = "Warning",
                             ContentMessage = "One or more nation(s) failed to add, probably due to an invalid username/password combo.",
                             Icon = Icon.Warning,
-                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
                         });
                         await MessageBoxDialog.Handle(messageBoxDialog);
                     }
@@ -77,7 +76,6 @@ namespace Henson.ViewModels
                     ContentMessage = "Are you sure you want to remove the selected nations' logins from Henson?",
                     Icon = Icon.Info,
                     ButtonDefinitions = ButtonEnum.YesNo,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
                 var result = await MessageBoxDialog.Handle(dialog);
 
@@ -136,7 +134,6 @@ namespace Henson.ViewModels
                         ContentTitle = "Warning",
                         ContentMessage = "One or more nation(s) failed to ping, probably due to an invalid username/password combo. They have been selected.",
                         Icon = Icon.Warning,
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     });
                     await MessageBoxDialog.Handle(dialog);
                 }
@@ -149,7 +146,6 @@ namespace Henson.ViewModels
                         ContentTitle = "Success",
                         ContentMessage = "All nations pinged successfully.",
                         Icon = Icon.Info,
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     });
                     await MessageBoxDialog.Handle(dialog);
                 }
@@ -172,7 +168,6 @@ namespace Henson.ViewModels
                         ContentTitle = "WA Nation Found",
                         ContentMessage = $"Your WA nation is {result}.",
                         Icon = Icon.Info,
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     });
                     await MessageBoxDialog.Handle(dialog);
                 }
@@ -185,7 +180,6 @@ namespace Henson.ViewModels
                         ContentTitle = "WA Nation Not Found",
                         ContentMessage = "Your WA nation was not found.",
                         Icon = Icon.Warning,
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     });
                     await MessageBoxDialog.Handle(dialog);
                 }
@@ -336,7 +330,6 @@ namespace Henson.ViewModels
                     ContentTitle = "Login Failed",
                     ContentMessage = "The login failed, probably due to an invalid username/password combination.",
                     Icon = Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
                 await MessageBoxDialog.Handle(dialog);
             }
@@ -351,7 +344,6 @@ namespace Henson.ViewModels
                     ContentTitle = "Current Login Doesn't Match",
                     ContentMessage = "Please log in with the the account you are trying to perform this action with.",
                     Icon = Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
                 await MessageBoxDialog.Handle(dialog);
                 return false;
@@ -368,7 +360,6 @@ namespace Henson.ViewModels
                     ContentTitle = "User Agent Not Set",
                     ContentMessage = "Please go to the Settings tab to set the User Agent.",
                     Icon = Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
                 await MessageBoxDialog.Handle(dialog);
                 return true;
@@ -399,7 +390,6 @@ namespace Henson.ViewModels
                     ContentTitle = "WA Application Failed",
                     ContentMessage = "Please log in again.",
                     Icon = Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
                 await MessageBoxDialog.Handle(dialog);
             }
@@ -429,7 +419,6 @@ namespace Henson.ViewModels
                     ContentTitle = "Local ID Not Found",
                     ContentMessage = "Please log in again.",
                     Icon = Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
                 await MessageBoxDialog.Handle(dialog);
             }
@@ -447,7 +436,6 @@ namespace Henson.ViewModels
                     ContentTitle = "Target Region Not Set",
                     ContentMessage = "Please set a target region.",
                     Icon = Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
                 await MessageBoxDialog.Handle(dialog);
                 return;
@@ -460,7 +448,6 @@ namespace Henson.ViewModels
                     ContentTitle = "Local ID Needed",
                     ContentMessage = "Please get the local ID before jumping region.",
                     Icon = Icon.Warning,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
                 await MessageBoxDialog.Handle(dialog);
                 return;
@@ -473,7 +460,6 @@ namespace Henson.ViewModels
                     ContentTitle = "Nation Already In Region",
                     ContentMessage = $"Your nation is already in the region {nation.Region}.",
                     Icon = Icon.Info,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
 
                 await MessageBoxDialog.Handle(dialog);
@@ -499,7 +485,6 @@ namespace Henson.ViewModels
                     ContentTitle = "Moving region failed",
                     ContentMessage = "Moving to the region failed.",
                     Icon = Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
                 await MessageBoxDialog.Handle(dialog);
             }
