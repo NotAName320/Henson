@@ -106,12 +106,27 @@ namespace Henson.ViewModels
                 FooterText = "Pinging nations...";
                 await Task.Delay(100);
 
-                var successes = Client.PingMany(nationLogins);
-                if(!successes.All(x => x))
+                var nations = Client.PingMany(nationLogins);
+                foreach(var n in nations)
+                {
+                    if(n == null) continue;
+
+                    //There has to be an easier way to do this
+                    int index = Nations.IndexOf(Nations.Where(x => x.Name.ToLower() == n.Name.ToLower()).First());
+                    DbClient.ExecuteNonQuery("UPDATE nations SET " +
+                        $"name = '{n.Name}', " +
+                        $"region = '{n.Region}', " +
+                        $"flagUrl = '{n.FlagUrl}' " +
+                        $"WHERE name = '{Nations[index].Name}'");
+
+                    Nations[index] = new NationGridViewModel(n, true, this);
+                }
+
+                if(nations.Any(x => x == null))
                 {
                     for(int i = 0; i < selectedNations.Count; i++)
                     {
-                        selectedNations[i].Checked = successes[i];
+                        selectedNations[i].Checked = nations[i] == null;
                     }
                     
                     FooterText = "Nations pinged (some failed)!";

@@ -39,9 +39,6 @@
                       CanUserResizeColumns="True" AutoGenerateColumns="False">
               <DataGrid.Columns>
                 <DataGridTemplateColumn SortMemberPath=".">
-                  <!--<DataGridCheckBoxColumn.Header>
-                      <CheckBox IsThreeState="True"/>
-                  </DataGridCheckBoxColumn.Header> this doesn't work-->
                   <DataTemplate DataType="vm:NationGridViewModel">
                     <CheckBox Name="CB" HorizontalAlignment="Center" IsChecked="{Binding Checked}"/>
                   </DataTemplate>

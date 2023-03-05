@@ -54,25 +54,28 @@ namespace Henson.Models
             return (retVal, didAuthFail);
         }
 
-        public bool Ping(NationLoginViewModel login)
+        public Nation? Ping(NationLoginViewModel login)
         {
             NameValueCollection nvc = new()
             {
                 { "nation", login.Name },
-                { "q", "ping" }
+                { "q", "ping+name+flag+region" }
             };
 
             try
             {
-                Utilities.API(nvc, login.Pass, 0, UserAgent);
+                var response = Utilities.API(nvc, login.Pass, 0, UserAgent);
+                XmlNodeList xmlResp = Utilities.Parse(Utilities.StrResp(response));
+
+                var region = char.ToUpper(xmlResp.FindProperty("region")[0]) + xmlResp.FindProperty("region")[1..];
+                return new Nation(xmlResp.FindProperty("name"), login.Pass, xmlResp.FindProperty("flag"), region);
             }
-            catch (Exception) { return false; }
-            return true;
+            catch (Exception) { return null; }
         }
 
-        public List<bool> PingMany(List<NationLoginViewModel> logins)
+        public List<Nation?> PingMany(List<NationLoginViewModel> logins)
         {
-            List<bool> loginSuccesses = new();
+            List<Nation?> loginSuccesses = new();
             foreach(var n in logins)
             {
                 loginSuccesses.Add(Ping(n));
