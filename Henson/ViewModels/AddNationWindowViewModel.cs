@@ -41,7 +41,6 @@ namespace Henson.ViewModels
                         ContentTitle = "Error",
                         ContentMessage = "Please enter a username and/or password.",
                         Icon = Icon.Error,
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     });
                     await MessageBoxDialog.Handle(dialog);
 
@@ -60,7 +59,6 @@ namespace Henson.ViewModels
                         ContentTitle = "Error",
                         ContentMessage = "Please enter a username, password, and/or range (e.g. 1-50).",
                         Icon = Icon.Error,
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     });
                     await MessageBoxDialog.Handle(errorDialog);
 
@@ -85,7 +83,6 @@ namespace Henson.ViewModels
                     ContentTitle = "Error",
                     ContentMessage = "Please enter a valid range format (e.g. 1-50).",
                     Icon = Icon.Error,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 });
                 await MessageBoxDialog.Handle(rangeDialog);
 
