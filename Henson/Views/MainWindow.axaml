@@ -25,6 +25,7 @@
             <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)"/>
             <Button Command="{Binding RemoveSelectedCommand}" Content="Remove Selected"/>
             <Button Command="{Binding PingSelectedCommand}" Content="Ping Selected"/>
+            <Button Command="{Binding PrepSelectedCommand}" Content="Prep Selected"/>
             <Button Command="{Binding FindWACommand}" Content="Find WA"/>
             <Button Command="{Binding OnSelectNationsClick}" Content="Select/Unselect All"/>
             <TextBlock VerticalAlignment="Center" Margin="10,0,0,0" Text="Current login: "/>

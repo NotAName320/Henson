@@ -98,6 +98,18 @@ namespace Henson.ViewModels
                 if(await UserAgentNotSet()) return;
                 
                 var selectedNations = Nations.Where(x => x.Checked).ToList();
+                if (selectedNations.Count == 0)
+                {
+                    var dialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "No Nations Selected",
+                        ContentMessage = "Please select some nations first.",
+                        Icon = Icon.Info,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
+                    return;
+                }
+
                 var nationLogins = selectedNations.Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
 
                 FooterText = "Pinging nations...";
@@ -182,6 +194,32 @@ namespace Henson.ViewModels
                     });
                     await MessageBoxDialog.Handle(dialog);
                 }
+            });
+
+            PrepSelectedCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                if(await UserAgentNotSet()) return;
+
+                var selectedNations = Nations.Where(x => x.Checked).ToList();
+                if(selectedNations.Count == 0)
+                {
+                    var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "No Nations Selected",
+                        ContentMessage = "Please select some nations first.",
+                        Icon = Icon.Info,
+                    });
+                    await MessageBoxDialog.Handle(messageDialog);
+                    return;
+                }
+
+                var nationLogins = selectedNations.Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
+
+                FooterText = "Opening prep window...";
+                await Task.Delay(100);
+
+                var dialog = new PrepSelectedViewModel(nationLogins);
+                await PrepSelectedDialog.Handle(dialog);
             });
         }
 
@@ -273,8 +311,10 @@ namespace Henson.ViewModels
         public ICommand RemoveSelectedCommand { get; }
         public ICommand PingSelectedCommand { get; }
         public ICommand FindWACommand { get; }
+        public ICommand PrepSelectedCommand { get; }
 
-        public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> AddNationDialog { get; } = new(); //I will simplify all of this eventually
+        public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> AddNationDialog { get; } = new();
+        public Interaction<PrepSelectedViewModel, Unit> PrepSelectedDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
 
         public void OnSelectNationsClick()

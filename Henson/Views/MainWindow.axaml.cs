@@ -9,6 +9,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Media;
+using System.Reactive;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -20,6 +21,7 @@ namespace Henson.Views
         {
             InitializeComponent();
             this.WhenActivated(d => d(ViewModel!.AddNationDialog.RegisterHandler(ShowAddNationDialog)));
+            this.WhenActivated(d => d(ViewModel!.PrepSelectedDialog.RegisterHandler(ShowPrepSelectedDialog)));
             this.WhenActivated(d => d(ViewModel!.MessageBoxDialog.RegisterHandler(ShowMessageBoxDialog)));
         }
 
@@ -31,6 +33,17 @@ namespace Henson.Views
             };
 
             var result = await dialog.ShowDialog<List<NationLoginViewModel>?>(this);
+            interaction.SetOutput(result);
+        }
+
+        private async Task ShowPrepSelectedDialog(InteractionContext<PrepSelectedViewModel, Unit> interaction)
+        {
+            var dialog = new PrepSelectedWindow
+            {
+                DataContext = interaction.Input
+            };
+
+            var result = await dialog.ShowDialog<Unit>(this);
             interaction.SetOutput(result);
         }
 
