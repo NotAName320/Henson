@@ -44,3 +44,14 @@ Uh, you're on your own here. I've provided the binaries for both x64 and ARM
 Macs, but I don't have the hardware to test either. If someone has a Mac and 
 successfully got Henson to work, please contact me and tell me how you did it! 
 (or even better file a pull request)
+
+## Acknowledgements
+Thanks to:
+- The people listed in the 
+[NOTICE](https://github.com/NotAName320/Henson/blob/main/Henson/NOTICE) file 
+for creating awesome open-source software
+- sweeze for creating Swarm and thus figuring out a lot of dumb HTTP site 
+stuff for me
+- rootabeta for being an early adopter of Henson and giving me lots of 
+suggestions on how to improve it
+- Qek because of dumb raid chat challenges on 3/4/23
