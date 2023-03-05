@@ -1,5 +1,4 @@
-﻿using Avalonia.Controls;
-using Henson.Models;
+﻿using Henson.Models;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
