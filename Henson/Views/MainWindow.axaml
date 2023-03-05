@@ -88,7 +88,7 @@
         <TextBlock Text="WIP. Soon, you'll be able to create multiple puppets here, with default settings of your liking!"/>
       </TabItem>
       <TabItem Header="Settings">
-          <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="75,Auto,Auto">
+          <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,Auto,Auto">
             <TextBlock VerticalAlignment="Center" Grid.Row="0" Grid.Column="0">User Agent:</TextBlock>
             <TextBox Margin="10,0,0,10" Grid.Row="0" Grid.Column="1" MinWidth="150" MaxWidth="150" Text="{Binding Settings.UserAgent}"/>
             <TextBlock VerticalAlignment="Center" Grid.Row="1" Grid.Column="0">Theme:</TextBlock>
