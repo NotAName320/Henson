@@ -218,8 +218,12 @@ namespace Henson.ViewModels
                 FooterText = "Opening prep window...";
                 await Task.Delay(100);
 
-                var dialog = new PrepSelectedViewModel(nationLogins);
+                var dialog = new PrepSelectedViewModel(nationLogins, Client);
                 await PrepSelectedDialog.Handle(dialog);
+
+                await PingSelectedCommand.Execute();
+
+                FooterText = "Nations prepped!";
             });
         }
 
@@ -309,7 +313,7 @@ namespace Henson.ViewModels
         
         public ICommand AddNationCommand { get; }
         public ICommand RemoveSelectedCommand { get; }
-        public ICommand PingSelectedCommand { get; }
+        public ReactiveCommand<Unit, Unit> PingSelectedCommand { get; }
         public ICommand FindWACommand { get; }
         public ICommand PrepSelectedCommand { get; }
 
