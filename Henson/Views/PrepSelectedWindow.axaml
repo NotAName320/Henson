@@ -14,7 +14,7 @@
   <DockPanel LastChildFill="True">
     <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
       <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Target Region:</TextBlock>
-      <TextBox Name="regionTextBox" MinWidth="200" MaxWidth="200"/>
+      <TextBox MinWidth="200" MaxWidth="200" Text="{Binding TargetRegion}"/>
     </DockPanel>
     <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
       <TextBlock VerticalAlignment="Center" Margin="0,0,18,0">Apply to WA?</TextBlock>

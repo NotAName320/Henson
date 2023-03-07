@@ -112,6 +112,7 @@ namespace Henson.Models
 
         public (string chk, string localId)? Login(NationLoginViewModel login)
         {
+            //non template none region page allows us to get chk and localid in one request
             RestRequest request = new("/region=rwby", Method.Get);
             request.AddHeader("User-Agent", UserAgent);
             request.AddParameter("nation", login.Name);

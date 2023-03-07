@@ -472,7 +472,7 @@ namespace Henson.ViewModels
             FooterText = $"Moving {nation.Name} to {region}... this may take a while.";
             await Task.Delay(100);
 
-            if (Client.MoveToJP(region, currentLocalID!))
+            if(Client.MoveToJP(region, currentLocalID!))
             {
                 FooterText = $"{nation.Name} moved to {region}!";
                 nation.Region = char.ToUpper(region[0]) + region[1..];
@@ -485,7 +485,7 @@ namespace Henson.ViewModels
 
                 MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                 {
-                    ContentTitle = "Moving region failed",
+                    ContentTitle = "Moving Region Failed",
                     ContentMessage = "Moving to the region failed.",
                     Icon = Icon.Error,
                 });

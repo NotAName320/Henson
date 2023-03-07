@@ -88,6 +88,35 @@ namespace Henson.ViewModels
                             LoginIndex++;
                         }
                         break;
+                    case "Move to JP":
+                        if(TargetRegion == "")
+                        {
+                            MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                            {
+                                ContentTitle = "Target Region Not Set",
+                                ContentMessage = "Please set a target region.",
+                                Icon = Icon.Error,
+                            });
+                            await MessageBoxDialog.Handle(dialog);
+                            return;
+                        }
+
+                        if(!Client.MoveToJP(TargetRegion, CurrentLocalID))
+                        {
+                            MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                            {
+                                ContentTitle = "Moving Nation To Region Failed",
+                                ContentMessage = $"Moving the nation {currentNation.Name} to region {TargetRegion} failed.",
+                                Icon = Icon.Error,
+                            });
+                            await MessageBoxDialog.Handle(dialog);
+                            return;
+                        }
+
+                        ButtonText = "Login";
+                        LoginIndex++;
+                        
+                        break;
                 }
             });
         }
@@ -119,6 +148,16 @@ namespace Henson.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref currentLogin, value);
+            }
+        }
+
+        private string targetRegion = "";
+        public string TargetRegion
+        {
+            get => targetRegion;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref targetRegion, value);
             }
         }
     }
