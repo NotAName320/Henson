@@ -18,6 +18,7 @@ namespace Henson.ViewModels
         private List<NationLoginViewModel> Nations { get; set; }
         private int LoginIndex { get; set; } = 0;
         private string CurrentChk { get; set; } = "";
+        private string CurrentLocalID { get; set; } = "";
         public ICommand ActionButtonCommand { get; }
         public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
 
@@ -46,10 +47,11 @@ namespace Henson.ViewModels
                 switch(buttonText)
                 {
                     case "Login":
-                        var result = Client.Login(currentNation);
-                        if(result != null)
+                        var (chk, localId) = Client.Login(currentNation) ?? default;
+                        if(chk != null)
                         {
-                            CurrentChk = result;
+                            CurrentChk = chk;
+                            CurrentLocalID = localId;
                             CurrentLogin = currentNation.Name;
 
                             ButtonText = AlsoApplyWA ? "Apply WA" : "Move to JP";
@@ -63,6 +65,26 @@ namespace Henson.ViewModels
                                 Icon = Icon.Error,
                             });
                             await MessageBoxDialog.Handle(dialog);
+                            LoginIndex++;
+                        }
+                        break;
+                    case "Apply WA":
+                        if(Client.ApplyWA(CurrentChk))
+                        {
+                            ButtonText = "Move to JP";
+                        }
+                        else
+                        {
+                            MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                            {
+                                ContentTitle = "Login Failed",
+                                ContentMessage = $"Applying to WA on {currentNation.Name} failed. Going to the next nation.",
+                                Icon = Icon.Error,
+                            });
+                            await MessageBoxDialog.Handle(dialog);
+                            
+                            ButtonText = "Login";
+                            CurrentLogin = "";
                             LoginIndex++;
                         }
                         break;

@@ -110,9 +110,9 @@ namespace Henson.Models
             return null;
         }
 
-        public string? Login(NationLoginViewModel login)
+        public (string chk, string localId)? Login(NationLoginViewModel login)
         {
-            var request = new RestRequest("/template-overall=none/page=un", Method.Get);
+            var request = new RestRequest("/region=rwby", Method.Get);
             request.AddHeader("User-Agent", UserAgent);
             request.AddParameter("nation", login.Name);
             request.AddParameter("password", login.Pass);
@@ -127,8 +127,9 @@ namespace Henson.Models
                 htmlDoc.LoadHtml(response.Content);
 
                 var chk = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='chk']").Attributes["value"].Value;
+                var localId = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='localid']").Attributes["value"].Value;
 
-                return chk;
+                return (chk, localId);
             }
             catch (Exception)
             {
@@ -148,26 +149,6 @@ namespace Henson.Models
             var response = HttpClient.Execute(request);
 
             return response.Content != null && response.Content.Contains("has been received!");
-        }
-
-        public string? GetLocalID()
-        {
-            var request = new RestRequest("/template-overall=none/page=settings", Method.Get);
-            request.AddHeader("User-Agent", UserAgent);
-
-            var response = HttpClient.Execute(request);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var htmlDoc = new HtmlDocument();
-                htmlDoc.LoadHtml(response.Content);
-
-                var localID = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='localid']").Attributes["value"].Value;
-
-                return localID;
-            }
-
-            return null;
         }
 
         public bool MoveToJP(string targetRegion, string localID)

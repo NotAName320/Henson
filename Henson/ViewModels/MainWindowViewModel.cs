@@ -354,17 +354,18 @@ namespace Henson.ViewModels
             FooterText = $"Logging in to {nation.Name}...";
             await Task.Delay(100);
 
-            var result = Client.Login(nationLogin);
-            if (result != null)
+            var (chk, localId) = Client.Login(nationLogin) ?? default;
+            if (chk != null)
             {
-                nation.Chk = result;
-
+                nation.Chk = chk;
+                currentLocalID = localId;
                 CurrentLoginUser = nation.Name;
-                currentLocalID = null;
+
                 FooterText = $"Logged in to {nation.Name}";
             }
             else
             {
+                CurrentLoginUser = "";
                 FooterText = $"Failed to log in to {nation.Name}";
                 await Task.Delay(100);
 
@@ -438,35 +439,6 @@ namespace Henson.ViewModels
             }
         }
 
-        public async Task OnNationGetLocalIDClick(NationGridViewModel nation)
-        {
-            if(await UserAgentNotSet()) return;
-            if(!await NationEqualsLogin(nation)) return;
-
-            var localID = Client.GetLocalID();
-
-            if(localID != null)
-            {
-                currentLocalID = localID;
-                FooterText = $"Got local ID of {nation.Name}, ready to move regions!";
-            }
-            else
-            {
-                CurrentLoginUser = "";
-                currentLocalID = null;
-                FooterText = $"Getting local ID failed... please log in again.";
-                await Task.Delay(100);
-
-                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Local ID Not Found",
-                    ContentMessage = "Please log in again.",
-                    Icon = Icon.Error,
-                });
-                await MessageBoxDialog.Handle(dialog);
-            }
-        }
-
         public async Task OnNationMoveRegionClick(NationGridViewModel nation, string region)
         {
             if(await UserAgentNotSet()) return;
@@ -479,18 +451,6 @@ namespace Henson.ViewModels
                     ContentTitle = "Target Region Not Set",
                     ContentMessage = "Please set a target region.",
                     Icon = Icon.Error,
-                });
-                await MessageBoxDialog.Handle(dialog);
-                return;
-            }
-            
-            if(currentLocalID == null)
-            {
-                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Local ID Needed",
-                    ContentMessage = "Please get the local ID before jumping region.",
-                    Icon = Icon.Warning,
                 });
                 await MessageBoxDialog.Handle(dialog);
                 return;
@@ -512,7 +472,7 @@ namespace Henson.ViewModels
             FooterText = $"Moving {nation.Name} to {region}... this may take a while.";
             await Task.Delay(100);
 
-            if (Client.MoveToJP(region, currentLocalID))
+            if (Client.MoveToJP(region, currentLocalID!))
             {
                 FooterText = $"{nation.Name} moved to {region}!";
                 nation.Region = char.ToUpper(region[0]) + region[1..];
