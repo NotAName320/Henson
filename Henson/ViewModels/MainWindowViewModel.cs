@@ -244,7 +244,7 @@ namespace Henson.ViewModels
 
             if(!File.Exists(path))
             {
-                File.Create(path);
+                File.Create(path).Dispose(); //avoids IOException
             }
 
             string setTomlString = File.ReadAllText(path);
