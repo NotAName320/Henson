@@ -144,7 +144,7 @@ namespace Henson.Models
             request.AddHeader("User-Agent", UserAgent);
             request.AddParameter("action", "join_UN");
             request.AddParameter("chk", chk);
-            request.AddParameter("submit", "1");
+            request.AddParameter("resend", "1");
             request.AddParameter("userclick", UserClick);
 
             var response = HttpClient.Execute(request);
