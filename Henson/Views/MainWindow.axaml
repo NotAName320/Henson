@@ -25,6 +25,7 @@
             <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)"/>
             <Button Command="{Binding RemoveSelectedCommand}" Content="Remove Selected"/>
             <Button Command="{Binding PingSelectedCommand}" Content="Ping Selected"/>
+            <Button Command="{Binding PrepSelectedCommand}" Content="Prep Selected"/>
             <Button Command="{Binding FindWACommand}" Content="Find WA"/>
             <Button Command="{Binding OnSelectNationsClick}" Content="Select/Unselect All"/>
             <TextBlock VerticalAlignment="Center" Margin="10,0,0,0" Text="Current login: "/>
@@ -59,13 +60,6 @@
                     </DataTemplate>
                   </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Get local ID">
-                  <DataGridTemplateColumn.CellTemplate>
-                    <DataTemplate DataType="vm:NationGridViewModel">
-                      <Button HorizontalAlignment="Center" Command="{Binding GetLocalID}" Background="Transparent">Get</Button>
-                    </DataTemplate>
-                  </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Move to region">
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate DataType="vm:NationGridViewModel">
@@ -87,7 +81,8 @@
       <TabItem Header="Settings">
           <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,Auto,Auto">
             <TextBlock VerticalAlignment="Center" Grid.Row="0" Grid.Column="0">User Agent:</TextBlock>
-            <TextBox Margin="10,0,0,10" Grid.Row="0" Grid.Column="1" MinWidth="150" MaxWidth="150" Text="{Binding Settings.UserAgent}"/>
+            <TextBox Margin="10,0,0,10" Grid.Row="0" Grid.Column="1" MinWidth="150" MaxWidth="150"
+                     Text="{Binding Settings.UserAgent}" Watermark="Nation Name..."/>
             <TextBlock VerticalAlignment="Center" Grid.Row="1" Grid.Column="0">Theme:</TextBlock>
             <ComboBox Margin="10,0,0,0" Grid.Row="1" Grid.Column="1" SelectedIndex="{Binding Settings.Theme}">
               <ComboBoxItem>Light</ComboBoxItem>

@@ -110,9 +110,10 @@ namespace Henson.Models
             return null;
         }
 
-        public string? Login(NationLoginViewModel login)
+        public (string chk, string localId)? Login(NationLoginViewModel login)
         {
-            var request = new RestRequest("/template-overall=none/page=un", Method.Get);
+            //non template none region page allows us to get chk and localid in one request
+            RestRequest request = new("/region=rwby", Method.Get);
             request.AddHeader("User-Agent", UserAgent);
             request.AddParameter("nation", login.Name);
             request.AddParameter("password", login.Pass);
@@ -123,12 +124,13 @@ namespace Henson.Models
 
             try
             {
-                var htmlDoc = new HtmlDocument();
+                HtmlDocument htmlDoc = new();
                 htmlDoc.LoadHtml(response.Content);
 
                 var chk = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='chk']").Attributes["value"].Value;
+                var localId = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='localid']").Attributes["value"].Value;
 
-                return chk;
+                return (chk, localId);
             }
             catch (Exception)
             {
@@ -138,7 +140,7 @@ namespace Henson.Models
 
         public bool ApplyWA(string chk)
         {
-            var request = new RestRequest("/template-overall=none/page=UN_status", Method.Post);
+            RestRequest request = new("/template-overall=none/page=UN_status", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
             request.AddParameter("action", "join_UN");
             request.AddParameter("chk", chk);
@@ -150,29 +152,9 @@ namespace Henson.Models
             return response.Content != null && response.Content.Contains("has been received!");
         }
 
-        public string? GetLocalID()
-        {
-            var request = new RestRequest("/template-overall=none/page=settings", Method.Get);
-            request.AddHeader("User-Agent", UserAgent);
-
-            var response = HttpClient.Execute(request);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var htmlDoc = new HtmlDocument();
-                htmlDoc.LoadHtml(response.Content);
-
-                var localID = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='localid']").Attributes["value"].Value;
-
-                return localID;
-            }
-
-            return null;
-        }
-
         public bool MoveToJP(string targetRegion, string localID)
         {
-            var request = new RestRequest("/template-overall=none/page=change_region", Method.Post);
+            RestRequest request = new("/template-overall=none/page=change_region", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
             request.AddParameter("localid", localID);
             request.AddParameter("region_name", targetRegion);

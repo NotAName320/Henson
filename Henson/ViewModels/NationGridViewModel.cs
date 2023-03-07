@@ -26,11 +26,6 @@ namespace Henson.ViewModels
                 await Parent.OnNationApplyWAClick(this);
             });
 
-            GetLocalID = ReactiveCommand.CreateFromTask(async () =>
-            {
-                await Parent.OnNationGetLocalIDClick(this);
-            });
-
             MoveTo = ReactiveCommand.CreateFromTask<string>(MoveToTask);
         }
 
@@ -50,7 +45,6 @@ namespace Henson.ViewModels
 
         public ICommand Login { get; }
         public ICommand ApplyWA { get; }
-        public ICommand GetLocalID { get; }
         public ReactiveCommand<string, Unit> MoveTo { get; }
 
         public async Task MoveToTask(string region)

@@ -98,6 +98,18 @@ namespace Henson.ViewModels
                 if(await UserAgentNotSet()) return;
                 
                 var selectedNations = Nations.Where(x => x.Checked).ToList();
+                if (selectedNations.Count == 0)
+                {
+                    var dialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "No Nations Selected",
+                        ContentMessage = "Please select some nations first.",
+                        Icon = Icon.Info,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
+                    return;
+                }
+
                 var nationLogins = selectedNations.Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
 
                 FooterText = "Pinging nations...";
@@ -183,6 +195,36 @@ namespace Henson.ViewModels
                     await MessageBoxDialog.Handle(dialog);
                 }
             });
+
+            PrepSelectedCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                if(await UserAgentNotSet()) return;
+
+                var selectedNations = Nations.Where(x => x.Checked).ToList();
+                if(selectedNations.Count == 0)
+                {
+                    var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "No Nations Selected",
+                        ContentMessage = "Please select some nations first.",
+                        Icon = Icon.Info,
+                    });
+                    await MessageBoxDialog.Handle(messageDialog);
+                    return;
+                }
+
+                var nationLogins = selectedNations.Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
+
+                FooterText = "Opening prep window...";
+                await Task.Delay(100);
+
+                var dialog = new PrepSelectedViewModel(nationLogins, Client);
+                await PrepSelectedDialog.Handle(dialog);
+
+                await PingSelectedCommand.Execute();
+
+                FooterText = "Nations prepped!";
+            });
         }
 
         private void LoadNations()
@@ -202,7 +244,7 @@ namespace Henson.ViewModels
 
             if(!File.Exists(path))
             {
-                File.Create(path);
+                File.Create(path).Dispose(); //avoids IOException
             }
 
             string setTomlString = File.ReadAllText(path);
@@ -271,10 +313,12 @@ namespace Henson.ViewModels
         
         public ICommand AddNationCommand { get; }
         public ICommand RemoveSelectedCommand { get; }
-        public ICommand PingSelectedCommand { get; }
+        public ReactiveCommand<Unit, Unit> PingSelectedCommand { get; }
         public ICommand FindWACommand { get; }
+        public ICommand PrepSelectedCommand { get; }
 
-        public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> AddNationDialog { get; } = new(); //I will simplify all of this eventually
+        public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> AddNationDialog { get; } = new();
+        public Interaction<PrepSelectedViewModel, Unit> PrepSelectedDialog { get; } = new();
         public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
 
         public void OnSelectNationsClick()
@@ -310,17 +354,18 @@ namespace Henson.ViewModels
             FooterText = $"Logging in to {nation.Name}...";
             await Task.Delay(100);
 
-            var result = Client.Login(nationLogin);
-            if (result != null)
+            var (chk, localId) = Client.Login(nationLogin) ?? default;
+            if (chk != null)
             {
-                nation.Chk = result;
-
+                nation.Chk = chk;
+                currentLocalID = localId;
                 CurrentLoginUser = nation.Name;
-                currentLocalID = null;
+
                 FooterText = $"Logged in to {nation.Name}";
             }
             else
             {
+                CurrentLoginUser = "";
                 FooterText = $"Failed to log in to {nation.Name}";
                 await Task.Delay(100);
 
@@ -394,35 +439,6 @@ namespace Henson.ViewModels
             }
         }
 
-        public async Task OnNationGetLocalIDClick(NationGridViewModel nation)
-        {
-            if(await UserAgentNotSet()) return;
-            if(!await NationEqualsLogin(nation)) return;
-
-            var localID = Client.GetLocalID();
-
-            if(localID != null)
-            {
-                currentLocalID = localID;
-                FooterText = $"Got local ID of {nation.Name}, ready to move regions!";
-            }
-            else
-            {
-                CurrentLoginUser = "";
-                currentLocalID = null;
-                FooterText = $"Getting local ID failed... please log in again.";
-                await Task.Delay(100);
-
-                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Local ID Not Found",
-                    ContentMessage = "Please log in again.",
-                    Icon = Icon.Error,
-                });
-                await MessageBoxDialog.Handle(dialog);
-            }
-        }
-
         public async Task OnNationMoveRegionClick(NationGridViewModel nation, string region)
         {
             if(await UserAgentNotSet()) return;
@@ -435,18 +451,6 @@ namespace Henson.ViewModels
                     ContentTitle = "Target Region Not Set",
                     ContentMessage = "Please set a target region.",
                     Icon = Icon.Error,
-                });
-                await MessageBoxDialog.Handle(dialog);
-                return;
-            }
-            
-            if(currentLocalID == null)
-            {
-                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Local ID Needed",
-                    ContentMessage = "Please get the local ID before jumping region.",
-                    Icon = Icon.Warning,
                 });
                 await MessageBoxDialog.Handle(dialog);
                 return;
@@ -468,7 +472,7 @@ namespace Henson.ViewModels
             FooterText = $"Moving {nation.Name} to {region}... this may take a while.";
             await Task.Delay(100);
 
-            if (Client.MoveToJP(region, currentLocalID))
+            if(Client.MoveToJP(region, currentLocalID!))
             {
                 FooterText = $"{nation.Name} moved to {region}!";
                 nation.Region = char.ToUpper(region[0]) + region[1..];
@@ -481,7 +485,7 @@ namespace Henson.ViewModels
 
                 MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                 {
-                    ContentTitle = "Moving region failed",
+                    ContentTitle = "Moving Region Failed",
                     ContentMessage = "Moving to the region failed.",
                     Icon = Icon.Error,
                 });
