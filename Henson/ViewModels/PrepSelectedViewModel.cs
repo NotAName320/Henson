@@ -19,6 +19,56 @@ namespace Henson.ViewModels
         public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
 
 
+        private string buttonText = "Login";
+        public string ButtonText
+        {
+            get => buttonText;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref buttonText, value);
+            }
+        }
+
+        private bool alsoApplyWA = true;
+        public bool AlsoApplyWA
+        {
+            get => alsoApplyWA;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref alsoApplyWA, value);
+            }
+        }
+
+        private string currentLogin = "";
+        public string CurrentLogin
+        {
+            get => currentLogin;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref currentLogin, value);
+            }
+        }
+
+        private string targetRegion = "";
+        public string TargetRegion
+        {
+            get => targetRegion;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref targetRegion, value);
+            }
+        }
+
+        private string footerText = "Click Login to start.";
+        public string FooterText
+        {
+            get => footerText;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref footerText, value);
+            }
+        }
+
         public PrepSelectedViewModel(List<NationLoginViewModel> nations, NsClient client)
         {
             Nations = nations;
@@ -50,10 +100,12 @@ namespace Henson.ViewModels
                             CurrentLocalID = localId;
                             CurrentLogin = currentNation.Name;
 
+                            FooterText = $"Logged in to {currentNation.Name}";
                             ButtonText = AlsoApplyWA ? "Apply WA" : "Move to JP";
                         }
                         else
                         {
+                            FooterText = LoginFooterText();
                             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                             {
                                 ContentTitle = "Login Failed",
@@ -68,9 +120,11 @@ namespace Henson.ViewModels
                         if(Client.ApplyWA(CurrentChk))
                         {
                             ButtonText = "Move to JP";
+                            FooterText = $"Sent WA application on {currentNation.Name}";
                         }
                         else
                         {
+                            FooterText = LoginFooterText();
                             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                             {
                                 ContentTitle = "Login Failed",
@@ -111,50 +165,20 @@ namespace Henson.ViewModels
 
                         ButtonText = "Login";
                         LoginIndex++;
-                        
+                        FooterText = LoginIndex != Nations.Count ? $"Moved {currentNation.Name} to {TargetRegion}!" : "All nations logged in!";
+
                         break;
                 }
             });
         }
 
-        private string buttonText = "Login";
-        public string ButtonText
+        public string LoginFooterText()
         {
-            get => buttonText;
-            set
+            if(LoginIndex == Nations.Count)
             {
-                this.RaiseAndSetIfChanged(ref buttonText, value);
+                return "All nations logged in!";
             }
-        }
-
-        private bool alsoApplyWA = true;
-        public bool AlsoApplyWA
-        {
-            get => alsoApplyWA;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref alsoApplyWA, value);
-            }
-        }
-
-        private string currentLogin = "";
-        public string CurrentLogin
-        {
-            get => currentLogin;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref currentLogin, value);
-            }
-        }
-
-        private string targetRegion = "";
-        public string TargetRegion
-        {
-            get => targetRegion;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref targetRegion, value);
-            }
+            return $"Next nation: {Nations[LoginIndex].Name}.";
         }
     }
 }

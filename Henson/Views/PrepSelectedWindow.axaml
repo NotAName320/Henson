@@ -24,10 +24,13 @@
       <TextBlock Text="Current Login: "/>
       <TextBlock Text="{Binding CurrentLogin}"/>
     </DockPanel>
-    <Button Height="200" Width="480" Margin="10"
+    <TextBlock DockPanel.Dock="Bottom" Margin="10,10,0,10"
+               Text="{Binding FooterText}"/>
+    <Button Height="180" Width="480" Margin="10"
+            DockPanel.Dock="Bottom"
             HorizontalContentAlignment="Center"
             VerticalContentAlignment="Center" FontSize="40"
             Content="{Binding ButtonText}"
-            Command="{Binding ActionButtonCommand}"/>
+            Command="{Binding ActionButtonCommand}" />
   </DockPanel>
 </Window>
