@@ -3,7 +3,9 @@ using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
@@ -14,8 +16,10 @@ namespace Henson.ViewModels
         private NsClient Client { get; }
         private List<NationLoginViewModel> Nations { get; set; }
         private int LoginIndex { get; set; } = 0;
+        private int PrepSuccesses { get; set; } = 0;
         private string CurrentChk { get; set; } = "";
         private string CurrentLocalID { get; set; } = "";
+        private StringBuilder FailedLogins { get; set; } = new();
         public ICommand ActionButtonCommand { get; }
         public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
 
@@ -92,7 +96,7 @@ namespace Henson.ViewModels
                 {
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
-                        ContentTitle = "Logins complete",
+                        ContentTitle = "Logins Complete",
                         ContentMessage = $"All nations have been prepped. Please close the window now.",
                         Icon = Icon.Error,
                     });
@@ -114,19 +118,13 @@ namespace Henson.ViewModels
                             CurrentLocalID = localId;
                             CurrentLogin = currentNation.Name;
 
-                            FooterText = $"Logged in to {currentNation.Name}";
+                            FooterText = $"Logged in to {currentNation.Name}.";
                             ButtonText = AlsoApplyWA ? "Apply WA" : "Move to JP";
                         }
                         else
                         {
-                            FooterText = LoginFooterText();
-                            MessageBoxViewModel dialog = new(new MessageBoxStandardParams
-                            {
-                                ContentTitle = "Login Failed",
-                                ContentMessage = $"Logging in to {currentNation.Name} failed. Going to the next nation.",
-                                Icon = Icon.Error,
-                            });
-                            await MessageBoxDialog.Handle(dialog);
+                            FooterText = $"Login to {currentNation.Name} failed.";
+                            AddToFailedLogins(currentNation.Name);
                             LoginIndex++;
                         }
                         break;
@@ -134,19 +132,13 @@ namespace Henson.ViewModels
                         if(Client.ApplyWA(CurrentChk))
                         {
                             ButtonText = "Move to JP";
-                            FooterText = $"Sent WA application on {currentNation.Name}";
+                            FooterText = $"Sent WA application on {currentNation.Name}.";
                         }
                         else
                         {
-                            FooterText = LoginFooterText();
-                            MessageBoxViewModel dialog = new(new MessageBoxStandardParams
-                            {
-                                ContentTitle = "Login Failed",
-                                ContentMessage = $"Applying to WA on {currentNation.Name} failed. Going to the next nation.",
-                                Icon = Icon.Error,
-                            });
-                            await MessageBoxDialog.Handle(dialog);
-                            
+                            FooterText = $"{currentNation.Name} WA App failed.";
+                            AddToFailedLogins(currentNation.Name);
+
                             ButtonText = "Login";
                             CurrentLogin = "";
                             LoginIndex++;
@@ -167,33 +159,48 @@ namespace Henson.ViewModels
 
                         if(!Client.MoveToJP(TargetRegion, CurrentLocalID))
                         {
-                            MessageBoxViewModel dialog = new(new MessageBoxStandardParams
-                            {
-                                ContentTitle = "Moving Nation To Region Failed",
-                                ContentMessage = $"Moving the nation {currentNation.Name} to region {TargetRegion} failed.",
-                                Icon = Icon.Error,
-                            });
-                            await MessageBoxDialog.Handle(dialog);
-                            return;
+                            FooterText = $"Moving {currentNation.Name} failed.";
+                            AddToFailedLogins(currentNation.Name);
                         }
-
+                        else
+                        {
+                            FooterText = $"Moved {currentNation.Name} to {TargetRegion}.";
+                            PrepSuccesses++;
+                        }
                         ButtonText = "Login";
                         LoginIndex++;
-                        FooterText = LoginIndex != Nations.Count ? $"Moved {currentNation.Name} to {TargetRegion}!" : "All nations logged in!";
-
+                        if(LoginIndex == Nations.Count)
+                        {
+                            FooterText += $" {PrepSuccesses}/{Nations.Count} prepped successfully!";
+                        }
                         break;
                 }
+
+                if (LoginIndex == Nations.Count && FailedLogins.Length != 0)
+                {
+                    FailedLogins.Remove(FailedLogins.Length - 2, 2);
+                    MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Some Logins Failed",
+                        ContentMessage = $"The following nations failed to be prepped ({Nations.Count-PrepSuccesses}/{Nations.Count}):" +
+                        $"\n{FailedLogins.ToString()}",
+                        Icon = Icon.Warning,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
+
+                }
+
                 ButtonsEnabled = true;
             });
         }
 
-        public string LoginFooterText()
+        private void AddToFailedLogins(string loginName)
         {
-            if(LoginIndex == Nations.Count)
+            if(FailedLogins.ToString().Split("\n").Last().Length + loginName.Length + 2 > 75)
             {
-                return "All nations logged in!";
+                FailedLogins.Append("\n");
             }
-            return $"Next nation: {Nations[LoginIndex].Name}.";
+            FailedLogins.Append(loginName + ", ");
         }
     }
 }
