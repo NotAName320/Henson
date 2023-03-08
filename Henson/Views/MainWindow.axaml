@@ -22,11 +22,11 @@
       <TabItem Header="Quick View">
         <DockPanel>
           <DockPanel DockPanel.Dock="Top">
-            <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)"/>
+            <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)" IsEnabled="{Binding ButtonsEnabled}"/>
             <Button Command="{Binding RemoveSelectedCommand}" Content="Remove Selected"/>
-            <Button Command="{Binding PingSelectedCommand}" Content="Ping Selected"/>
-            <Button Command="{Binding PrepSelectedCommand}" Content="Prep Selected"/>
-            <Button Command="{Binding FindWACommand}" Content="Find WA"/>
+            <Button Command="{Binding PingSelectedCommand}" Content="Ping Selected" IsEnabled="{Binding ButtonsEnabled}"/>
+            <Button Command="{Binding PrepSelectedCommand}" Content="Prep Selected" IsEnabled="{Binding ButtonsEnabled}"/>
+            <Button Command="{Binding FindWACommand}" Content="Find WA" IsEnabled="{Binding ButtonsEnabled}"/>
             <Button Command="{Binding OnSelectNationsClick}" Content="Select/Unselect All"/>
             <TextBlock VerticalAlignment="Center" Margin="10,0,0,0" Text="Current login: "/>
             <TextBlock VerticalAlignment="Center" Text="{Binding CurrentLoginUser}"/>
@@ -50,21 +50,25 @@
                 <DataGridTemplateColumn Header="Login">
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate>
-                      <Button HorizontalAlignment="Center" Command="{Binding Login}" Background="Transparent">Login</Button>
+                      <Button HorizontalAlignment="Center" Content="Login" Command="{Binding Login}"
+                      Background="Transparent" IsEnabled="{Binding Parent.ButtonsEnabled}"/>
                     </DataTemplate>
                   </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Apply to WA">
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate DataType="vm:NationGridViewModel">
-                      <Button HorizontalAlignment="Center" Command="{Binding ApplyWA}" Background="Transparent">Apply</Button>
+                      <Button HorizontalAlignment="Center" Content="Apply" Command="{Binding ApplyWA}"
+                      Background="Transparent" IsEnabled="{Binding Parent.ButtonsEnabled}"/>
                     </DataTemplate>
                   </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
                 <DataGridTemplateColumn Header="Move to region">
                   <DataGridTemplateColumn.CellTemplate>
                     <DataTemplate DataType="vm:NationGridViewModel">
-                      <Button HorizontalAlignment="Center" Command="{Binding MoveTo}" CommandParameter="{Binding ElementName=regionTextBox, Path=Text}" Background="Transparent">Move</Button>
+                      <Button HorizontalAlignment="Center" Content="Move" Command="{Binding MoveTo}"
+                      CommandParameter="{Binding ElementName=regionTextBox, Path=Text}"
+                      Background="Transparent" IsEnabled="{Binding Parent.ButtonsEnabled}"/>
                     </DataTemplate>
                   </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

@@ -4,6 +4,7 @@ using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Reactive.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace Henson.ViewModels
@@ -69,6 +70,16 @@ namespace Henson.ViewModels
             }
         }
 
+        private bool buttonsEnabled = true;
+        public bool ButtonsEnabled
+        {
+            get => buttonsEnabled;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref buttonsEnabled, value);
+            }
+        }
+
         public PrepSelectedViewModel(List<NationLoginViewModel> nations, NsClient client, string target)
         {
             Nations = nations;
@@ -91,6 +102,8 @@ namespace Henson.ViewModels
 
                 NationLoginViewModel currentNation = Nations[LoginIndex];
 
+                ButtonsEnabled = false;
+                await Task.Delay(100);
                 switch(buttonText)
                 {
                     case "Login":
@@ -170,6 +183,7 @@ namespace Henson.ViewModels
 
                         break;
                 }
+                ButtonsEnabled = true;
             });
         }
 

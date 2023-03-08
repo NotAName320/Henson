@@ -31,6 +31,7 @@
             HorizontalContentAlignment="Center"
             VerticalContentAlignment="Center" FontSize="40"
             Content="{Binding ButtonText}"
-            Command="{Binding ActionButtonCommand}" />
+            Command="{Binding ActionButtonCommand}"
+            IsEnabled="{Binding ButtonsEnabled}"/>
   </DockPanel>
 </Window>

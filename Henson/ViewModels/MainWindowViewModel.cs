@@ -40,6 +40,7 @@ namespace Henson.ViewModels
                 if(result != null)
                 {
                     FooterText = "Loading nations... this may take a while.";
+                    ButtonsEnabled = false;
                     await Task.Delay(100);
 
                     var (nations, authFailedOnSome) = Client.AuthenticateAndReturnInfo(result);
@@ -63,6 +64,7 @@ namespace Henson.ViewModels
                     }
 
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+                    ButtonsEnabled = true;
                     FooterText = "Finished loading!";
                 }
             });
@@ -113,6 +115,7 @@ namespace Henson.ViewModels
                 var nationLogins = selectedNations.Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
 
                 FooterText = "Pinging nations...";
+                ButtonsEnabled = false;
                 await Task.Delay(100);
 
                 var nations = Client.PingMany(nationLogins);
@@ -151,6 +154,7 @@ namespace Henson.ViewModels
                 else
                 {
                     FooterText = "Nations pinged!";
+                    ButtonsEnabled = true;
 
                     var dialog = new MessageBoxViewModel(new MessageBoxStandardParams
                     {
@@ -166,9 +170,12 @@ namespace Henson.ViewModels
             {
                 if(await UserAgentNotSet()) return;
                 FooterText = "Finding WA nation...";
+                ButtonsEnabled = false;
                 await Task.Delay(100);
 
                 var result = Client.FindWA(Nations.ToList());
+
+                ButtonsEnabled = true;
 
                 if(result != null)
                 {
@@ -321,6 +328,16 @@ namespace Henson.ViewModels
             }
         }
 
+        private bool buttonsEnabled = true;
+        public bool ButtonsEnabled
+        {
+            get => buttonsEnabled;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref buttonsEnabled, value);
+            }
+        }
+
         public ICommand AddNationCommand { get; }
         public ICommand RemoveSelectedCommand { get; }
         public ReactiveCommand<Unit, Unit> PingSelectedCommand { get; }
@@ -362,6 +379,7 @@ namespace Henson.ViewModels
             var nationLogin = new NationLoginViewModel(nation.Name, nation.Pass);
 
             FooterText = $"Logging in to {nation.Name}...";
+            ButtonsEnabled = false;
             await Task.Delay(100);
 
             var (chk, localId) = Client.Login(nationLogin) ?? default;
@@ -387,6 +405,7 @@ namespace Henson.ViewModels
                 });
                 await MessageBoxDialog.Handle(dialog);
             }
+            ButtonsEnabled = true;
         }
 
         private async Task<bool> NationEqualsLogin(NationGridViewModel nation)
@@ -428,6 +447,8 @@ namespace Henson.ViewModels
 
             var chk = nation.Chk!;
 
+            ButtonsEnabled = false;
+            await Task.Delay(100);
             if(Client.ApplyWA(chk))
             {
                 FooterText = $"{nation.Name} WA application successful!";
@@ -447,6 +468,7 @@ namespace Henson.ViewModels
                 });
                 await MessageBoxDialog.Handle(dialog);
             }
+            ButtonsEnabled = true;
         }
 
         public async Task OnNationMoveRegionClick(NationGridViewModel nation, string region)
@@ -480,6 +502,7 @@ namespace Henson.ViewModels
             }
 
             FooterText = $"Moving {nation.Name} to {region}... this may take a while.";
+            ButtonsEnabled = false;
             await Task.Delay(100);
 
             if(Client.MoveToJP(region, currentLocalID!))
@@ -501,6 +524,7 @@ namespace Henson.ViewModels
                 });
                 await MessageBoxDialog.Handle(dialog);
             }
+            ButtonsEnabled = true;
         }
     }
 }
