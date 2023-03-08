@@ -73,7 +73,7 @@ namespace Henson.ViewModels
         {
             Nations = nations;
             Client = client;
-            TargetRegion = target;
+            targetRegion = target;
 
             ActionButtonCommand = ReactiveCommand.CreateFromTask(async () =>
             {
