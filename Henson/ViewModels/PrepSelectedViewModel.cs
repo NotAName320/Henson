@@ -49,7 +49,7 @@ namespace Henson.ViewModels
             }
         }
 
-        private string targetRegion = "";
+        private string targetRegion;
         public string TargetRegion
         {
             get => targetRegion;
@@ -69,10 +69,11 @@ namespace Henson.ViewModels
             }
         }
 
-        public PrepSelectedViewModel(List<NationLoginViewModel> nations, NsClient client)
+        public PrepSelectedViewModel(List<NationLoginViewModel> nations, NsClient client, string target)
         {
             Nations = nations;
             Client = client;
+            TargetRegion = target;
 
             ActionButtonCommand = ReactiveCommand.CreateFromTask(async () =>
             {

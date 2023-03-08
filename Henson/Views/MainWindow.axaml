@@ -32,7 +32,8 @@
             <TextBlock VerticalAlignment="Center" Text="{Binding CurrentLoginUser}"/>
             <DockPanel HorizontalAlignment="Right">
               <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Target Region:</TextBlock>
-              <TextBox Name="regionTextBox" MinWidth="200" MaxWidth="400"/>
+              <TextBox Name="regionTextBox" MinWidth="200" MaxWidth="400"
+                       Text="{Binding TargetRegion}"/>
             </DockPanel>
           </DockPanel>
           <Grid DockPanel.Dock="Top">

@@ -218,7 +218,7 @@ namespace Henson.ViewModels
                 FooterText = "Opening prep window...";
                 await Task.Delay(100);
 
-                var dialog = new PrepSelectedViewModel(nationLogins, Client);
+                var dialog = new PrepSelectedViewModel(nationLogins, Client, TargetRegion);
                 await PrepSelectedDialog.Handle(dialog);
 
                 await PingSelectedCommand.Execute();
@@ -310,7 +310,17 @@ namespace Henson.ViewModels
             get => footerText;
             set => this.RaiseAndSetIfChanged(ref footerText, value);
         }
-        
+
+        private string targetRegion = "";
+        public string TargetRegion
+        {
+            get => targetRegion;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref targetRegion, value);
+            }
+        }
+
         public ICommand AddNationCommand { get; }
         public ICommand RemoveSelectedCommand { get; }
         public ReactiveCommand<Unit, Unit> PingSelectedCommand { get; }
