@@ -7,12 +7,14 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Media;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -154,7 +156,6 @@ namespace Henson.ViewModels
                 else
                 {
                     FooterText = "Nations pinged!";
-                    ButtonsEnabled = true;
 
                     var dialog = new MessageBoxViewModel(new MessageBoxStandardParams
                     {
@@ -164,6 +165,7 @@ namespace Henson.ViewModels
                     });
                     await MessageBoxDialog.Handle(dialog);
                 }
+                ButtonsEnabled = true;
             });
 
             FindWACommand = ReactiveCommand.CreateFromTask(async () =>
@@ -207,8 +209,7 @@ namespace Henson.ViewModels
             {
                 if(await UserAgentNotSet()) return;
 
-                var selectedNations = Nations.Where(x => x.Checked).ToList();
-                if(selectedNations.Count == 0)
+                if(!Nations.Any(x => x.Checked))
                 {
                     var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
                     {
@@ -220,15 +221,16 @@ namespace Henson.ViewModels
                     return;
                 }
 
-                var nationLogins = selectedNations.Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
-
                 FooterText = "Opening prep window...";
                 await Task.Delay(100);
 
-                var dialog = new PrepSelectedViewModel(nationLogins, Client, TargetRegion);
+                var dialog = new PrepSelectedViewModel(Nations.ToList(), Client, TargetRegion);
                 await PrepSelectedDialog.Handle(dialog);
 
-                await PingSelectedCommand.Execute();
+                foreach(var n in Nations)
+                {
+                    DbClient.ExecuteNonQuery($"UPDATE nations SET region = '{n.Region}' WHERE name = '{n.Name}'");
+                }
 
                 FooterText = "Nations prepped!";
             });
@@ -371,6 +373,15 @@ namespace Henson.ViewModels
             SetSettings();
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             FooterText = $"Settings updated.";
+
+            //easter egg :)
+            if(Settings.UserAgent == "092436")
+            {
+                Process process = new();
+                process.StartInfo.UseShellExecute = true;
+                process.StartInfo.FileName = "https://www.youtube.com/watch?v=WS3Lkc6Gzlk";
+                process.Start();
+            }
         }
 
         public async Task OnNationLoginClick(NationGridViewModel nation)

@@ -14,7 +14,8 @@ namespace Henson.ViewModels
     public class PrepSelectedViewModel : ViewModelBase
     {
         private NsClient Client { get; }
-        private List<NationLoginViewModel> Nations { get; set; }
+        private List<NationGridViewModel> Nations { get; set; }
+        private List<NationLoginViewModel> SelectedNations { get; set; }
         private int LoginIndex { get; set; } = 0;
         private int PrepSuccesses { get; set; } = 0;
         private string CurrentChk { get; set; } = "";
@@ -84,15 +85,16 @@ namespace Henson.ViewModels
             }
         }
 
-        public PrepSelectedViewModel(List<NationLoginViewModel> nations, NsClient client, string target)
+        public PrepSelectedViewModel(List<NationGridViewModel> nations, NsClient client, string target)
         {
             Nations = nations;
+            SelectedNations = Nations.Where(x => x.Checked).Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
             Client = client;
             targetRegion = target;
 
             ActionButtonCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                if (LoginIndex == Nations.Count)
+                if (LoginIndex == SelectedNations.Count)
                 {
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
@@ -104,7 +106,7 @@ namespace Henson.ViewModels
                     return;
                 }
 
-                NationLoginViewModel currentNation = Nations[LoginIndex];
+                NationLoginViewModel currentNation = SelectedNations[LoginIndex];
 
                 ButtonsEnabled = false;
                 await Task.Delay(100);
@@ -165,25 +167,26 @@ namespace Henson.ViewModels
                         else
                         {
                             FooterText = $"Moved {currentNation.Name} to {TargetRegion}.";
+                            Nations.Where(x => x.Name == currentNation.Name).First().Region = TargetRegion;
                             PrepSuccesses++;
                         }
                         ButtonText = "Login";
                         LoginIndex++;
-                        if(LoginIndex == Nations.Count)
+                        if(LoginIndex == SelectedNations.Count)
                         {
-                            FooterText += $" {PrepSuccesses}/{Nations.Count} prepped successfully!";
+                            FooterText += $" {PrepSuccesses}/{SelectedNations.Count} prepped successfully!";
                         }
                         break;
                 }
 
-                if (LoginIndex == Nations.Count && FailedLogins.Length != 0)
+                if (LoginIndex == SelectedNations.Count && FailedLogins.Length != 0)
                 {
                     FailedLogins.Remove(FailedLogins.Length - 2, 2);
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
                         ContentTitle = "Some Logins Failed",
-                        ContentMessage = $"The following nations failed to be prepped ({Nations.Count-PrepSuccesses}/{Nations.Count}):" +
-                        $"\n{FailedLogins.ToString()}",
+                        ContentMessage = $"The following nations failed to be prepped ({SelectedNations.Count-PrepSuccesses}/{SelectedNations.Count}):" +
+                        $"\n{FailedLogins}",
                         Icon = Icon.Warning,
                     });
                     await MessageBoxDialog.Handle(dialog);
@@ -198,7 +201,7 @@ namespace Henson.ViewModels
         {
             if(FailedLogins.ToString().Split("\n").Last().Length + loginName.Length + 2 > 75)
             {
-                FailedLogins.Append("\n");
+                FailedLogins.Append('\n');
             }
             FailedLogins.Append(loginName + ", ");
         }
