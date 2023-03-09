@@ -492,7 +492,7 @@ namespace Henson.ViewModels
             if(await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
 
-            if(region == null)
+            if(region == "")
             {
                 MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                 {
