@@ -375,11 +375,16 @@ namespace Henson.ViewModels
             FooterText = $"Settings updated.";
 
             //easter egg :)
-            if(Settings.UserAgent == "092436")
+            Process process = new();
+            process.StartInfo.UseShellExecute = true;
+            if (Settings.UserAgent == "092436")
             {
-                Process process = new();
-                process.StartInfo.UseShellExecute = true;
                 process.StartInfo.FileName = "https://www.youtube.com/watch?v=WS3Lkc6Gzlk";
+                process.Start();
+            }
+            if(Settings.UserAgent == "051690")
+            {
+                process.StartInfo.FileName = "https://www.youtube.com/watch?v=57ta7mkgrOU";
                 process.Start();
             }
         }
