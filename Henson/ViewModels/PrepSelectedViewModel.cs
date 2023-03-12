@@ -3,6 +3,7 @@ using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
@@ -13,17 +14,23 @@ namespace Henson.ViewModels
 {
     public class PrepSelectedViewModel : ViewModelBase
     {
+        public string TargetRegion { get; set; }
+
+        public ICommand ActionButtonCommand { get; }
+
+        public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
+
         private NsClient Client { get; }
         private List<NationGridViewModel> Nations { get; set; }
         private List<NationLoginViewModel> SelectedNations { get; set; }
+
         private int LoginIndex { get; set; } = 0;
         private int PrepSuccesses { get; set; } = 0;
+
         private string CurrentChk { get; set; } = "";
         private string CurrentLocalID { get; set; } = "";
-        private StringBuilder FailedLogins { get; set; } = new();
-        public ICommand ActionButtonCommand { get; }
-        public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
 
+        private StringBuilder FailedLogins { get; set; } = new();
 
         private string buttonText = "Login";
         public string ButtonText
@@ -55,16 +62,6 @@ namespace Henson.ViewModels
             }
         }
 
-        private string targetRegion;
-        public string TargetRegion
-        {
-            get => targetRegion;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref targetRegion, value);
-            }
-        }
-
         private string footerText = "Click Login to start.";
         public string FooterText
         {
@@ -90,7 +87,7 @@ namespace Henson.ViewModels
             Nations = nations;
             SelectedNations = Nations.Where(x => x.Checked).Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
             Client = client;
-            targetRegion = target;
+            TargetRegion = target;
 
             ActionButtonCommand = ReactiveCommand.CreateFromTask(async () =>
             {

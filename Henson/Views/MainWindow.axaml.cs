@@ -57,7 +57,9 @@ namespace Henson.Views
 
             var messageBox = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(interaction.Input.Params);
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
+
+            var result = await messageBox.ShowDialog(this);
+            interaction.SetOutput(result);
         }
     }
 }

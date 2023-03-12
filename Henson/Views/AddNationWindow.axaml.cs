@@ -26,7 +26,14 @@ namespace Henson.Views
             this.WhenActivated(d => d(ViewModel!.ImportOneCommand.Subscribe(Close)));
             this.WhenActivated(d => d(ViewModel!.ImportManyCommand.Subscribe(Close)));
         }
-        
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+            //Spent like 4 hours figuring out that I needed the below line lol
+            SetClosing(false);
+        }
+
         private async Task GetConfigJson(InteractionContext<ViewModelBase, string[]?> interaction)
         {
             //Need to write an error handler for this sometime
@@ -50,19 +57,14 @@ namespace Henson.Views
             var messageBox = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(parameters);
             SetClosing(true);
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            interaction.SetOutput(await messageBox.ShowDialog(this));
+
+            var result = await messageBox.ShowDialog(this);
+            interaction.SetOutput(result);
         }
 
         private void SetClosing(bool value)
         {
             Closing += (s, e) => { e.Cancel = value; };
-        }
-
-        protected override void OnClosing(CancelEventArgs e)
-        {    
-            base.OnClosing(e);
-            //Spent like 4 hours figuring out that I needed the below line lol
-            SetClosing(false);
         }
     }
 }

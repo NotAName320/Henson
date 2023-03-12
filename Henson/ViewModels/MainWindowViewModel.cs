@@ -14,7 +14,6 @@ using System.Media;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -24,6 +23,47 @@ namespace Henson.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        public ICommand AddNationCommand { get; }
+        public ICommand RemoveSelectedCommand { get; }
+        public ICommand PingSelectedCommand { get; }
+        public ICommand FindWACommand { get; }
+        public ICommand PrepSelectedCommand { get; }
+
+        public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> AddNationDialog { get; } = new();
+        public Interaction<PrepSelectedViewModel, Unit> PrepSelectedDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
+
+        private string footerText = "Welcome to Henson!";
+        public string FooterText
+        {
+            get => footerText;
+            set => this.RaiseAndSetIfChanged(ref footerText, value);
+        }
+
+        private string? currentLocalID = null;
+        private string currentLoginUser = "";
+        public string CurrentLoginUser
+        {
+            get => currentLoginUser;
+            set => this.RaiseAndSetIfChanged(ref currentLoginUser, value);
+        }
+
+        public string TargetRegion { get; set; } = "";
+
+        private bool buttonsEnabled = true;
+        public bool ButtonsEnabled
+        {
+            get => buttonsEnabled;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref buttonsEnabled, value);
+            }
+        }
+
+        private NsClient Client { get; } = new();
+        private ObservableCollection<NationGridViewModel> Nations { get; } = new();
+        private ProgramSettingsViewModel Settings { get; set; }
+
         public MainWindowViewModel()
         {
             Settings = LoadSettings();
@@ -236,120 +276,6 @@ namespace Henson.ViewModels
             });
         }
 
-        private void LoadNations()
-        {
-            var nations = DbClient.GetNations();
-
-            foreach(var n in nations)
-            {
-                Nations.Add(new NationGridViewModel(n, false, this));
-            }
-        }
-
-        private static ProgramSettingsViewModel LoadSettings()
-        {
-            var workingPath = Path.GetDirectoryName(AppContext.BaseDirectory)!;
-            var path = Path.Combine(workingPath, "settings.toml");
-
-            if(!File.Exists(path))
-            {
-                File.Create(path).Dispose(); //avoids IOException
-            }
-
-            string setTomlString = File.ReadAllText(path);
-            var model = Toml.ToModel(setTomlString);
-
-            ProgramSettingsViewModel retVal = new();
-            try
-            {
-                retVal.UserAgent = (string)model["user_agent"];
-            }
-            catch(KeyNotFoundException) { model["user_agent"] = ""; }
-
-            try
-            {
-                retVal.Theme = ((string)model["theme"]).ToLower() == "dark" ? 1 : 0;
-            }
-            catch(KeyNotFoundException) { model["theme"] = "light"; }
-
-            File.WriteAllText(path, Toml.FromModel(model));
-
-            return retVal;
-        }
-
-        private void SetSettings()
-        {
-            Client.UserAgent = Settings.UserAgent;
-
-            var theme = (FluentTheme)Application.Current!.Styles[0]; //yes we are fishing blindly for the FluentTheme within Styles
-            if(Settings.Theme == 1)
-            {
-                theme.Mode = FluentThemeMode.Dark;
-            }
-            else
-            {
-                theme.Mode = FluentThemeMode.Light;
-            }
-
-            //force the application to reload DataGrid theming otherwise it follows existing theme
-            //yes this is stupid
-            var uri = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml");
-            Application.Current.Styles[1] = new Avalonia.Markup.Xaml.Styling.StyleInclude(uri)
-            {
-                Source = uri
-            };
-        }
-
-        public ObservableCollection<NationGridViewModel> Nations { get; } = new();
-        public ProgramSettingsViewModel Settings { get; set; }
-        public NsClient Client { get; } = new();
-
-        private string currentLoginUser = "";
-        public string CurrentLoginUser
-        {
-            get => currentLoginUser;
-            set => this.RaiseAndSetIfChanged(ref currentLoginUser, value);
-        }
-
-        private string? currentLocalID = null;
-
-        private string footerText = "Welcome to Henson!";
-        public string FooterText
-        {
-            get => footerText;
-            set => this.RaiseAndSetIfChanged(ref footerText, value);
-        }
-
-        private string targetRegion = "";
-        public string TargetRegion
-        {
-            get => targetRegion;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref targetRegion, value);
-            }
-        }
-
-        private bool buttonsEnabled = true;
-        public bool ButtonsEnabled
-        {
-            get => buttonsEnabled;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref buttonsEnabled, value);
-            }
-        }
-
-        public ICommand AddNationCommand { get; }
-        public ICommand RemoveSelectedCommand { get; }
-        public ReactiveCommand<Unit, Unit> PingSelectedCommand { get; }
-        public ICommand FindWACommand { get; }
-        public ICommand PrepSelectedCommand { get; }
-
-        public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> AddNationDialog { get; } = new();
-        public Interaction<PrepSelectedViewModel, Unit> PrepSelectedDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
-
         public void OnSelectNationsClick()
         {
             bool OppositeAllTrueOrFalse = !Nations.All(x => x.Checked);
@@ -422,38 +348,6 @@ namespace Henson.ViewModels
                 await MessageBoxDialog.Handle(dialog);
             }
             ButtonsEnabled = true;
-        }
-
-        private async Task<bool> NationEqualsLogin(NationGridViewModel nation)
-        {
-            if(nation.Name != currentLoginUser)
-            {
-                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
-                {
-                    ContentTitle = "Current Login Doesn't Match",
-                    ContentMessage = "Please log in with the the account you are trying to perform this action with.",
-                    Icon = Icon.Error,
-                });
-                await MessageBoxDialog.Handle(dialog);
-                return false;
-            }
-            return true;
-        }
-
-        private async Task<bool> UserAgentNotSet()
-        {
-            if(Settings.UserAgent == "")
-            {
-                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
-                {
-                    ContentTitle = "User Agent Not Set",
-                    ContentMessage = "Please go to the Settings tab to set the User Agent.",
-                    Icon = Icon.Error,
-                });
-                await MessageBoxDialog.Handle(dialog);
-                return true;
-            }
-            return false;
         }
 
         public async Task OnNationApplyWAClick(NationGridViewModel nation)
@@ -541,6 +435,102 @@ namespace Henson.ViewModels
                 await MessageBoxDialog.Handle(dialog);
             }
             ButtonsEnabled = true;
+        }
+
+        private async Task<bool> NationEqualsLogin(NationGridViewModel nation)
+        {
+            if (nation.Name != currentLoginUser)
+            {
+                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Current Login Doesn't Match",
+                    ContentMessage = "Please log in with the the account you are trying to perform this action with.",
+                    Icon = Icon.Error,
+                });
+                await MessageBoxDialog.Handle(dialog);
+                return false;
+            }
+            return true;
+        }
+
+        private async Task<bool> UserAgentNotSet()
+        {
+            if (Settings.UserAgent == "")
+            {
+                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                {
+                    ContentTitle = "User Agent Not Set",
+                    ContentMessage = "Please go to the Settings tab to set the User Agent.",
+                    Icon = Icon.Error,
+                });
+                await MessageBoxDialog.Handle(dialog);
+                return true;
+            }
+            return false;
+        }
+
+        private void LoadNations()
+        {
+            var nations = DbClient.GetNations();
+
+            foreach (var n in nations)
+            {
+                Nations.Add(new NationGridViewModel(n, false, this));
+            }
+        }
+
+        private static ProgramSettingsViewModel LoadSettings()
+        {
+            var workingPath = Path.GetDirectoryName(AppContext.BaseDirectory)!;
+            var path = Path.Combine(workingPath, "settings.toml");
+
+            if (!File.Exists(path))
+            {
+                File.Create(path).Dispose(); //avoids IOException
+            }
+
+            string setTomlString = File.ReadAllText(path);
+            var model = Toml.ToModel(setTomlString);
+
+            ProgramSettingsViewModel retVal = new();
+            try
+            {
+                retVal.UserAgent = (string)model["user_agent"];
+            }
+            catch (KeyNotFoundException) { model["user_agent"] = ""; }
+
+            try
+            {
+                retVal.Theme = ((string)model["theme"]).ToLower() == "dark" ? 1 : 0;
+            }
+            catch (KeyNotFoundException) { model["theme"] = "light"; }
+
+            File.WriteAllText(path, Toml.FromModel(model));
+
+            return retVal;
+        }
+
+        private void SetSettings()
+        {
+            Client.UserAgent = Settings.UserAgent;
+
+            var theme = (FluentTheme)Application.Current!.Styles[0]; //yes we are fishing blindly for the FluentTheme within Styles
+            if (Settings.Theme == 1)
+            {
+                theme.Mode = FluentThemeMode.Dark;
+            }
+            else
+            {
+                theme.Mode = FluentThemeMode.Light;
+            }
+
+            //force the application to reload DataGrid theming otherwise it follows existing theme
+            //yes this is stupid
+            var uri = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml");
+            Application.Current.Styles[1] = new Avalonia.Markup.Xaml.Styling.StyleInclude(uri)
+            {
+                Source = uri
+            };
         }
     }
 }

@@ -14,7 +14,9 @@ namespace Henson.Models
     public class NsClient
     {
         public DotNS APIClient { get; } = new();
+
         public RestClient HttpClient = new("https://www.nationstates.net");
+
         public string UserAgent
         {
             get => APIClient.UserAgent;

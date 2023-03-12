@@ -11,6 +11,21 @@ namespace Henson.ViewModels
 {
     public class AddNationWindowViewModel : ViewModelBase
     {
+        public string ImportOneUser { get; set; } = "";
+        public string ImportOnePass { get; set; } = "";
+        public string ImportManyUser { get; set; } = "";
+        public string ImportManyPass { get; set; } = "";
+        public string ImportManyRange { get; set; } = "";
+
+        public ReactiveCommand<Unit, List<NationLoginViewModel>?> FilePickerCommand { get; }
+        public ReactiveCommand<Unit, List<NationLoginViewModel>?> ImportOneCommand { get; }
+        public ReactiveCommand<Unit, List<NationLoginViewModel>?> ImportManyCommand { get; }
+
+        public Interaction<ViewModelBase, string[]?> FilePickerDialog { get; } = new();
+        public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
+
+        public List<NationLoginViewModel> retVal = new();
+
         public AddNationWindowViewModel()
         {
             FilePickerCommand = ReactiveCommand.CreateFromTask(async () =>
@@ -51,7 +66,7 @@ namespace Henson.ViewModels
 
             ImportManyCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                if (string.IsNullOrWhiteSpace(ImportManyUser) || string.IsNullOrWhiteSpace(ImportManyPass) || string.IsNullOrEmpty(ImportManyRange))
+                if (string.IsNullOrWhiteSpace(ImportManyUser) || string.IsNullOrWhiteSpace(ImportManyPass) || string.IsNullOrWhiteSpace(ImportManyRange))
                 {
                     MessageBoxViewModel errorDialog = new(new MessageBoxStandardParams
                     {
@@ -88,20 +103,5 @@ namespace Henson.ViewModels
                 return null;
             });
         }
-
-        public string ImportOneUser { get; set; } = "";
-        public string ImportOnePass { get; set;  } = "";
-        public string ImportManyUser { get; set; } = "";
-        public string ImportManyPass { get; set; } = "";
-        public string ImportManyRange { get; set; } = "";
-
-        public ReactiveCommand<Unit, List<NationLoginViewModel>?> FilePickerCommand { get; }
-        public ReactiveCommand<Unit, List<NationLoginViewModel>?> ImportOneCommand { get; }
-        public ReactiveCommand<Unit, List<NationLoginViewModel>?> ImportManyCommand { get; }
-
-        public Interaction<ViewModelBase, string[]?> FilePickerDialog { get; } = new();
-        public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
-
-        public List<NationLoginViewModel> retVal = new();
     }
 }
