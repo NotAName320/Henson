@@ -23,16 +23,51 @@ namespace Henson.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
+        //commands must be defined in the constructor, i'll still provide  some brief documentation here
+        /// <summary>
+        /// Fired when the Add Nation button in quick view is clicked and opens an AddNationDialog.
+        /// </summary>
         public ICommand AddNationCommand { get; }
+
+        /// <summary>
+        /// Fired when the Remove Selected button in quick view is clicked.
+        /// </summary>
         public ICommand RemoveSelectedCommand { get; }
+
+        /// <summary>
+        /// Fired when the Ping Selected button in quick view is clicked.
+        /// </summary>
         public ICommand PingSelectedCommand { get; }
+
+        /// <summary>
+        /// Fired when the Find WA button in quick view is clicked.
+        /// </summary>
         public ICommand FindWACommand { get; }
+
+        /// <summary>
+        /// Fired when the Prep Selected button in quick view is clicked.
+        /// </summary>
         public ICommand PrepSelectedCommand { get; }
 
+        /// <summary>
+        /// This interaction opens the Add Nation Dialog and returns a list of NationLoginViewModels
+        /// representing logins to nations that may or may not be valid.
+        /// </summary>
         public Interaction<AddNationWindowViewModel, List<NationLoginViewModel>?> AddNationDialog { get; } = new();
+
+        /// <summary>
+        /// This interaction opens the Prep Selected window.
+        /// </summary>
         public Interaction<PrepSelectedViewModel, Unit> PrepSelectedDialog { get; } = new();
+
+        /// <summary>
+        /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
+        /// </summary>
         public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
 
+        /// <summary>
+        /// The text displayed in the footer.
+        /// </summary>
         private string footerText = "Welcome to Henson!";
         public string FooterText
         {
@@ -40,17 +75,26 @@ namespace Henson.ViewModels
             set => this.RaiseAndSetIfChanged(ref footerText, value);
         }
 
-        private string? currentLocalID = null;
-        private string currentLoginUser = "";
+        /// <summary>
+        /// The current logged in user displayed in the quick view.
+        /// </summary>
         public string CurrentLoginUser
         {
             get => currentLoginUser;
             set => this.RaiseAndSetIfChanged(ref currentLoginUser, value);
         }
+        private string currentLoginUser = "";
 
+        /// <summary>
+        /// The target region in the quick view's text box, only used in the code to pass on
+        /// to a child window.
+        /// </summary>
         public string TargetRegion { get; set; } = "";
 
-        private bool buttonsEnabled = true;
+        /// <summary>
+        /// Boolean that controls the enabling and disabling of buttons that send requests
+        /// to ensure compliance with API.
+        /// </summary>
         public bool ButtonsEnabled
         {
             get => buttonsEnabled;
@@ -59,11 +103,29 @@ namespace Henson.ViewModels
                 this.RaiseAndSetIfChanged(ref buttonsEnabled, value);
             }
         }
+        private bool buttonsEnabled = true;
 
+        private string? currentLocalID = null; //should probably store that in the object or the chk here for constitency
+
+        /// <summary>
+        /// An object storing the UserAgent and using it to make requests to NationStates via both API and site.
+        /// </summary>
         private NsClient Client { get; } = new();
+
+        /// <summary>
+        /// Represents the nations loaded by the program.
+        /// </summary>
         private ObservableCollection<NationGridViewModel> Nations { get; } = new();
+
+        /// <summary>
+        /// Represents the state of the input in the settings tab and not what current settings are loaded/saved.
+        /// </summary>
         private ProgramSettingsViewModel Settings { get; set; }
 
+        /// <summary>
+        /// Constructs a new <c>MainWindowViewModel</c>.
+        /// Note that in Avalonia/WPF, ViewModel constructors function as the window's startup code.
+        /// </summary>
         public MainWindowViewModel()
         {
             Settings = LoadSettings();
@@ -276,6 +338,9 @@ namespace Henson.ViewModels
             });
         }
 
+        /// <summary>
+        /// Fired when Select/Unselect all is clicked in the quick view menu.
+        /// </summary>
         public void OnSelectNationsClick()
         {
             bool OppositeAllTrueOrFalse = !Nations.All(x => x.Checked);
@@ -285,6 +350,9 @@ namespace Henson.ViewModels
             }
         }
 
+        /// <summary>
+        /// Fired when Save is clicked in the settings menu.
+        /// </summary>
         public void OnSaveSettingsClick()
         {
             var model = Toml.ToModel("");
@@ -315,6 +383,11 @@ namespace Henson.ViewModels
             }
         }
 
+        /// <summary>
+        /// Fired when Login is clicked in the quick view grid.
+        /// </summary>
+        /// <param name="nation">The nation on which Login is being clicked.</param>
+        /// <returns></returns>
         public async Task OnNationLoginClick(NationGridViewModel nation)
         {
             if(await UserAgentNotSet()) return;
@@ -350,6 +423,11 @@ namespace Henson.ViewModels
             ButtonsEnabled = true;
         }
 
+        /// <summary>
+        /// Fired when Apply WA is clicked in the quick view grid.
+        /// </summary>
+        /// <param name="nation">The nation on which Apply WA is being clicked.</param>
+        /// <returns></returns>
         public async Task OnNationApplyWAClick(NationGridViewModel nation)
         {
             if(await UserAgentNotSet()) return;
@@ -381,6 +459,12 @@ namespace Henson.ViewModels
             ButtonsEnabled = true;
         }
 
+        /// <summary>
+        /// Fired when Move is clicked on a nation in the quick view grid.
+        /// </summary>
+        /// <param name="nation">The nation on which Move is being clicked.</param>
+        /// <param name="region">The target region in the text box when Move was clicked.</param>
+        /// <returns></returns>
         public async Task OnNationMoveRegionClick(NationGridViewModel nation, string region)
         {
             if(await UserAgentNotSet()) return;
@@ -437,6 +521,13 @@ namespace Henson.ViewModels
             ButtonsEnabled = true;
         }
 
+        /// <summary>
+        /// Checks if the nation provided matches the nation currently logged in, and shows an error
+        /// message box if it doesn't.
+        /// </summary>
+        /// <param name="nation">The nation to be checked with the current login.</param>
+        /// <returns>A boolean value representing whether or not the provided nation matches the
+        /// current login.</returns>
         private async Task<bool> NationEqualsLogin(NationGridViewModel nation)
         {
             if (nation.Name != currentLoginUser)
@@ -453,6 +544,10 @@ namespace Henson.ViewModels
             return true;
         }
 
+        /// <summary>
+        /// Checks if the user agent has a non-empty value, and shows an error message box if it is.
+        /// </summary>
+        /// <returns>A boolean value representing whether or not the user agent is empty.</returns>
         private async Task<bool> UserAgentNotSet()
         {
             if (Settings.UserAgent == "")
@@ -469,6 +564,9 @@ namespace Henson.ViewModels
             return false;
         }
 
+        /// <summary>
+        /// Loads nations from the database.
+        /// </summary>
         private void LoadNations()
         {
             var nations = DbClient.GetNations();
@@ -479,6 +577,10 @@ namespace Henson.ViewModels
             }
         }
 
+        /// <summary>
+        /// Loads settings from the settings file,
+        /// </summary>
+        /// <returns>A ProgramSettingsViewModel object representing the settings from the loaded file.</returns>
         private static ProgramSettingsViewModel LoadSettings()
         {
             var workingPath = Path.GetDirectoryName(AppContext.BaseDirectory)!;
@@ -509,7 +611,10 @@ namespace Henson.ViewModels
 
             return retVal;
         }
-
+        
+        /// <summary>
+        /// Changes program variables to match those specified by the current ProgramSettingsViewModel.
+        /// </summary>
         private void SetSettings()
         {
             Client.UserAgent = Settings.UserAgent;
