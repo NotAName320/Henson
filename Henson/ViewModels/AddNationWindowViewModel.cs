@@ -11,21 +11,42 @@ namespace Henson.ViewModels
 {
     public class AddNationWindowViewModel : ViewModelBase
     {
+        //strings that are bound to the textboxes
         public string ImportOneUser { get; set; } = "";
         public string ImportOnePass { get; set; } = "";
         public string ImportManyUser { get; set; } = "";
         public string ImportManyPass { get; set; } = "";
         public string ImportManyRange { get; set; } = "";
 
+        /// <summary>
+        /// Fired when the Browse... button is clicked.
+        /// </summary>
         public ReactiveCommand<Unit, List<NationLoginViewModel>?> FilePickerCommand { get; }
+
+        /// <summary>
+        /// Fired when the Import button is clicked.
+        /// </summary>
         public ReactiveCommand<Unit, List<NationLoginViewModel>?> ImportOneCommand { get; }
+
+        /// <summary>
+        /// Fired when the Mass Import button is clicked.
+        /// </summary>
         public ReactiveCommand<Unit, List<NationLoginViewModel>?> ImportManyCommand { get; }
 
+        /// <summary>
+        /// This interaction opens the a file window, and returns a string array with the first value being the file chosen,
+        /// or null if the window is closed without a pick.
+        /// </summary>
         public Interaction<ViewModelBase, string[]?> FilePickerDialog { get; } = new();
+
+        /// <summary>
+        /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
+        /// </summary>
         public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
 
-        public List<NationLoginViewModel> retVal = new();
-
+        /// <summary>
+        /// Constructs a new <c>AddWindowViewModel</c>.
+        /// </summary>
         public AddNationWindowViewModel()
         {
             FilePickerCommand = ReactiveCommand.CreateFromTask(async () =>
@@ -35,6 +56,7 @@ namespace Henson.ViewModels
 
                 if (result != null)
                 {
+                    List<NationLoginViewModel> retVal = new();
                     ConfigJsonReader jsonReader = new(result[0]);
                     foreach(var keyValue in jsonReader.Items)
                     {

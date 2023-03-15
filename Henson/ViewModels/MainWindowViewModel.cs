@@ -23,7 +23,7 @@ namespace Henson.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        //commands must be defined in the constructor, i'll still provide  some brief documentation here
+        //commands must be defined in the constructor, i'll still provide some brief documentation here
         /// <summary>
         /// Fired when the Add Nation button in quick view is clicked and opens an AddNationDialog.
         /// </summary>
