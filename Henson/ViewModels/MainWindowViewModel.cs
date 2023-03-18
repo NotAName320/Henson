@@ -166,16 +166,9 @@ namespace Henson.ViewModels
                     ButtonsEnabled = false;
                     await Task.Delay(100);
 
-                    var (nations, authFailedOnSome) = Client.AuthenticateAndReturnInfo(result);
-                    foreach(Nation n in nations)
-                    {
-                        if(Nations.Select(x => x.Name).Contains(n.Name)) continue;
+                    var nations = Client.PingMany(result);
 
-                        Nations.Add(new NationGridViewModel(n, true, this));
-                        DbClient.InsertNation(n);
-                    }
-
-                    if(authFailedOnSome)
+                    if(nations.Any(x => x == null))
                     {
                         var messageBoxDialog = new MessageBoxViewModel(new MessageBoxStandardParams
                         {
@@ -184,6 +177,15 @@ namespace Henson.ViewModels
                             Icon = Icon.Warning,
                         });
                         await MessageBoxDialog.Handle(messageBoxDialog);
+                        nations = nations.Where(x => x != null).ToList();
+                    }
+
+                    foreach (var n in nations)
+                    {
+                        if(Nations.Select(x => x.Name).Contains(n!.Name)) continue;
+
+                        Nations.Add(new NationGridViewModel(n, true, this));
+                        DbClient.InsertNation(n);
                     }
 
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();

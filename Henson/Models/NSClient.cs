@@ -25,6 +25,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Xml;
 
@@ -65,39 +66,6 @@ namespace Henson.Models
         private const int MultipleRequestsWaitTime = 750;
 
         /// <summary>
-        /// A function that authenticates a list of logins, pinging them via the API, and sends info back.
-        /// </summary>
-        /// <param name="logins">A list of username-password pairs.</param>
-        /// <returns>A tuple containing a list of Nation information, as well as a boolean indicating whether any logins failed.</returns>
-        public (List<Nation> nations, bool authFailedOnSome) AuthenticateAndReturnInfo(List<NationLoginViewModel> logins)
-        {
-            //Todo: simplify this
-            List<Nation> retVal = new();
-            bool didAuthFail = false;
-            foreach(NationLoginViewModel login in logins)
-            {
-                NameValueCollection nvc = new()
-                {
-                    { "nation", login.Name },
-                    { "q", "ping+name+flag+region" }
-                };
-
-                try
-                {
-                    var response = Utilities.API(nvc, login.Pass, 0, UserAgent); //why is this a thing that even throws an exception???
-                    XmlNodeList xmlResp = Utilities.Parse(Utilities.StrResp(response));
-
-                    var region = char.ToUpper(xmlResp.FindProperty("region")[0]) + xmlResp.FindProperty("region")[1..];
-                    retVal.Add(new Nation(xmlResp.FindProperty("name"), login.Pass, xmlResp.FindProperty("flag"), region));
-                }
-                catch (Exception) { didAuthFail = true; }
-                Thread.Sleep(MultipleRequestsWaitTime); //avoid ratelimits
-            }
-
-            return (retVal, didAuthFail);
-        }
-
-        /// <summary>
         /// Pings a nation via the API and sends info back.
         /// </summary>
         /// <param name="login">A username-password pair.</param>
@@ -110,29 +78,32 @@ namespace Henson.Models
                 { "q", "ping+name+flag+region" }
             };
 
+            var response = Utilities.API(nvc, login.Pass, 0, UserAgent);
+
+            XmlNodeList xmlResp;
             try
             {
-                var response = Utilities.API(nvc, login.Pass, 0, UserAgent);
-                XmlNodeList xmlResp = Utilities.Parse(Utilities.StrResp(response));
-
-                var region = char.ToUpper(xmlResp.FindProperty("region")[0]) + xmlResp.FindProperty("region")[1..];
-                return new Nation(xmlResp.FindProperty("name"), login.Pass, xmlResp.FindProperty("flag"), region);
+                xmlResp = Utilities.Parse(Utilities.StrResp(response));
             }
             catch (Exception) { return null; }
+
+            var region = char.ToUpper(xmlResp.FindProperty("region")[0]) + xmlResp.FindProperty("region")[1..];
+            return new Nation(xmlResp.FindProperty("name"), login.Pass, xmlResp.FindProperty("flag"), region);
         }
 
         /// <summary>
-        /// Runs <c>Ping</c> on a list of nation logins and sleeps betwen them.
+        /// Runs <c>Ping</c> on a list of nation logins and sleeps between them.
         /// </summary>
         /// <param name="logins">A list of username-password pairs.</param>
         /// <returns>A list of <c>Nation</c> objects with the nations' info or <c>null</c> for each login failure.</returns>
         public List<Nation?> PingMany(List<NationLoginViewModel> logins)
         {
             List<Nation?> loginSuccesses = new();
+
             foreach(var n in logins)
             {
-                loginSuccesses.Add(Ping(n));
                 Thread.Sleep(MultipleRequestsWaitTime);
+                loginSuccesses.Add(Ping(n));
             }
 
             return loginSuccesses;
@@ -185,21 +156,18 @@ namespace Henson.Models
             request.AddParameter("userclick", UserClick);
 
             var response = HttpClient.Execute(request);
+            HtmlDocument htmlDoc = new();
+            htmlDoc.LoadHtml(response.Content);
 
+            string chk, localId;
             try
             {
-                HtmlDocument htmlDoc = new();
-                htmlDoc.LoadHtml(response.Content);
-
-                var chk = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='chk']").Attributes["value"].Value;
-                var localId = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='localid']").Attributes["value"].Value;
-
-                return (chk, localId);
+                chk = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='chk']").Attributes["value"].Value;
+                localId = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='localid']").Attributes["value"].Value;
             }
-            catch (Exception)
-            {
-                return null;
-            }
+            catch (Exception) { return null; }
+
+            return (chk, localId);
         }
 
         /// <summary>
