@@ -76,7 +76,25 @@ namespace Henson.ViewModels
                 if (result != null)
                 {
                     List<NationLoginViewModel> retVal = new();
-                    ConfigJsonReader jsonReader = new(result[0]);
+
+                    ConfigJsonReader jsonReader;
+                    try
+                    {
+                        jsonReader = new(result[0]);
+                    }
+                    catch (Exception)
+                    {
+                        MessageBoxViewModel messageDialog = new(new MessageBoxStandardParams
+                        {
+                            ContentTitle = "JSON Processing Error",
+                            ContentMessage = "The JSON file was invalid.",
+                            Icon = Icon.Error,
+                        });
+                        await MessageBoxDialog.Handle(messageDialog);
+
+                        return null;
+                    }
+
                     foreach(var keyValue in jsonReader.Items)
                     {
                         retVal.Add(new NationLoginViewModel(keyValue.Key, keyValue.Value));
