@@ -4,7 +4,6 @@ namespace Henson.ViewModels
 {
     public class ProgramSettingsViewModel : ViewModelBase
     {
-        private string userAgent = "";
         public string UserAgent
         {
             get => userAgent;
@@ -13,8 +12,8 @@ namespace Henson.ViewModels
                 this.RaiseAndSetIfChanged(ref userAgent, value);
             }
         }
+        private string userAgent = "";
 
-        private int theme = 0;
         public int Theme
         {
             get => theme;
@@ -23,5 +22,6 @@ namespace Henson.ViewModels
                 this.RaiseAndSetIfChanged(ref theme, value);
             }
         }
+        private int theme = 0;
     }
 }

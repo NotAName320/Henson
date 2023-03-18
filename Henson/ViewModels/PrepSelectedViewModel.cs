@@ -3,7 +3,6 @@ using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
@@ -14,25 +13,65 @@ namespace Henson.ViewModels
 {
     public class PrepSelectedViewModel : ViewModelBase
     {
+        /// <summary>
+        /// The contents of the Target Region text box.
+        /// </summary>
         public string TargetRegion { get; set; }
 
+        /// <summary>
+        /// The command fired when pressing the button.
+        /// </summary>
         public ICommand ActionButtonCommand { get; }
 
+        /// <summary>
+        /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
+        /// I should really create a common class for these lmao
+        /// </summary>
         public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
 
+        /// <summary>
+        /// An object storing the UserAgent and using it to make requests to NationStates via both API and site.
+        /// </summary>
         private NsClient Client { get; }
+
+        /// <summary>
+        /// The list of all nations loaded by Henson.
+        /// </summary>
         private List<NationGridViewModel> Nations { get; set; }
+
+        /// <summary>
+        /// A list of nations selected by the user.
+        /// </summary>
         private List<NationLoginViewModel> SelectedNations { get; set; }
 
+        /// <summary>
+        /// The current index that the user is on.
+        /// </summary>
         private int LoginIndex { get; set; } = 0;
+
+        /// <summary>
+        /// The number of nations successfully prepped without errors (e.g. moved region successfully).
+        /// </summary>
         private int PrepSuccesses { get; set; } = 0;
 
+        /// <summary>
+        /// The current chk of the logged in nation.
+        /// </summary>
         private string CurrentChk { get; set; } = "";
+
+        /// <summary>
+        /// The current Local ID of the logged in nation.
+        /// </summary>
         private string CurrentLocalID { get; set; } = "";
 
+        /// <summary>
+        /// The names of all the logins that failed.
+        /// </summary>
         private StringBuilder FailedLogins { get; set; } = new();
 
-        private string buttonText = "Login";
+        /// <summary>
+        /// The text on the button.
+        /// </summary>
         public string ButtonText
         {
             get => buttonText;
@@ -41,8 +80,11 @@ namespace Henson.ViewModels
                 this.RaiseAndSetIfChanged(ref buttonText, value);
             }
         }
+        private string buttonText = "Login";
 
-        private bool alsoApplyWA = true;
+        /// <summary>
+        /// Whether or not the Apply WA? checkox is checked.
+        /// </summary>
         public bool AlsoApplyWA
         {
             get => alsoApplyWA;
@@ -51,8 +93,11 @@ namespace Henson.ViewModels
                 this.RaiseAndSetIfChanged(ref alsoApplyWA, value);
             }
         }
+        private bool alsoApplyWA = true;
 
-        private string currentLogin = "";
+        /// <summary>
+        /// The value displayed by the current login text block in the window.
+        /// </summary>
         public string CurrentLogin
         {
             get => currentLogin;
@@ -61,8 +106,11 @@ namespace Henson.ViewModels
                 this.RaiseAndSetIfChanged(ref currentLogin, value);
             }
         }
+        private string currentLogin = "";
 
-        private string footerText = "Click Login to start.";
+        /// <summary>
+        /// The text displayed in the footer of the window.
+        /// </summary>
         public string FooterText
         {
             get => footerText;
@@ -71,8 +119,12 @@ namespace Henson.ViewModels
                 this.RaiseAndSetIfChanged(ref footerText, value);
             }
         }
+        private string footerText = "Click Login to start.";
 
-        private bool buttonsEnabled = true;
+        /// <summary>
+        /// Boolean that controls the enabling and disabling of buttons that send requests
+        /// to ensure compliance with API.
+        /// </summary>
         public bool ButtonsEnabled
         {
             get => buttonsEnabled;
@@ -81,6 +133,7 @@ namespace Henson.ViewModels
                 this.RaiseAndSetIfChanged(ref buttonsEnabled, value);
             }
         }
+        private bool buttonsEnabled = true;
 
         public PrepSelectedViewModel(List<NationGridViewModel> nations, NsClient client, string target)
         {
@@ -194,6 +247,10 @@ namespace Henson.ViewModels
             });
         }
 
+        /// <summary>
+        /// Adds a name to the failed logins and wraps the string around if necessary.
+        /// </summary>
+        /// <param name="loginName">The login name to be added.</param>
         private void AddToFailedLogins(string loginName)
         {
             if(FailedLogins.ToString().Split("\n").Last().Length + loginName.Length + 2 > 75)
