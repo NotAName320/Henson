@@ -135,6 +135,12 @@ namespace Henson.ViewModels
         }
         private bool buttonsEnabled = true;
 
+        /// <summary>
+        /// Constructs a new <c>PrepSelectedViewModel</c>.
+        /// </summary>
+        /// <param name="nations">The list of nations from the parent <c>MainWindowViewModel</c>.</param>
+        /// <param name="client">The client from the parent <c>MainWindowViewModel</c>.</param>
+        /// <param name="target">The prefilled region from the target box.</param>
         public PrepSelectedViewModel(List<NationGridViewModel> nations, NsClient client, string target)
         {
             Nations = nations;
