@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using Avalonia.Themes.Fluent;
 using Henson.Models;
+using log4net;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 using Octokit;
@@ -142,11 +143,18 @@ namespace Henson.ViewModels
         private ProgramSettingsViewModel Settings { get; set; }
 
         /// <summary>
+        /// The log4net logger. It will emit messages as from MainWindowViewModel.
+        /// </summary>
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
+
+        /// <summary>
         /// Constructs a new <c>MainWindowViewModel</c>.
         /// Note that in Avalonia/WPF, ViewModel constructors function as the window's startup code.
         /// </summary>
         public MainWindowViewModel()
         {
+
+            log.Info($"Starting Henson... Version v{GetType().Assembly.GetName().Version} on platform {RuntimeInformation.RuntimeIdentifier}");
             Settings = LoadSettings();
             SetSettings();
 
@@ -642,15 +650,18 @@ namespace Henson.ViewModels
         /// </summary>
         private void SetSettings()
         {
+            log.Info(Settings.UserAgent == "" ? "User agent set to empty string!" : $"User agent set to {Settings.UserAgent}");
             Client.UserAgent = Settings.UserAgent;
 
             var theme = (FluentTheme)Avalonia.Application.Current!.Styles[0]; //yes we are fishing blindly for the FluentTheme within Styles
             if (Settings.Theme == 1)
             {
+                log.Info("Theme set to Dark");
                 theme.Mode = FluentThemeMode.Dark;
             }
             else
             {
+                log.Info("Theme set to Light");
                 theme.Mode = FluentThemeMode.Light;
             }
 

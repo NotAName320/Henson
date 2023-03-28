@@ -47,6 +47,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <None Update="log4net.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="NOTICE">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
