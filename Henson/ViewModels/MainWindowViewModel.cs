@@ -17,11 +17,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-using Avalonia;
 using Avalonia.Themes.Fluent;
 using Henson.Models;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
+using Octokit;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -149,6 +149,8 @@ namespace Henson.ViewModels
         {
             Settings = LoadSettings();
             SetSettings();
+
+            RxApp.MainThreadScheduler.Schedule(CheckIfLatestRelease);
 
             DbClient.CreateDbIfNotExists();
 
@@ -640,7 +642,7 @@ namespace Henson.ViewModels
         {
             Client.UserAgent = Settings.UserAgent;
 
-            var theme = (FluentTheme)Application.Current!.Styles[0]; //yes we are fishing blindly for the FluentTheme within Styles
+            var theme = (FluentTheme)Avalonia.Application.Current!.Styles[0]; //yes we are fishing blindly for the FluentTheme within Styles
             if (Settings.Theme == 1)
             {
                 theme.Mode = FluentThemeMode.Dark;
@@ -653,10 +655,41 @@ namespace Henson.ViewModels
             //force the application to reload DataGrid theming otherwise it follows existing theme
             //yes this is stupid
             var uri = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml");
-            Application.Current.Styles[1] = new Avalonia.Markup.Xaml.Styling.StyleInclude(uri)
+            Avalonia.Application.Current.Styles[1] = new Avalonia.Markup.Xaml.Styling.StyleInclude(uri)
             {
                 Source = uri
             };
+        }
+
+        /// <summary>
+        /// Checks if the version is the latest release on GitHub and shows a notification window (and opens web browser to releases page) if it isn't.
+        /// </summary>
+        private async void CheckIfLatestRelease()
+        {
+            var currentVer = GetType().Assembly.GetName().Version!;
+            var client = new GitHubClient(new ProductHeaderValue(Uri.EscapeDataString($"NotAName320/Henson v{currentVer}")));
+            var latestRelease = await client.Repository.Release.GetLatest("NotAName320", "Henson");
+
+            //Dumb shit to convert release tag to length 3 array of major, minor, build
+            List<int> latestVer = latestRelease.TagName.Replace("v", "").Split(".").Select(x => Int32.Parse(x)).ToList();
+
+            if (latestVer[0] <= currentVer.Major && latestVer[1] <= currentVer.Minor && latestVer[2] <= currentVer.Build) return;
+
+            MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+            {
+                ContentTitle = "New Version Available",
+                ContentMessage = $"A new version ({latestRelease.TagName}) of Henson is now available.\n\n" +
+                "You can get it at https://github.com/NotAName320/Henson/releases.\n\n" +
+                "Updating immediately is always recommended to ensure site rules compliance.",
+                Icon = Icon.Info,
+            });
+            await MessageBoxDialog.Handle(dialog);
+
+            //opens web browser, works on windows and linux (IDK about mac)
+            Process process = new();
+            process.StartInfo.UseShellExecute = true;
+            process.StartInfo.FileName = "https://github.com/NotAName320/Henson/releases";
+            process.Start();
         }
     }
 }
