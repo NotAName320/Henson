@@ -43,6 +43,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           <DockPanel DockPanel.Dock="Top">
             <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)" IsEnabled="{Binding ButtonsEnabled}"/>
             <Button Command="{Binding RemoveSelectedCommand}" Content="Remove Selected"/>
+            <Button Command="{Binding OnLockSelectedClick}" Content="Lock/Unlock Selected"/>
             <Button Command="{Binding PingSelectedCommand}" Content="Ping Selected" IsEnabled="{Binding ButtonsEnabled}"/>
             <Button Command="{Binding PrepSelectedCommand}" Content="Prep Selected" IsEnabled="{Binding ButtonsEnabled}"/>
             <Button Command="{Binding FindWACommand}" Content="Find WA" IsEnabled="{Binding ButtonsEnabled}"/>
@@ -64,7 +65,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
                     <CheckBox Name="CB" HorizontalAlignment="Center" IsChecked="{Binding Checked}"/>
                   </DataTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn IsReadOnly="True" Header="Nation" Width="*" Binding="{Binding Name}"/>
+                <DataGridTextColumn IsReadOnly="True" Header="Nation" Width="*" Binding="{Binding GridName}"/>
                 <DataGridTextColumn IsReadOnly="True" Header="Current region" Width=".35*" Binding="{Binding Region}"/>
                 <DataGridTemplateColumn Header="Login">
                   <DataGridTemplateColumn.CellTemplate>

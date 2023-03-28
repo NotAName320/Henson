@@ -195,7 +195,7 @@ namespace Henson.ViewModels
                     {
                         if(Nations.Select(x => x.Name).Contains(n!.Name)) continue;
 
-                        Nations.Add(new NationGridViewModel(n, true, this));
+                        Nations.Add(new NationGridViewModel(n, true, false, this));
                         DbClient.InsertNation(n);
                     }
 
@@ -267,7 +267,7 @@ namespace Henson.ViewModels
                         $"flagUrl = '{n.FlagUrl}' " +
                         $"WHERE name = '{Nations[index].Name}'");
 
-                    Nations[index] = new NationGridViewModel(n, true, this);
+                    Nations[index] = new NationGridViewModel(n, true, Nations[index].Locked, this);
                 }
 
                 if(nations.Any(x => x == null))
@@ -343,12 +343,12 @@ namespace Henson.ViewModels
             {
                 if(await UserAgentNotSet()) return;
 
-                if(!Nations.Any(x => x.Checked))
+                if(!Nations.Any(x => x.Checked && !x.Locked))
                 {
                     var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
                     {
                         ContentTitle = "No Nations Selected",
-                        ContentMessage = "Please select some nations first.",
+                        ContentMessage = "Please select some (unlocked) nations first.",
                         Icon = Icon.Info,
                     });
                     await MessageBoxDialog.Handle(messageDialog);
@@ -368,6 +368,21 @@ namespace Henson.ViewModels
 
                 FooterText = "Nations prepped!";
             });
+        }
+
+        public void OnLockSelectedClick()
+        {
+            var selectedNations = Nations.Where(x => x.Checked).ToList();
+            bool OppositeAllTrueOrFalse = !selectedNations.All(x => x.Locked);
+            {
+                foreach(var nation in selectedNations)
+                {
+                    nation.Locked = OppositeAllTrueOrFalse;
+                    DbClient.ExecuteNonQuery($"UPDATE nations SET locked = {nation.Locked} WHERE name = '{nation.Name}'");
+                }
+            }
+            FooterText = "Selected nation(s) " + (OppositeAllTrueOrFalse ? "locked!" : "unlocked!");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
         }
 
         /// <summary>
@@ -465,6 +480,13 @@ namespace Henson.ViewModels
             if(await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
 
+            if (nation.Locked)
+            {
+                FooterText = "Nation is locked!";
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+                return;
+            }
+
             var chk = nation.Chk!;
 
             ButtonsEnabled = false;
@@ -524,6 +546,13 @@ namespace Henson.ViewModels
                 });
 
                 await MessageBoxDialog.Handle(dialog);
+                return;
+            }
+
+            if(nation.Locked)
+            {
+                FooterText = "Nation is locked!";
+                if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
                 return;
             }
 
@@ -601,11 +630,11 @@ namespace Henson.ViewModels
         /// </summary>
         private void LoadNations()
         {
-            var nations = DbClient.GetNations();
+            var (nations, locked) = DbClient.GetNations();
 
             foreach (var n in nations)
             {
-                Nations.Add(new NationGridViewModel(n, false, this));
+                Nations.Add(new NationGridViewModel(n, false, locked.Contains(n.Name), this));
             }
         }
 

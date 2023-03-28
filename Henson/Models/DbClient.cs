@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
 using System.Data.SQLite;
+using System.Diagnostics;
 using System.IO;
 
 namespace Henson.Models
@@ -36,23 +37,35 @@ namespace Henson.Models
         /// </summary>
         public static void CreateDbIfNotExists()
         {
-            if (File.Exists(path)) return;
-
             using var con = new SQLiteConnection($"Data Source={path}");
             con.Open();
 
-            string createTable = "CREATE TABLE nations (name varchar(40), pass text, flagUrl text, region text, UNIQUE(name))";
-            using SQLiteCommand command = new(createTable, con);
-            command.ExecuteNonQuery();
+            string createTable = "CREATE TABLE IF NOT EXISTS nations (name varchar(40), pass text, flagUrl text, region text, locked integer DEFAULT 0, UNIQUE(name))";
+            using SQLiteCommand createTableCommand = new(createTable, con);
+            createTableCommand.ExecuteNonQuery();
+
+            //check if locked exists on upgrading and create it if it doesn't
+            string checkLockedExists = "SELECT EXISTS(SELECT 1 FROM (SELECT * FROM pragma_table_info('nations')) WHERE name='locked')";
+            using SQLiteCommand checkLockedExistsCommand = new(checkLockedExists, con);
+            using SQLiteDataReader reader = checkLockedExistsCommand.ExecuteReader();
+
+            if(reader.Read() && !reader.GetBoolean(0))
+            {
+                string createLocked = "ALTER TABLE nations ADD COLUMN locked integer DEFAULT 0";
+                using SQLiteCommand createLockedCommand = new(createLocked, con);
+                createLockedCommand.ExecuteNonQuery();
+            }
         }
 
         /// <summary>
         /// Gets the list of existing nations from the database.
         /// </summary>
-        /// <returns>A list of <c>Nation</c> objects reflecting those stored in the database.</returns>
-        public static List<Nation> GetNations()
+        /// <returns>A tuple consisting of a list of <c>Nation</c> objects reflecting those stored in the database as well as
+        /// a list of strings of the names of locked nations.</returns>
+        public static (List<Nation> nations, List<string> locked) GetNations()
         {
             List<Nation> retVal = new();
+            List<string> lockedNations = new();
 
             using var con = new SQLiteConnection($"Data Source={path}");
             con.Open();
@@ -64,9 +77,13 @@ namespace Henson.Models
             while (reader.Read())
             {
                 retVal.Add(new Nation(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3)));
+                if(reader.GetBoolean(4))
+                {
+                    lockedNations.Add(reader.GetString(0));
+                }
             }
 
-            return retVal;
+            return (retVal, lockedNations);
         }
 
         /// <summary>

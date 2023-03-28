@@ -163,7 +163,7 @@ namespace Henson.ViewModels
         public PrepSelectedViewModel(List<NationGridViewModel> nations, NsClient client, string target)
         {
             Nations = nations;
-            SelectedNations = Nations.Where(x => x.Checked).Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
+            SelectedNations = Nations.Where(x => x.Checked && !x.Locked).Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
             Client = client;
             TargetRegion = target;
 

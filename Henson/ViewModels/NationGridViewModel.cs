@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using Henson.Models;
 using ReactiveUI;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Windows.Input;
 
 namespace Henson.ViewModels
@@ -53,12 +54,26 @@ namespace Henson.ViewModels
             set => this.RaiseAndSetIfChanged(ref _checked, value);
         }
 
+        private bool _locked;
+        public bool Locked
+        {
+            get => _locked;
+            set => this.RaiseAndSetIfChanged(ref _locked, value);
+        }
+
+        private readonly ObservableAsPropertyHelper<string> _gridName;
+        public string GridName
+        {
+            get => _gridName.Value;
+        }
+
         private readonly Nation _nation;
 
-        public NationGridViewModel(Nation nation, bool _checked, MainWindowViewModel parent)
+        public NationGridViewModel(Nation nation, bool _checked, bool _locked, MainWindowViewModel parent)
         {
             _nation = nation;
             this._checked = _checked;
+            this._locked = _locked;
             Parent = parent; //This is a dumb solution to a dumb problem: not being able to access parent VMs in a DataGrid.
 
             Login = ReactiveCommand.CreateFromTask(async () =>
@@ -75,6 +90,11 @@ namespace Henson.ViewModels
             {
                 await Parent.OnNationMoveRegionClick(this, region);
             });
+
+            //dont even ask me to explain this!!! reactiveui is confusing
+            //peep this: https://stackoverflow.com/questions/41526936/can-i-avoid-explicitly-calling-raisepropertychanged-for-dependent-properties
+            this.WhenAnyValue(x => x.Name, x => x.Locked).Select(_ => Name + (Locked ? "🔒" : ""))
+                .ToProperty(this, x => x.GridName, out _gridName);
         }
     }
 }
