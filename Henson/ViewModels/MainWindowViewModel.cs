@@ -153,7 +153,6 @@ namespace Henson.ViewModels
         /// </summary>
         public MainWindowViewModel()
         {
-
             log.Info($"Starting Henson... Version v{GetType().Assembly.GetName().Version} on platform {RuntimeInformation.RuntimeIdentifier}");
             Settings = LoadSettings();
             SetSettings();
