@@ -156,6 +156,8 @@ namespace Henson.ViewModels
 
             RxApp.MainThreadScheduler.Schedule(LoadNations);
 
+            RxApp.MainThreadScheduler.Schedule(CheckIfUserAgentEmpty);
+
             AddNationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if(await UserAgentNotSet()) return;
@@ -690,6 +692,25 @@ namespace Henson.ViewModels
             process.StartInfo.UseShellExecute = true;
             process.StartInfo.FileName = "https://github.com/NotAName320/Henson/releases";
             process.Start();
+        }
+
+        /// <summary>
+        /// Checks if the user agent is empty and shows a notification window if it is.
+        /// </summary>
+        private async void CheckIfUserAgentEmpty()
+        {
+            if(Settings.UserAgent == "")
+            {
+                await Task.Delay(100); //Stupidest hack ever, but wait till MessageBoxDialog is initialized before showing because this runs so fast
+
+                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                {
+                    ContentTitle = "User Agent Empty",
+                    ContentMessage = "You must set a user agent in Settings before being able to use the features of Henson.",
+                    Icon = Icon.Warning,
+                });
+                await MessageBoxDialog.Handle(dialog);
+            }
         }
     }
 }
