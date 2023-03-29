@@ -169,7 +169,7 @@ namespace Henson.ViewModels
 
             ActionButtonCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                if (LoginIndex == SelectedNations.Count)
+                if(LoginIndex == SelectedNations.Count)
                 {
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
@@ -254,7 +254,7 @@ namespace Henson.ViewModels
                         break;
                 }
 
-                if (LoginIndex == SelectedNations.Count && FailedLogins.Length != 0)
+                if(LoginIndex == SelectedNations.Count && FailedLogins.Length != 0)
                 {
                     FailedLogins.Remove(FailedLogins.Length - 2, 2);
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams

@@ -74,7 +74,7 @@ namespace Henson.Models
             using SQLiteCommand command = new(getNations, con);
             using SQLiteDataReader reader = command.ExecuteReader();
 
-            while (reader.Read())
+            while(reader.Read())
             {
                 retVal.Add(new Nation(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3)));
                 if(reader.GetBoolean(4))

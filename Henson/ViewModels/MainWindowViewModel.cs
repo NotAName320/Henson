@@ -191,7 +191,7 @@ namespace Henson.ViewModels
                         nations = nations.Where(x => x != null).ToList();
                     }
 
-                    foreach (var n in nations)
+                    foreach(var n in nations)
                     {
                         if(Nations.Select(x => x.Name).Contains(n!.Name)) continue;
 
@@ -199,7 +199,7 @@ namespace Henson.ViewModels
                         DbClient.InsertNation(n);
                     }
 
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+                    if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
                     ButtonsEnabled = true;
                     FooterText = "Finished loading!";
                 }
@@ -236,7 +236,7 @@ namespace Henson.ViewModels
                 if(await UserAgentNotSet()) return;
                 
                 var selectedNations = Nations.Where(x => x.Checked).ToList();
-                if (selectedNations.Count == 0)
+                if(selectedNations.Count == 0)
                 {
                     var dialog = new MessageBoxViewModel(new MessageBoxStandardParams
                     {
@@ -382,7 +382,7 @@ namespace Henson.ViewModels
                 }
             }
             FooterText = "Selected nation(s) " + (OppositeAllTrueOrFalse ? "locked!" : "unlocked!");
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
         }
 
         /// <summary>
@@ -412,13 +412,13 @@ namespace Henson.ViewModels
             File.WriteAllText(path, Toml.FromModel(model));
 
             SetSettings();
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             FooterText = $"Settings updated.";
 
             //easter egg :)
             Process process = new();
             process.StartInfo.UseShellExecute = true;
-            if (Settings.UserAgent == "092436")
+            if(Settings.UserAgent == "092436")
             {
                 process.StartInfo.FileName = "https://www.youtube.com/watch?v=WS3Lkc6Gzlk";
                 process.Start();
@@ -445,7 +445,7 @@ namespace Henson.ViewModels
             await Task.Delay(100);
 
             var (chk, localId) = Client.Login(nationLogin) ?? default;
-            if (chk != null)
+            if(chk != null)
             {
                 nation.Chk = chk;
                 currentLocalID = localId;
@@ -480,10 +480,10 @@ namespace Henson.ViewModels
             if(await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
 
-            if (nation.Locked)
+            if(nation.Locked)
             {
                 FooterText = "Nation is locked!";
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+                if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
                 return;
             }
 
@@ -591,7 +591,7 @@ namespace Henson.ViewModels
         /// current login.</returns>
         private async Task<bool> NationEqualsLogin(NationGridViewModel nation)
         {
-            if (nation.Name != currentLoginUser)
+            if(nation.Name != currentLoginUser)
             {
                 MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                 {
@@ -611,7 +611,7 @@ namespace Henson.ViewModels
         /// <returns>A boolean value representing whether or not the user agent is empty.</returns>
         private async Task<bool> UserAgentNotSet()
         {
-            if (Settings.UserAgent == "")
+            if(Settings.UserAgent == "")
             {
                 MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                 {
@@ -632,7 +632,7 @@ namespace Henson.ViewModels
         {
             var (nations, locked) = DbClient.GetNations();
 
-            foreach (var n in nations)
+            foreach(var n in nations)
             {
                 Nations.Add(new NationGridViewModel(n, false, locked.Contains(n.Name), this));
             }
@@ -647,7 +647,7 @@ namespace Henson.ViewModels
             var workingPath = Path.GetDirectoryName(AppContext.BaseDirectory)!;
             var path = Path.Combine(workingPath, "settings.toml");
 
-            if (!File.Exists(path))
+            if(!File.Exists(path))
             {
                 File.Create(path).Dispose(); //avoids IOException
             }
@@ -682,7 +682,7 @@ namespace Henson.ViewModels
             Client.UserAgent = Settings.UserAgent;
 
             var theme = (FluentTheme)Avalonia.Application.Current!.Styles[0]; //yes we are fishing blindly for the FluentTheme within Styles
-            if (Settings.Theme == 1)
+            if(Settings.Theme == 1)
             {
                 log.Info("Theme set to Dark");
                 theme.Mode = FluentThemeMode.Dark;
@@ -714,7 +714,7 @@ namespace Henson.ViewModels
             //Dumb shit to convert release tag to length 3 array of major, minor, build
             List<int> latestVer = latestRelease.TagName.Replace("v", "").Split(".").Select(x => Int32.Parse(x)).ToList();
 
-            if (latestVer[0] <= currentVer.Major && latestVer[1] <= currentVer.Minor && latestVer[2] <= currentVer.Build) return;
+            if(latestVer[0] <= currentVer.Major && latestVer[1] <= currentVer.Minor && latestVer[2] <= currentVer.Build) return;
 
             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
             {

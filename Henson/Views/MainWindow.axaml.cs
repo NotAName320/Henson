@@ -75,7 +75,7 @@ namespace Henson.Views
             parameters.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
             var messageBox = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(interaction.Input.Params);
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
 
             var result = await messageBox.ShowDialog(this);
             interaction.SetOutput(result);

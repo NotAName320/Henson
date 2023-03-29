@@ -31,7 +31,7 @@ namespace Henson
             var name = data.GetType().FullName!.Replace("ViewModel", "View");
             var type = Type.GetType(name);
 
-            if (type != null)
+            if(type != null)
             {
                 return (Control)Activator.CreateInstance(type)!;
             }

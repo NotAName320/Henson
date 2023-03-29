@@ -73,7 +73,7 @@ namespace Henson.ViewModels
                 var dialog = new ViewModelBase();
                 var result = await FilePickerDialog.Handle(dialog);
 
-                if (result != null)
+                if(result != null)
                 {
                     List<NationLoginViewModel> retVal = new();
 
@@ -125,7 +125,7 @@ namespace Henson.ViewModels
 
             ImportManyCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                if (string.IsNullOrWhiteSpace(ImportManyUser) || string.IsNullOrWhiteSpace(ImportManyPass) || string.IsNullOrWhiteSpace(ImportManyRange))
+                if(string.IsNullOrWhiteSpace(ImportManyUser) || string.IsNullOrWhiteSpace(ImportManyPass) || string.IsNullOrWhiteSpace(ImportManyRange))
                 {
                     MessageBoxViewModel errorDialog = new(new MessageBoxStandardParams
                     {

@@ -34,7 +34,7 @@ namespace Henson.ViewModels
             get => _nation.Region;
             set
             {
-                if (value == _nation.Region) return;
+                if(value == _nation.Region) return;
                 _nation.Region = value;
                 this.RaisePropertyChanged();
             }
