@@ -154,6 +154,8 @@ namespace Henson.ViewModels
         public MainWindowViewModel()
         {
             log.Info($"Starting Henson... Version v{GetType().Assembly.GetName().Version} on platform {RuntimeInformation.RuntimeIdentifier}");
+            if(File.Exists("henson.log.1")) File.Delete("henson.log.1"); //delete old log
+
             Settings = LoadSettings();
             SetSettings();
 
@@ -370,9 +372,21 @@ namespace Henson.ViewModels
             });
         }
 
-        public void OnLockSelectedClick()
+        public async Task OnLockSelectedClick()
         {
             var selectedNations = Nations.Where(x => x.Checked).ToList();
+            if(selectedNations.Count == 0)
+            {
+                var dialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                {
+                    ContentTitle = "No Nations Selected",
+                    ContentMessage = "Please select some nations first.",
+                    Icon = Icon.Info,
+                });
+                await MessageBoxDialog.Handle(dialog);
+                return;
+            }
+
             bool OppositeAllTrueOrFalse = !selectedNations.All(x => x.Locked);
             {
                 foreach(var nation in selectedNations)
