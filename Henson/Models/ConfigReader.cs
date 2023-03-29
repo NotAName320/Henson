@@ -1,5 +1,5 @@
 ﻿/*
-Object that reads Swarm config.json
+Object that reads Swarm and Shine config
 Copyright (C) 2023 NotAName320
 
 This program is free software: you can redistribute it and/or modify
@@ -29,12 +29,12 @@ namespace Henson.Models
     public class ConfigReader
     {
         /// <summary>
-        /// A dictionary containg key-value pairs from the config.json.
+        /// A dictionary containg key-value pairs from the config.
         /// </summary>
         public Dictionary<string, string> Items { get; set; }
 
         /// <summary>
-        /// Constructs a new <c>ConfigJsonReader</c> from a file.
+        /// Constructs a new <c>ConfigReader</c> from a file.
         /// </summary>
         /// <param name="filePath">The string path to the file.</param>
         public ConfigReader(string filePath)

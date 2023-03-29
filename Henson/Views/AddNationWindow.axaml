@@ -34,7 +34,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   <DockPanel HorizontalAlignment="Center"
              VerticalAlignment="Center">
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-      <TextBlock Margin="0,6,20,0">Import Swarm config:</TextBlock>
+      <TextBlock Margin="0,6,26,0">Swarm/Shine config:</TextBlock>
       <Button Command="{Binding FilePickerCommand}">Browse...</Button>
     </StackPanel>
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
