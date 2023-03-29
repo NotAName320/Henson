@@ -727,10 +727,7 @@ namespace Henson.ViewModels
             var client = new GitHubClient(new ProductHeaderValue(Uri.EscapeDataString($"NotAName320/Henson v{currentVer}")));
             var latestRelease = await client.Repository.Release.GetLatest("NotAName320", "Henson");
 
-            //Dumb shit to convert release tag to length 3 array of major, minor, build
-            List<int> latestVer = latestRelease.TagName.Replace("v", "").Split(".").Select(x => Int32.Parse(x)).ToList();
-
-            if(latestVer[0] <= currentVer.Major && latestVer[1] <= currentVer.Minor && latestVer[2] <= currentVer.Build) return;
+            if(new Version(latestRelease.TagName.Replace("v", "")) <= currentVer) return;
             log.Warn($"Newer version now available! Current version: v{currentVer}, latest version on GitHub: {latestRelease.TagName}");
 
             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
