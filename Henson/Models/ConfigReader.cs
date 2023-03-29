@@ -21,10 +21,12 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Tomlyn;
+using Tomlyn.Model;
 
 namespace Henson.Models
 {
-    public class ConfigJsonReader
+    public class ConfigReader
     {
         /// <summary>
         /// A dictionary containg key-value pairs from the config.json.
@@ -35,14 +37,23 @@ namespace Henson.Models
         /// Constructs a new <c>ConfigJsonReader</c> from a file.
         /// </summary>
         /// <param name="filePath">The string path to the file.</param>
-        public ConfigJsonReader(string filePath)
+        public ConfigReader(string filePath)
         {
             using StreamReader r = new(filePath);
-            string jsonString = r.ReadToEnd();
+            string configString = r.ReadToEnd();
 
-            var allNations = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(jsonString);
+            Dictionary<string, string> allNations;
+            if(filePath.EndsWith(".toml"))
+            {
+                var model = Toml.ToModel(configString);
+                allNations = ((TomlTable)model["nations"]).ToDictionary(x => x.Key, x => x.Value.ToString()!);
+            }
+            else
+            {
+                allNations = JsonConvert.DeserializeObject<Dictionary<string, Dictionary<string, string>>>(configString)!.Values.First();
+            }
 
-            Items = allNations!.Values.First();
+            Items = allNations;
         }
     }
 }

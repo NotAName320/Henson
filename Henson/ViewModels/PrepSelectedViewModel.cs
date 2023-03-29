@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 using Henson.Models;
+using log4net;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
@@ -155,6 +156,11 @@ namespace Henson.ViewModels
         private bool buttonsEnabled = true;
 
         /// <summary>
+        /// The log4net logger. It will emit messages as from PrepSelectedViewModel.
+        /// </summary>
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
+
+        /// <summary>
         /// Constructs a new <c>PrepSelectedViewModel</c>.
         /// </summary>
         /// <param name="nations">The list of nations from the parent <c>MainWindowViewModel</c>.</param>
@@ -175,7 +181,7 @@ namespace Henson.ViewModels
                     {
                         ContentTitle = "Logins Complete",
                         ContentMessage = $"All nations have been prepped. Please close the window now.",
-                        Icon = Icon.Error,
+                        Icon = Icon.Info,
                     });
                     await MessageBoxDialog.Handle(dialog);
                     return;
@@ -261,7 +267,7 @@ namespace Henson.ViewModels
                     {
                         ContentTitle = "Some Logins Failed",
                         ContentMessage = $"The following nations failed to be prepped ({SelectedNations.Count-PrepSuccesses}/{SelectedNations.Count}):" +
-                        $"\n{FailedLogins}",
+                        $"\n{FailedLogins}\n\nCheck the log for more info.",
                         Icon = Icon.Warning,
                     });
                     await MessageBoxDialog.Handle(dialog);
@@ -278,6 +284,7 @@ namespace Henson.ViewModels
         /// <param name="loginName">The login name to be added.</param>
         private void AddToFailedLogins(string loginName)
         {
+            log.Error($"Prepping {loginName} failed");
             if(FailedLogins.ToString().Split("\n").Last().Length + loginName.Length + 2 > 75)
             {
                 FailedLogins.Append('\n');

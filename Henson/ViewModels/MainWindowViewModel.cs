@@ -372,6 +372,10 @@ namespace Henson.ViewModels
             });
         }
 
+        /// <summary>
+        /// Locks selected nations, or unlocks if all selected nations are locked.
+        /// </summary>
+        /// <returns></returns>
         public async Task OnLockSelectedClick()
         {
             var selectedNations = Nations.Where(x => x.Checked).ToList();
@@ -388,12 +392,10 @@ namespace Henson.ViewModels
             }
 
             bool OppositeAllTrueOrFalse = !selectedNations.All(x => x.Locked);
+            foreach(var nation in selectedNations)
             {
-                foreach(var nation in selectedNations)
-                {
-                    nation.Locked = OppositeAllTrueOrFalse;
-                    DbClient.ExecuteNonQuery($"UPDATE nations SET locked = {nation.Locked} WHERE name = '{nation.Name}'");
-                }
+                nation.Locked = OppositeAllTrueOrFalse;
+                DbClient.ExecuteNonQuery($"UPDATE nations SET locked = {nation.Locked} WHERE name = '{nation.Name}'");
             }
             FooterText = "Selected nation(s) " + (OppositeAllTrueOrFalse ? "locked!" : "unlocked!");
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
@@ -729,6 +731,7 @@ namespace Henson.ViewModels
             List<int> latestVer = latestRelease.TagName.Replace("v", "").Split(".").Select(x => Int32.Parse(x)).ToList();
 
             if(latestVer[0] <= currentVer.Major && latestVer[1] <= currentVer.Minor && latestVer[2] <= currentVer.Build) return;
+            log.Warn($"Newer version now available! Current version: v{currentVer}, latest version on GitHub: {latestRelease.TagName}");
 
             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
             {
@@ -754,6 +757,7 @@ namespace Henson.ViewModels
         {
             if(Settings.UserAgent == "")
             {
+                log.Warn("User agent has no value!");
                 await Task.Delay(100); //Stupidest hack ever, but wait till MessageBoxDialog is initialized before showing because this runs so fast
 
                 MessageBoxViewModel dialog = new(new MessageBoxStandardParams

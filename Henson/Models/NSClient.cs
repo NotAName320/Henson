@@ -20,10 +20,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using dotNS;
 using Henson.ViewModels;
 using HtmlAgilityPack;
+using log4net;
 using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Xml;
@@ -40,7 +42,7 @@ namespace Henson.Models
         /// <summary>
         /// An HTTP Client that interacts with the NationStates site.
         /// </summary>
-        public RestClient HttpClient = new("https://www.nationstates.net");
+        public RestClient HttpClient = new("https://nationstates.net");
 
         /// <summary>
         /// A formatted User Agent that can be used to identify Henson to the site.
@@ -65,6 +67,11 @@ namespace Henson.Models
         private const int MultipleRequestsWaitTime = 750;
 
         /// <summary>
+        /// The log4net logger. It will emit messages as from NSClient.
+        /// </summary>
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
+
+        /// <summary>
         /// Pings a nation via the API and sends info back.
         /// </summary>
         /// <param name="login">A username-password pair.</param>
@@ -77,14 +84,17 @@ namespace Henson.Models
                 { "q", "ping+name+flag+region" }
             };
 
-            var response = Utilities.API(nvc, login.Pass, 0, UserAgent);
-
             XmlNodeList xmlResp;
             try
             {
+                var response = Utilities.API(nvc, login.Pass, 0, UserAgent);
                 xmlResp = Utilities.Parse(Utilities.StrResp(response));
             }
-            catch (Exception) { return null; }
+            catch (Exception)
+            {
+                log.Error($"Adding nation {login.Name} failed!");
+                return null;
+            }
 
             var region = char.ToUpper(xmlResp.FindProperty("region")[0]) + xmlResp.FindProperty("region")[1..];
             return new Nation(xmlResp.FindProperty("name"), login.Pass, xmlResp.FindProperty("flag"), region);
@@ -145,6 +155,7 @@ namespace Henson.Models
         /// <returns>A tuple containg the chk and Local ID, or null if the login was unsuccessful.</returns>
         public (string chk, string localId)? Login(NationLoginViewModel login)
         {
+            log.Info($"Logging in to {login.Name}");
             //non template=none region page allows us to get chk and localid in one request
             //shoutout to sweeze
             RestRequest request = new("/region=notas_region", Method.Get);
@@ -164,7 +175,11 @@ namespace Henson.Models
                 chk = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='chk']").Attributes["value"].Value;
                 localId = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='localid']").Attributes["value"].Value;
             }
-            catch (Exception) { return null; }
+            catch (Exception)
+            {
+                log.Error($"Logging in to {login.Name} failed!");
+                return null;
+            }
 
             return (chk, localId);
         }
@@ -185,7 +200,10 @@ namespace Henson.Models
 
             var response = HttpClient.Execute(request);
 
-            return response.Content != null && response.Content.Contains("has been received!");
+            bool successful = response.Content != null && response.Content.Contains("has been received!");
+            if(!successful) log.Error($"Applying to WA failed!");
+
+            return successful;
         }
 
         /// <summary>
@@ -205,7 +223,10 @@ namespace Henson.Models
 
             var response = HttpClient.Execute(request);
 
-            return response.Content != null && response.Content.Contains("Success!");
+            bool successful = response.Content != null && response.Content.Contains("Success!");
+            if(!successful) log.Error($"Moving to JP {targetRegion} failed!");
+
+            return successful;
         }
     }
 }

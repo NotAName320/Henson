@@ -77,7 +77,7 @@ namespace Henson.ViewModels
                 {
                     List<NationLoginViewModel> retVal = new();
 
-                    ConfigJsonReader jsonReader;
+                    ConfigReader jsonReader;
                     try
                     {
                         jsonReader = new(result[0]);
@@ -86,8 +86,8 @@ namespace Henson.ViewModels
                     {
                         MessageBoxViewModel messageDialog = new(new MessageBoxStandardParams
                         {
-                            ContentTitle = "JSON Processing Error",
-                            ContentMessage = "The JSON file was invalid.",
+                            ContentTitle = "Config Processing Error",
+                            ContentMessage = "The config file was invalid.",
                             Icon = Icon.Error,
                         });
                         await MessageBoxDialog.Handle(messageDialog);
