@@ -728,6 +728,7 @@ namespace Henson.ViewModels
             var latestRelease = await client.Repository.Release.GetLatest("NotAName320", "Henson");
 
             if(new Version(latestRelease.TagName.Replace("v", "")) <= currentVer) return;
+
             log.Warn($"Newer version now available! Current version: v{currentVer}, latest version on GitHub: {latestRelease.TagName}");
 
             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
