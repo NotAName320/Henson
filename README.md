@@ -55,3 +55,6 @@ stuff for me
 - rootabeta for being an early adopter of Henson and giving me lots of 
 suggestions on how to improve it
 - qekitor because of dumb raid chat challenges on 3/4/23
+
+## Screenshot
+![hensonscreenshot](https://user-images.githubusercontent.com/27144780/228611624-e3651c54-9bf7-4bec-a10f-ad658f9816ed.png)
