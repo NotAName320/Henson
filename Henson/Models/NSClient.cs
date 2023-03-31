@@ -50,7 +50,7 @@ namespace Henson.Models
             get => APIClient.UserAgent;
             set
             {
-                APIClient.UserAgent = Uri.EscapeDataString($"Henson v{GetType().Assembly.GetName().Version} developed by nation: Notanam in use by nation: {value}");
+                APIClient.UserAgent = Uri.EscapeDataString($"Henson v{GetType().Assembly.GetName().Version} BETA developed by nation: Notanam in use by nation: {value}");
             }
         }
 
