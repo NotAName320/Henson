@@ -17,16 +17,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-using dotNS;
 using Henson.ViewModels;
 using HtmlAgilityPack;
 using log4net;
+using NSDotnet;
 using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace Henson.Models
@@ -34,9 +33,9 @@ namespace Henson.Models
     public class NsClient
     {
         /// <summary>
-        /// A DotNS client that interacts with the NationStates API.
+        /// A NSDotNet client that interacts with the NationStates API.
         /// </summary>
-        public DotNS APIClient { get; } = new();
+        public NSAPI APIClient { get; } = NSAPI.Instance;
 
         /// <summary>
         /// An HTTP Client that interacts with the NationStates site.
@@ -66,6 +65,11 @@ namespace Henson.Models
         private const int MultipleRequestsWaitTime = 750;
 
         /// <summary>
+        /// The link to the NationStates API.
+        /// </summary>
+        private const string APILink = "https://www.nationstates.net/cgi-bin/api.cgi";
+
+        /// <summary>
         /// The log4net logger. It will emit messages as from NSClient.
         /// </summary>
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
@@ -75,28 +79,18 @@ namespace Henson.Models
         /// </summary>
         /// <param name="login">A username-password pair.</param>
         /// <returns>A <c>Nation</c> object with the nation's info or <c>null</c> if the login failed.</returns>
-        public Nation? Ping(NationLoginViewModel login)
+        public async Task<Nation?> Ping(NationLoginViewModel login)
         {
-            NameValueCollection nvc = new()
-            {
-                { "nation", login.Name },
-                { "q", "ping+name+flag+region" }
-            };
+            var response = await APIClient.MakeRequest(APILink + $"?nation={login.Name}&q=ping+name+flag+region", login.Pass);
 
-            XmlNodeList xmlResp;
-            try
-            {
-                var response = Utilities.API(nvc, login.Pass, 0, UserAgent);
-                xmlResp = Utilities.Parse(Utilities.StrResp(response));
-            }
-            catch (Exception)
-            {
-                log.Error($"Adding nation {login.Name} failed!");
-                return null;
-            }
+            if(response == null || !response.IsSuccessStatusCode) return null;
 
-            var region = char.ToUpper(xmlResp.FindProperty("region")[0]) + xmlResp.FindProperty("region")[1..];
-            return new Nation(xmlResp.FindProperty("name"), login.Pass, xmlResp.FindProperty("flag"), region);
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(await response.Content.ReadAsStringAsync());
+            XmlNodeList xmlResp = doc.SelectNodes("/NATION/*")!;
+
+            var region = char.ToUpper(FindProperty(xmlResp, "region")[0]) + FindProperty(xmlResp, "region")[1..];
+            return new Nation(FindProperty(xmlResp, "name"), login.Pass, FindProperty(xmlResp, "flag"), region);
         }
 
         /// <summary>
@@ -104,14 +98,14 @@ namespace Henson.Models
         /// </summary>
         /// <param name="logins">A list of username-password pairs.</param>
         /// <returns>A list of <c>Nation</c> objects with the nations' info or <c>null</c> for each login failure.</returns>
-        public List<Nation?> PingMany(List<NationLoginViewModel> logins)
+        public async Task<List<Nation?>> PingMany(List<NationLoginViewModel> logins)
         {
             List<Nation?> loginSuccesses = new();
 
             foreach(var n in logins)
             {
-                Thread.Sleep(MultipleRequestsWaitTime);
-                loginSuccesses.Add(Ping(n));
+                await Task.Delay(MultipleRequestsWaitTime);
+                loginSuccesses.Add(await Ping(n));
             }
 
             return loginSuccesses;
@@ -122,19 +116,17 @@ namespace Henson.Models
         /// </summary>
         /// <param name="nations">A list of nations.</param>
         /// <returns>The name of the nation that is in the WA, or <c>null</c> if no nation was found.</returns>
-        public string? FindWA(List<NationGridViewModel> nations)
+        public async Task<string?> FindWA(List<NationGridViewModel> nations)
         {
-            NameValueCollection nvc = new()
-            {
-                { "wa", "1" },
-                { "q", "members" }
-            };
+            var response = await APIClient.MakeRequest(APILink + $"?wa=1&q=members");
 
-            var response = Utilities.API(nvc, null, 0, UserAgent);
+            if(response == null || !response.IsSuccessStatusCode) return null;
 
-            XmlNodeList nodelist = Utilities.Parse(Utilities.StrResp(response), "*");
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(await response.Content.ReadAsStringAsync());
+            XmlNodeList xmlResp = doc.SelectNodes("/WA/*")!;
 
-            HashSet<string> members = nodelist.FindProperty("MEMBERS").Replace('_', ' ').Split(',').ToHashSet();
+            HashSet<string> members = FindProperty(xmlResp, "MEMBERS").Replace('_', ' ').Split(',').ToHashSet();
 
             foreach(var n in nations)
             {
@@ -226,6 +218,25 @@ namespace Henson.Models
             if(!successful) log.Error($"Moving to JP {targetRegion} failed!");
 
             return successful;
+        }
+
+        private static string FindProperty(XmlNodeList nodes, string name, int depth = 0)
+        {
+            //Imported from https://github.com/kolya5544/dotNS/blob/master/Utilities.cs, used to easily select XML nodes
+            if (nodes == null) return "";
+            if (depth == 5) return "";
+            name = name.ToLower();
+            foreach (XmlNode node in nodes)
+            {
+                if (node.Name.ToLower() == name) return node.InnerText;
+                if (node.Attributes != null && node.Attributes[name] != null) return node.Attributes[name]!.InnerText;
+                if (node.ChildNodes.Count > 0)
+                {
+                    string anything = FindProperty(node.ChildNodes, name, depth + 1);
+                    if (anything != "") return anything;
+                }
+            }
+            return "";
         }
     }
 }
