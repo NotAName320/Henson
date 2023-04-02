@@ -42,12 +42,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <DockPanel>
           <DockPanel DockPanel.Dock="Top">
             <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)" IsEnabled="{Binding ButtonsEnabled}"/>
-            <Button Command="{Binding RemoveSelectedCommand}" Content="Remove Selected"/>
-            <Button Command="{Binding OnLockSelectedClick}" Content="Lock/Unlock Selected"/>
-            <Button Command="{Binding PingSelectedCommand}" Content="Ping Selected" IsEnabled="{Binding ButtonsEnabled}"/>
-            <Button Command="{Binding PrepSelectedCommand}" Content="Prep Selected" IsEnabled="{Binding ButtonsEnabled}"/>
             <Button Command="{Binding FindWACommand}" Content="Find WA" IsEnabled="{Binding ButtonsEnabled}"/>
             <Button Command="{Binding OnSelectNationsClick}" Content="Select/Unselect All"/>
+            <Button Command="{Binding RemoveSelectedCommand}" Content="Remove" IsEnabled="{Binding AnyNationSelected}"/>
+            <Button Command="{Binding OnLockSelectedClick}" Content="Lock/Unlock" IsEnabled="{Binding AnyNationSelected}"/>
+            <Button Command="{Binding PingSelectedCommand}" Content="Ping" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
+            <Button Command="{Binding PrepSelectedCommand}" Content="Prep" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
             <TextBlock VerticalAlignment="Center" Margin="10,0,0,0" Text="Current login: "/>
             <TextBlock VerticalAlignment="Center" Text="{Binding CurrentLoginUser}"/>
             <DockPanel HorizontalAlignment="Right">

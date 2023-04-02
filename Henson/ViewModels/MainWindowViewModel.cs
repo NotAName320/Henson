@@ -18,6 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 using Avalonia.Themes.Fluent;
+using DynamicData;
+using DynamicData.Binding;
 using Henson.Models;
 using log4net;
 using MessageBox.Avalonia.DTO;
@@ -124,6 +126,18 @@ namespace Henson.ViewModels
             }
         }
         private bool buttonsEnabled = true;
+        
+        /// <summary>
+        /// A boolean representation of whether any nation is selected in Nations at any time.
+        /// </summary>
+        public bool AnyNationSelected => _anyNationSelected.Value;
+        private readonly ObservableAsPropertyHelper<bool> _anyNationSelected;
+
+        /// <summary>
+        /// A boolean representation of whether both ButtonsEnabled and AnyNationSelected are true at any time.
+        /// </summary>
+        public bool NationSelectedAndNoSiteRequests => _nationSelectedAndNoSiteRequests.Value;
+        private readonly ObservableAsPropertyHelper<bool> _nationSelectedAndNoSiteRequests;
 
         private string? currentLocalID = null; //should probably store that in the object or the chk here for constitency
 
@@ -284,7 +298,8 @@ namespace Henson.ViewModels
                     var dialog = new MessageBoxViewModel(new MessageBoxStandardParams
                     {
                         ContentTitle = "Warning",
-                        ContentMessage = "One or more nation(s) failed to ping, probably due to an invalid username/password combo. They have been selected.",
+                        ContentMessage = "One or more nation(s) failed to ping, probably due to an invalid username/password combo. " +
+                        "They have been selected.",
                         Icon = Icon.Warning,
                     });
                     await MessageBoxDialog.Handle(dialog);
@@ -370,6 +385,15 @@ namespace Henson.ViewModels
 
                 FooterText = "Nations prepped!";
             });
+
+            //When any nation is checked or unchecked see if any nation is checked at all and set that value to a property
+            Nations.ToObservableChangeSet().AutoRefresh(x => x.Checked).ToCollection()
+                   .Select(x => x.Any(y => y.Checked)).ToProperty(this, x => x.AnyNationSelected, out _anyNationSelected);
+
+            //Combine ButtonsEnabled property with AnyNationSelected property to get property
+            //for buttons that need to be disabled in both situations
+            this.WhenAnyValue(x => x.ButtonsEnabled, x => x.AnyNationSelected).Select(_ => ButtonsEnabled && AnyNationSelected)
+                .ToProperty(this, x => x.NationSelectedAndNoSiteRequests, out _nationSelectedAndNoSiteRequests);
         }
 
         /// <summary>

@@ -62,10 +62,7 @@ namespace Henson.ViewModels
         }
 
         private readonly ObservableAsPropertyHelper<string> _gridName;
-        public string GridName
-        {
-            get => _gridName.Value;
-        }
+        public string GridName => _gridName.Value;
 
         private readonly Nation _nation;
 
