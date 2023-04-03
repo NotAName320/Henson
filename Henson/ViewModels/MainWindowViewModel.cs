@@ -193,7 +193,7 @@ namespace Henson.ViewModels
                     ButtonsEnabled = false;
                     await Task.Delay(100);
 
-                    var nations = Client.PingMany(result);
+                    var nations = await Client.PingMany(result);
 
                     if(nations.Any(x => x == null))
                     {
@@ -270,7 +270,7 @@ namespace Henson.ViewModels
                 ButtonsEnabled = false;
                 await Task.Delay(100);
 
-                var nations = Client.PingMany(nationLogins);
+                var nations = await Client.PingMany(nationLogins);
                 foreach(var n in nations)
                 {
                     if(n == null) continue;
@@ -326,7 +326,7 @@ namespace Henson.ViewModels
                 ButtonsEnabled = false;
                 await Task.Delay(100);
 
-                var result = Client.FindWA(Nations.ToList());
+                var result = await Client.FindWA(Nations.ToList());
 
                 ButtonsEnabled = true;
 
