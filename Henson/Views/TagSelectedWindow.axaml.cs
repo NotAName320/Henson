@@ -1,5 +1,5 @@
 /*
-Main Window control
+Tag Selected Window control
 Copyright (C) 2023 NotAName320
 
 This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
+using System;
+using System.Media;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
@@ -25,57 +29,15 @@ using Avalonia.ReactiveUI;
 using Henson.ViewModels;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
-using System;
-using System.Collections.Generic;
-using System.Media;
-using System.Reactive;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace Henson.Views
 {
-    public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
+    public partial class TagSelectedWindow : ReactiveWindow<TagSelectedViewModel>
     {
-        public MainWindow()
+        public TagSelectedWindow()
         {
             InitializeComponent();
-            this.WhenActivated(d => d(ViewModel!.AddNationDialog.RegisterHandler(ShowAddNationDialog)));
-            this.WhenActivated(d => d(ViewModel!.PrepSelectedDialog.RegisterHandler(ShowPrepSelectedDialog)));
-            this.WhenActivated(d => d(ViewModel!.TagSelectedDialog.RegisterHandler(ShowTagSelectedDialog)));
             this.WhenActivated(d => d(ViewModel!.MessageBoxDialog.RegisterHandler(ShowMessageBoxDialog)));
-        }
-
-        private async Task ShowAddNationDialog(InteractionContext<AddNationWindowViewModel, List<NationLoginViewModel>?> interaction)
-        {
-            var dialog = new AddNationWindow
-            {
-                DataContext = interaction.Input
-            };
-
-            var result = await dialog.ShowDialog<List<NationLoginViewModel>?>(this);
-            interaction.SetOutput(result);
-        }
-
-        private async Task ShowPrepSelectedDialog(InteractionContext<PrepSelectedViewModel, Unit> interaction)
-        {
-            var dialog = new PrepSelectedWindow
-            {
-                DataContext = interaction.Input
-            };
-
-            var result = await dialog.ShowDialog<Unit>(this);
-            interaction.SetOutput(result);
-        }
-
-        private async Task ShowTagSelectedDialog(InteractionContext<TagSelectedViewModel, Unit> interaction)
-        {
-            var dialog = new TagSelectedWindow
-            {
-                DataContext = interaction.Input
-            };
-
-            var result = await dialog.ShowDialog<Unit>(this);
-            interaction.SetOutput(result);
         }
 
         private async Task ShowMessageBoxDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)

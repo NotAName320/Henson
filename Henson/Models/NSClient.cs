@@ -50,7 +50,7 @@ namespace Henson.Models
             get => APIClient.UserAgent;
             set
             {
-                APIClient.UserAgent = Uri.EscapeDataString($"Henson v{GetType().Assembly.GetName().Version} BETA developed by nation: Notanam in use by nation: {value}");
+                APIClient.UserAgent = Uri.EscapeDataString($"Henson v{GetType().Assembly.GetName().Version} developed by nation: Notanam in use by nation: {value}");
             }
         }
 
@@ -83,7 +83,11 @@ namespace Henson.Models
         {
             var response = await APIClient.MakeRequest(APILink + $"?nation={login.Name}&q=ping+name+flag+region", login.Pass);
 
-            if(response == null || !response.IsSuccessStatusCode) return null;
+            if(response == null || !response.IsSuccessStatusCode)
+            {
+                log.Error($"Failed to ping {login.Name}");
+                return null;
+            }
 
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(await response.Content.ReadAsStringAsync());
@@ -94,21 +98,22 @@ namespace Henson.Models
         }
 
         /// <summary>
-        /// Runs <c>Ping</c> on a list of nation logins and sleeps between them.
+        /// Runs the given function on a list of nation logins and sleeps between them.
         /// </summary>
-        /// <param name="logins">A list of username-password pairs.</param>
-        /// <returns>A list of <c>Nation</c> objects with the nations' info or <c>null</c> for each login failure.</returns>
-        public async Task<List<Nation?>> PingMany(List<NationLoginViewModel> logins)
+        /// <param name="inputs">A list of data to insert.</param>
+        /// <param name="function">The function to run.</param>
+        /// <returns>A list of objects corresponding to what each login returned or <c>null</c> for each login failure.</returns>
+        public async Task<List<TTwo?>> RunMany<TOne, TTwo>(List<TOne> inputs, Func<TOne, Task<TTwo?>> function)
         {
-            List<Nation?> loginSuccesses = new();
+            List<TTwo?> results = new();
 
-            foreach(var n in logins)
+            foreach(var n in inputs)
             {
                 await Task.Delay(MultipleRequestsWaitTime);
-                loginSuccesses.Add(await Ping(n));
+                results.Add(await function(n));
             }
 
-            return loginSuccesses;
+            return results;
         }
 
         /// <summary>
@@ -137,6 +142,28 @@ namespace Henson.Models
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Checks if the nation has sufficient RO perms to tag a region.
+        /// </summary>
+        /// <param name="nation">The nation to check.</param>
+        /// <returns>The nation right back, or <c>null</c> if the nation didn't have perms.</returns>
+        public async Task<NationGridViewModel?> IsROWithTagPerms(NationGridViewModel nation)
+        {
+            var response = await APIClient.MakeRequest(APILink + $"?region={nation.Region}&q=officers");
+
+            if(response == null || !response.IsSuccessStatusCode) return null;
+
+            XmlDocument doc = new XmlDocument();
+            doc.LoadXml(await response.Content.ReadAsStringAsync());
+            XmlNode root = doc.DocumentElement!;
+            XmlNodeList nodeList = root.SelectNodes($"descendant::OFFICER[NATION='{nation.Name.ToLower()}']")!;
+
+            string authority = FindProperty(nodeList, "AUTHORITY");
+
+            return authority.Contains('A') && authority.Contains('C') && authority.Contains('E') ? nation : null;
+            
         }
 
         /// <summary>
