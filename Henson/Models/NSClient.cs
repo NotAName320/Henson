@@ -40,7 +40,7 @@ namespace Henson.Models
         /// <summary>
         /// An HTTP Client that interacts with the NationStates site.
         /// </summary>
-        public RestClient HttpClient = new("https://nationstates.net");
+        public RestClient HttpClient = new("https://www.nationstates.net");
 
         /// <summary>
         /// A formatted User Agent that can be used to identify Henson to the site.
@@ -89,7 +89,7 @@ namespace Henson.Models
                 return null;
             }
 
-            XmlDocument doc = new XmlDocument();
+            XmlDocument doc = new();
             doc.LoadXml(await response.Content.ReadAsStringAsync());
             XmlNodeList xmlResp = doc.SelectNodes("/NATION/*")!;
 
@@ -127,7 +127,7 @@ namespace Henson.Models
 
             if(response == null || !response.IsSuccessStatusCode) return null;
 
-            XmlDocument doc = new XmlDocument();
+            XmlDocument doc = new();
             doc.LoadXml(await response.Content.ReadAsStringAsync());
             XmlNodeList xmlResp = doc.SelectNodes("/WA/*")!;
 
@@ -170,8 +170,8 @@ namespace Henson.Models
         /// Registers a login via the site.
         /// </summary>
         /// <param name="login">A username-password pair.</param>
-        /// <returns>A tuple containg the chk and Local ID, or null if the login was unsuccessful.</returns>
-        public (string chk, string localId)? Login(NationLoginViewModel login)
+        /// <returns>A tuple containg the chk, Local ID, and pin, or null if the login was unsuccessful.</returns>
+        public (string chk, string localId, string pin)? Login(NationLoginViewModel login)
         {
             log.Info($"Logging in to {login.Name}");
             //non template=none region page allows us to get chk and localid in one request
@@ -187,11 +187,12 @@ namespace Henson.Models
             HtmlDocument htmlDoc = new();
             htmlDoc.LoadHtml(response.Content);
 
-            string chk, localId;
+            string chk, localId, pin;
             try
             {
                 chk = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='chk']").Attributes["value"].Value;
                 localId = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='localid']").Attributes["value"].Value;
+                pin = response!.Headers!.ToList().Find(x => x.Name == "Set-Cookie")!.Value!.ToString()!.Split("; ")[0].Split('=')[1];
             }
             catch (Exception)
             {
@@ -199,15 +200,18 @@ namespace Henson.Models
                 return null;
             }
 
-            return (chk, localId);
+            
+
+            return (chk, localId, pin);
         }
 
         /// <summary>
         /// Send a WA email to a logged in nation with the chk, or resend the email if already sent.
         /// </summary>
         /// <param name="chk">The chk recorded from a login.</param>
+        /// <param name="pin">The PIN recorded from a login.</param>
         /// <returns>A boolean indicating whether or not the application was successfully sent.</returns>
-        public bool ApplyWA(string chk)
+        public bool ApplyWA(string chk, string pin)
         {
             RestRequest request = new("/template-overall=none/page=UN_status", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
@@ -215,6 +219,7 @@ namespace Henson.Models
             request.AddParameter("chk", chk);
             request.AddParameter("resend", "1");
             request.AddParameter("userclick", UserClick);
+            request.AddCookie("pin", pin, "/", ".nationstates.net");
 
             var response = HttpClient.Execute(request);
 
@@ -229,8 +234,9 @@ namespace Henson.Models
         /// </summary>
         /// <param name="targetRegion">The name of the region to move to.</param>
         /// <param name="localID">The Local ID recorded from a login.</param>
+        /// <param name="pin">The PIN recorded from a login.</param>
         /// <returns>A boolean indicating whether or not the move was successful.</returns>
-        public bool MoveToJP(string targetRegion, string localID)
+        public bool MoveToJP(string targetRegion, string localID, string pin)
         {
             RestRequest request = new("/template-overall=none/page=change_region", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
@@ -238,6 +244,7 @@ namespace Henson.Models
             request.AddParameter("region_name", targetRegion);
             request.AddParameter("move_region", "1");
             request.AddParameter("userclick", UserClick);
+            request.AddCookie("pin", pin, "/", ".nationstates.net");
 
             var response = HttpClient.Execute(request);
 

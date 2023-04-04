@@ -85,6 +85,11 @@ namespace Henson.ViewModels
         private string CurrentLocalID { get; set; } = "";
 
         /// <summary>
+        /// The current Pin of the logged in nation.
+        /// </summary>
+        private string CurrentPin { get; set; } = "";
+
+        /// <summary>
         /// The names of all the logins that failed.
         /// </summary>
         private StringBuilder FailedLogins { get; set; } = new();
@@ -194,11 +199,12 @@ namespace Henson.ViewModels
                 switch(buttonText)
                 {
                     case "Login":
-                        var (chk, localId) = Client.Login(currentNation) ?? default;
+                        var (chk, localId, pin) = Client.Login(currentNation) ?? default;
                         if(chk != null)
                         {
                             CurrentChk = chk;
                             CurrentLocalID = localId;
+                            CurrentPin = pin;
                             CurrentLogin = currentNation.Name;
 
                             FooterText = $"Logged in to {currentNation.Name}.";
@@ -212,7 +218,7 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Apply WA":
-                        if(Client.ApplyWA(CurrentChk))
+                        if(Client.ApplyWA(CurrentChk, CurrentPin))
                         {
                             ButtonText = "Move to JP";
                             FooterText = $"Sent WA application on {currentNation.Name}.";
@@ -240,7 +246,7 @@ namespace Henson.ViewModels
                             return;
                         }
 
-                        if(!Client.MoveToJP(TargetRegion, CurrentLocalID))
+                        if(!Client.MoveToJP(TargetRegion, CurrentLocalID, CurrentPin))
                         {
                             FooterText = $"Moving {currentNation.Name} failed.";
                             AddToFailedLogins(currentNation.Name);
