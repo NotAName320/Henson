@@ -18,7 +18,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 using System.Collections.Generic;
+using System.Reactive.Linq;
+using System.Windows.Input;
 using Henson.Models;
+using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 
@@ -37,10 +40,41 @@ namespace Henson.ViewModels
         public string WFE { get; set; } = "";
 
         /// <summary>
+        /// The full file path to the banner image.
+        /// </summary>
+        public string BannerPath { get; set; } = "";
+
+        /// <summary>
+        /// The full file path to the flag image.
+        /// </summary>
+        public string FlagPath { get; set; } = "";
+
+        /// <summary>
+        /// Fired when the Browse... button beside the banner text is clicked.
+        /// </summary>
+        public ICommand BannerPickerCommand { get; }
+
+        /// <summary>
+        /// Fired when the Browse... button beside the flag text is clicked.
+        /// </summary>
+        public ICommand FlagPickerCommand { get; }
+
+        /// <summary>
+        /// The command fired when pressing the action button.
+        /// </summary>
+        public ICommand ActionButtonCommand { get; }
+
+        /// <summary>
         /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
         /// I should really create a common class for these lmao
         /// </summary>
         public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
+
+        /// <summary>
+        /// This interaction opens the a file window, and returns a string array with the first value being the file chosen,
+        /// or null if the window is closed without a pick.
+        /// </summary>
+        public Interaction<ViewModelBase, string[]?> FilePickerDialog { get; } = new();
 
         /// <summary>
         /// The text on the button.
@@ -118,11 +152,58 @@ namespace Henson.ViewModels
         /// </summary>
         private List<NationGridViewModel> NationsToTag { get; set; }
 
+        /// <summary>
+        /// The current index that the user is on.
+        /// </summary>
+        private int LoginIndex { get; set; } = 0;
+
         public TagSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string target)
         {
             NationsToTag = nations;
             Client = client;
 
+            BannerPickerCommand = ReactiveCommand.CreateFromTask(async () => 
+            {
+                var dialog = new ViewModelBase();
+                var result = await FilePickerDialog.Handle(dialog);
+
+                if(result != null) BannerPath = result[0];
+            });
+
+            FlagPickerCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var dialog = new ViewModelBase();
+                var result = await FilePickerDialog.Handle(dialog);
+
+                if(result != null) FlagPath = result[0];
+            });
+
+            ActionButtonCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                if(WFE == "")
+                {
+                    MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "No WFE",
+                        ContentMessage = $"Please set a WFE to tag regions with.",
+                        Icon = Icon.Error,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
+                    return;
+                }
+
+                if(BannerPath == "" || FlagPath == "")
+                {
+                    MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "No Banner/Flag",
+                        ContentMessage = $"Please upload both a banner/flag to tag regions with.",
+                        Icon = Icon.Error,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
+                    return;
+                }
+            });
         }
     }
 }

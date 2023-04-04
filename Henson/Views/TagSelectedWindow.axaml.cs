@@ -38,6 +38,7 @@ namespace Henson.Views
         {
             InitializeComponent();
             this.WhenActivated(d => d(ViewModel!.MessageBoxDialog.RegisterHandler(ShowMessageBoxDialog)));
+            this.WhenActivated(d => d(ViewModel!.FilePickerDialog.RegisterHandler(AddFilePicker)));
         }
 
         private async Task ShowMessageBoxDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
@@ -52,6 +53,16 @@ namespace Henson.Views
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
 
             var result = await messageBox.ShowDialog(this);
+            interaction.SetOutput(result);
+        }
+
+        private async Task AddFilePicker(InteractionContext<ViewModelBase, string[]?> interaction)
+        {
+            //Need to write an error handler for this sometime
+            var dialog = new OpenFileDialog();
+            dialog.Filters!.Add(new FileDialogFilter() { Name = "All Files", Extensions = { "*" } });
+
+            var result = await dialog.ShowAsync(this);
             interaction.SetOutput(result);
         }
     }

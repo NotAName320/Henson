@@ -402,7 +402,6 @@ namespace Henson.ViewModels
                 }
 
                 FooterText = "Checking which nations have taggable RO perms...";
-                await Task.Delay(100);
 
                 var SelectedNations = Nations.Where(x => x.Checked && !x.Locked).ToList();
                 var TaggableNations = (await Client.RunMany(SelectedNations, Client.IsROWithTagPerms)).Where(x => x != null).ToList();
@@ -419,8 +418,12 @@ namespace Henson.ViewModels
                     return;
                 }
 
+                FooterText = "Opening tag window...";
+
                 var dialog = new TagSelectedWindowViewModel(Nations.ToList(), Client, TargetRegion);
                 await TagSelectedDialog.Handle(dialog);
+
+                FooterText = "Regions tagged!";
             });
 
             //When any nation is checked or unchecked see if any nation is checked at all and set that value to a property
