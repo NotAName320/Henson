@@ -139,7 +139,9 @@ namespace Henson.ViewModels
         public bool NationSelectedAndNoSiteRequests => _nationSelectedAndNoSiteRequests.Value;
         private readonly ObservableAsPropertyHelper<bool> _nationSelectedAndNoSiteRequests;
 
-        private string? currentLocalID = null; //should probably store that in the object or the chk here for constitency
+        private string currentLocalID = ""; //should probably store that in the object or the chk here for constitency
+
+        private string currentPin = "";
 
         /// <summary>
         /// An object storing the UserAgent and using it to make requests to NationStates via both API and site.
@@ -484,11 +486,12 @@ namespace Henson.ViewModels
             ButtonsEnabled = false;
             await Task.Delay(100);
 
-            var (chk, localId) = Client.Login(nationLogin) ?? default;
+            var (chk, localId, pin) = Client.Login(nationLogin) ?? default;
             if(chk != null)
             {
                 nation.Chk = chk;
                 currentLocalID = localId;
+                currentPin = pin;
                 CurrentLoginUser = nation.Name;
 
                 FooterText = $"Logged in to {nation.Name}";
@@ -531,14 +534,14 @@ namespace Henson.ViewModels
 
             ButtonsEnabled = false;
             await Task.Delay(100);
-            if(Client.ApplyWA(chk))
+            if(Client.ApplyWA(chk, currentPin))
             {
                 FooterText = $"{nation.Name} WA application successful!";
             }
             else
             {
                 CurrentLoginUser = "";
-                currentLocalID = null;
+                currentLocalID = "";
                 FooterText = $"{nation.Name} WA application failed... please log in again.";
                 await Task.Delay(100);
 
@@ -600,7 +603,7 @@ namespace Henson.ViewModels
             ButtonsEnabled = false;
             await Task.Delay(100);
 
-            if(Client.MoveToJP(region, currentLocalID!))
+            if(Client.MoveToJP(region, currentLocalID, currentPin))
             {
                 FooterText = $"{nation.Name} moved to {region}!";
                 nation.Region = char.ToUpper(region[0]) + region[1..];
