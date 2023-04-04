@@ -31,7 +31,7 @@ using System.Windows.Input;
 
 namespace Henson.ViewModels
 {
-    public class PrepSelectedViewModel : ViewModelBase
+    public class PrepSelectedWindowViewModel : ViewModelBase
     {
         /// <summary>
         /// The contents of the Target Region text box.
@@ -166,7 +166,7 @@ namespace Henson.ViewModels
         /// <param name="nations">The list of nations from the parent <c>MainWindowViewModel</c>.</param>
         /// <param name="client">The client from the parent <c>MainWindowViewModel</c>.</param>
         /// <param name="target">The prefilled region from the target box.</param>
-        public PrepSelectedViewModel(List<NationGridViewModel> nations, NsClient client, string target)
+        public PrepSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string target)
         {
             Nations = nations;
             SelectedNations = Nations.Where(x => x.Checked && !x.Locked).Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();

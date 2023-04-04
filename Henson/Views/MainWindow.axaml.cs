@@ -56,7 +56,7 @@ namespace Henson.Views
             interaction.SetOutput(result);
         }
 
-        private async Task ShowPrepSelectedDialog(InteractionContext<PrepSelectedViewModel, Unit> interaction)
+        private async Task ShowPrepSelectedDialog(InteractionContext<PrepSelectedWindowViewModel, Unit> interaction)
         {
             var dialog = new PrepSelectedWindow
             {
@@ -67,7 +67,7 @@ namespace Henson.Views
             interaction.SetOutput(result);
         }
 
-        private async Task ShowTagSelectedDialog(InteractionContext<TagSelectedViewModel, Unit> interaction)
+        private async Task ShowTagSelectedDialog(InteractionContext<TagSelectedWindowViewModel, Unit> interaction)
         {
             var dialog = new TagSelectedWindow
             {

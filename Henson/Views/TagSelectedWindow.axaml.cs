@@ -32,7 +32,7 @@ using ReactiveUI;
 
 namespace Henson.Views
 {
-    public partial class TagSelectedWindow : ReactiveWindow<TagSelectedViewModel>
+    public partial class TagSelectedWindow : ReactiveWindow<TagSelectedWindowViewModel>
     {
         public TagSelectedWindow()
         {

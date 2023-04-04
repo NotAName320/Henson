@@ -85,12 +85,12 @@ namespace Henson.ViewModels
         /// <summary>
         /// This interaction opens the Prep Selected window.
         /// </summary>
-        public Interaction<PrepSelectedViewModel, Unit> PrepSelectedDialog { get; } = new();
+        public Interaction<PrepSelectedWindowViewModel, Unit> PrepSelectedDialog { get; } = new();
 
         /// <summary>
         /// This interaction opens the Tag Selected window.
         /// </summary>
-        public Interaction<TagSelectedViewModel, Unit> TagSelectedDialog { get; } = new();
+        public Interaction<TagSelectedWindowViewModel, Unit> TagSelectedDialog { get; } = new();
 
         /// <summary>
         /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
@@ -374,7 +374,7 @@ namespace Henson.ViewModels
                 FooterText = "Opening prep window...";
                 await Task.Delay(100);
 
-                var dialog = new PrepSelectedViewModel(Nations.ToList(), Client, TargetRegion);
+                var dialog = new PrepSelectedWindowViewModel(Nations.ToList(), Client, TargetRegion);
                 await PrepSelectedDialog.Handle(dialog);
 
                 foreach(var n in Nations)
@@ -419,7 +419,7 @@ namespace Henson.ViewModels
                     return;
                 }
 
-                var dialog = new TagSelectedViewModel(Nations.ToList(), Client, TargetRegion);
+                var dialog = new TagSelectedWindowViewModel(Nations.ToList(), Client, TargetRegion);
                 await TagSelectedDialog.Handle(dialog);
             });
 

@@ -24,7 +24,7 @@ using ReactiveUI;
 
 namespace Henson.ViewModels
 {
-    public class TagSelectedViewModel : ViewModelBase
+    public class TagSelectedWindowViewModel : ViewModelBase
     {
         /// <summary>
         /// The embassies, separated by commas, that the user would like to send in each region.
@@ -118,7 +118,7 @@ namespace Henson.ViewModels
         /// </summary>
         private List<NationGridViewModel> NationsToTag { get; set; }
 
-        public TagSelectedViewModel(List<NationGridViewModel> nations, NsClient client, string target)
+        public TagSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string target)
         {
             NationsToTag = nations;
             Client = client;
