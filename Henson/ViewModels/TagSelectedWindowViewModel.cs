@@ -17,7 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Windows.Input;
 using Henson.Models;
@@ -42,12 +44,44 @@ namespace Henson.ViewModels
         /// <summary>
         /// The full file path to the banner image.
         /// </summary>
-        public string BannerPath { get; set; } = "";
+        public string BannerPath
+        {
+            get => bannerPath;
+            set
+            {
+                bannerPath = value;
+                if(bannerPath != "" && bannerPath.Contains('/'))
+                {
+                    BannerFileName = bannerPath.Split('/').Last();
+                }
+                else if(bannerPath != "" && bannerPath.Contains('\\'))
+                {
+                    BannerFileName = bannerPath.Split('\\').Last();
+                }
+            }
+        }
+        private string bannerPath = "";
 
         /// <summary>
         /// The full file path to the flag image.
         /// </summary>
-        public string FlagPath { get; set; } = "";
+        public string FlagPath
+        {
+            get => flagPath;
+            set
+            {
+                flagPath = value;
+                if(flagPath != "" && flagPath.Contains('/'))
+                {
+                    FlagFileName = flagPath.Split('/').Last();
+                }
+                else if(flagPath != "" && flagPath.Contains('\\'))
+                {
+                    FlagFileName = flagPath.Split('\\').Last();
+                }
+            }
+        }
+        private string flagPath = "";
 
         /// <summary>
         /// Fired when the Browse... button beside the banner text is clicked.
@@ -100,20 +134,13 @@ namespace Henson.ViewModels
                 this.RaiseAndSetIfChanged(ref currentNation, value);
             }
         }
-        private string currentNation = "aowuehfpaowh";
+        private string currentNation = "";
 
         /// <summary>
         /// The current region being tagged.
         /// </summary>
-        public string CurrentRegion
-        {
-            get => currentRegion;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref currentRegion, value);
-            }
-        }
-        private string currentRegion = "ao[wiehfasdf]";
+        public string CurrentRegion => _currentRegion.Value;
+        private readonly ObservableAsPropertyHelper<string> _currentRegion;
 
         /// <summary>
         /// The text displayed in the footer of the window.
@@ -142,6 +169,26 @@ namespace Henson.ViewModels
         }
         private bool buttonsEnabled = true;
 
+        public string BannerFileName
+        {
+            get => bannerFileName;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref bannerFileName, value);
+            }
+        }
+        private string bannerFileName = "";
+
+        public string FlagFileName
+        {
+            get => flagFileName;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref flagFileName, value);
+            }
+        }
+        private string flagFileName = "";
+
         /// <summary>
         /// An object storing the UserAgent and using it to make requests to NationStates via both API and site.
         /// </summary>
@@ -157,7 +204,7 @@ namespace Henson.ViewModels
         /// </summary>
         private int LoginIndex { get; set; } = 0;
 
-        public TagSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string target)
+        public TagSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client)
         {
             NationsToTag = nations;
             Client = client;
@@ -204,6 +251,9 @@ namespace Henson.ViewModels
                     return;
                 }
             });
+
+            this.WhenAnyValue(x => x.LoginIndex).Select(_ => LoginIndex == NationsToTag.Count ? "" : NationsToTag[LoginIndex].Region)
+                .ToProperty(this, x => x.CurrentRegion, out _currentRegion);
         }
     }
 }

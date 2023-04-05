@@ -422,7 +422,7 @@ namespace Henson.ViewModels
 
                 FooterText = "Opening tag window...";
 
-                var dialog = new TagSelectedWindowViewModel(Nations.ToList(), Client, TargetRegion);
+                var dialog = new TagSelectedWindowViewModel(Nations.ToList(), Client);
                 await TagSelectedDialog.Handle(dialog);
 
                 FooterText = "Regions tagged!";
