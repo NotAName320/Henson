@@ -17,12 +17,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Henson.Models;
+using log4net;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
@@ -34,7 +37,12 @@ namespace Henson.ViewModels
         /// <summary>
         /// The embassies, separated by commas, that the user would like to send in each region.
         /// </summary>
-        public string Embassies { get; set; } = "";
+        public string Embassies
+        {
+            get => string.Join(',', _embassyList);
+            set => _embassyList = value.Split(',').ToList();
+        }
+        private List<string> _embassyList = new();
 
         /// <summary>
         /// The WFE to tag each region with.
@@ -126,15 +134,8 @@ namespace Henson.ViewModels
         /// <summary>
         /// The current logged in nation.
         /// </summary>
-        public string CurrentNation
-        {
-            get => currentNation;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref currentNation, value);
-            }
-        }
-        private string currentNation = "";
+        public string CurrentNation => _currentNation.Value;
+        private readonly ObservableAsPropertyHelper<string> _currentNation;
 
         /// <summary>
         /// The current region being tagged.
@@ -195,7 +196,7 @@ namespace Henson.ViewModels
         private NsClient Client { get; }
 
         /// <summary>
-        /// The list of with RO perms to tag.
+        /// The list of nations with RO perms to tag.
         /// </summary>
         private List<NationGridViewModel> NationsToTag { get; set; }
 
@@ -203,6 +204,26 @@ namespace Henson.ViewModels
         /// The current index that the user is on.
         /// </summary>
         private int LoginIndex { get; set; } = 0;
+
+        /// <summary>
+        /// The current chk of the logged in nation.
+        /// </summary>
+        private string CurrentChk { get; set; } = "";
+
+        /// <summary>
+        /// The current Pin of the logged in nation.
+        /// </summary>
+        private string CurrentPin { get; set; } = "";
+
+        /// <summary>
+        /// The names of all the logins that failed.
+        /// </summary>
+        private StringBuilder FailedLogins { get; set; } = new();
+
+        /// <summary>
+        /// The log4net logger. It will emit messages as from TagSelectedWindowViewModel.
+        /// </summary>
+        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
 
         public TagSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client)
         {
@@ -250,10 +271,54 @@ namespace Henson.ViewModels
                     await MessageBoxDialog.Handle(dialog);
                     return;
                 }
+
+                NationLoginViewModel currentNation = new(NationsToTag[LoginIndex].Name, NationsToTag[LoginIndex].Pass);
+
+                ButtonsEnabled = false;
+                await Task.Delay(100);
+                switch(buttonText)
+                {
+                    case "Login":
+                        var (chk, localId, pin) = Client.Login(currentNation) ?? default;
+                        if(chk != null)
+                        {
+                            CurrentChk = chk;
+                            CurrentPin = pin;
+
+                            FooterText = $"Logged in to {currentNation.Name}.";
+                            ButtonText = ""
+                        }
+                        else
+                        {
+                            FooterText = $"Login to {currentNation.Name} failed.";
+                            AddToFailedLogins(currentNation.Name);
+                            LoginIndex++;
+                        }
+                        break;
+                    case "Change WFE":
+                        break;
+                }
             });
+
+            this.WhenAnyValue(x => x.LoginIndex).Select(_ => LoginIndex == NationsToTag.Count ? "" : NationsToTag[LoginIndex].Name)
+                .ToProperty(this, x => x.CurrentNation, out _currentNation);
 
             this.WhenAnyValue(x => x.LoginIndex).Select(_ => LoginIndex == NationsToTag.Count ? "" : NationsToTag[LoginIndex].Region)
                 .ToProperty(this, x => x.CurrentRegion, out _currentRegion);
+        }
+
+        /// <summary>
+        /// Adds a name to the failed logins and wraps the string around if necessary.
+        /// </summary>
+        /// <param name="loginName">The login name to be added.</param>
+        private void AddToFailedLogins(string loginName)
+        {
+            log.Error($"Prepping {loginName} failed");
+            if(FailedLogins.ToString().Split("\n").Last().Length + loginName.Length + 2 > 75)
+            {
+                FailedLogins.Append('\n');
+            }
+            FailedLogins.Append(loginName + ", ");
         }
     }
 }

@@ -103,7 +103,7 @@ namespace Henson.Models
         /// <param name="inputs">A list of data to insert.</param>
         /// <param name="function">The function to run.</param>
         /// <returns>A list of objects corresponding to what each login returned or <c>null</c> for each login failure.</returns>
-        public async Task<List<TTwo?>> RunMany<TOne, TTwo>(List<TOne> inputs, Func<TOne, Task<TTwo?>> function)
+        public static async Task<List<TTwo?>> RunMany<TOne, TTwo>(List<TOne> inputs, Func<TOne, Task<TTwo?>> function)
         {
             List<TTwo?> results = new();
 
@@ -155,7 +155,7 @@ namespace Henson.Models
 
             if(response == null || !response.IsSuccessStatusCode) return null;
 
-            XmlDocument doc = new XmlDocument();
+            XmlDocument doc = new();
             doc.LoadXml(await response.Content.ReadAsStringAsync());
             XmlNode root = doc.DocumentElement!;
             XmlNodeList nodeList = root.SelectNodes($"descendant::OFFICER[NATION='{nation.Name.ToLower()}']")!;
@@ -199,8 +199,6 @@ namespace Henson.Models
                 log.Error($"Logging in to {login.Name} failed!");
                 return null;
             }
-
-            
 
             return (chk, localId, pin);
         }

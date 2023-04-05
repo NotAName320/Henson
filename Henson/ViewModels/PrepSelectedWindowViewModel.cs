@@ -161,7 +161,7 @@ namespace Henson.ViewModels
         private bool buttonsEnabled = true;
 
         /// <summary>
-        /// The log4net logger. It will emit messages as from PrepSelectedViewModel.
+        /// The log4net logger. It will emit messages as from PrepSelectedWindowViewModel.
         /// </summary>
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
 

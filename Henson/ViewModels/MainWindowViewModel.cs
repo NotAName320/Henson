@@ -205,7 +205,7 @@ namespace Henson.ViewModels
                     ButtonsEnabled = false;
                     await Task.Delay(100);
 
-                    var nations = await Client.RunMany(result, Client.Ping);
+                    var nations = await NsClient.RunMany(result, Client.Ping);
 
                     if(nations.Any(x => x == null))
                     {
@@ -271,7 +271,7 @@ namespace Henson.ViewModels
                 ButtonsEnabled = false;
                 await Task.Delay(100);
 
-                var nations = await Client.RunMany(nationLogins, Client.Ping);
+                var nations = await NsClient.RunMany(nationLogins, Client.Ping);
                 foreach(var n in nations)
                 {
                     if(n == null) continue;
@@ -406,7 +406,8 @@ namespace Henson.ViewModels
                 FooterText = "Checking which nations have taggable RO perms...";
 
                 var SelectedNations = Nations.Where(x => x.Checked && !x.Locked).ToList();
-                var TaggableNations = (await Client.RunMany(SelectedNations, Client.IsROWithTagPerms)).Where(x => x != null).ToList();
+                var TaggableNations = (await NsClient.RunMany(SelectedNations, Client.IsROWithTagPerms)).Where(x => x != null)
+                                                     .Select(x => x!).ToList();
 
                 if(TaggableNations.Count == 0)
                 {
@@ -422,7 +423,7 @@ namespace Henson.ViewModels
 
                 FooterText = "Opening tag window...";
 
-                var dialog = new TagSelectedWindowViewModel(Nations.ToList(), Client);
+                var dialog = new TagSelectedWindowViewModel(TaggableNations, Client);
                 await TagSelectedDialog.Handle(dialog);
 
                 FooterText = "Regions tagged!";

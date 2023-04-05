@@ -1,0 +1,3 @@
+[submodule "NSDotNet"]
+	path = NSDotNet
+	url = https://github.com/Vleerian/NSDotNet.git
