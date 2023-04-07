@@ -45,6 +45,10 @@ Macs, but I don't have the hardware to test either. If someone has a Mac and
 successfully got Henson to work, please contact me and tell me how you did it! 
 (or even better file a pull request)
 
+## Updating Henson
+Simply drag the new files on top of the old ones and replace them. The program 
+will automatically update the settings file and database with new features!
+
 ## Acknowledgements
 Thanks to:
 - The people listed in the 
