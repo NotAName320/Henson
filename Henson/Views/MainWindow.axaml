@@ -25,7 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="675"
         x:Class="Henson.Views.MainWindow"
         Icon="/Assets/henson-icon.ico"
-        Title="Henson 1.2.1"
+        Title="Henson 1.3.0"
         WindowStartupLocation="CenterScreen">
 
   <Design.DataContext>
