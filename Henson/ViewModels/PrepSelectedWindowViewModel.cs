@@ -31,7 +31,7 @@ using System.Windows.Input;
 
 namespace Henson.ViewModels
 {
-    public class PrepSelectedViewModel : ViewModelBase
+    public class PrepSelectedWindowViewModel : ViewModelBase
     {
         /// <summary>
         /// The contents of the Target Region text box.
@@ -57,42 +57,42 @@ namespace Henson.ViewModels
         /// <summary>
         /// The list of all nations loaded by Henson.
         /// </summary>
-        private List<NationGridViewModel> Nations { get; set; }
+        private readonly List<NationGridViewModel> Nations;
 
         /// <summary>
         /// A list of nations selected by the user.
         /// </summary>
-        private List<NationLoginViewModel> SelectedNations { get; set; }
+        private readonly List<NationLoginViewModel> SelectedNations;
 
         /// <summary>
         /// The current index that the user is on.
         /// </summary>
-        private int LoginIndex { get; set; } = 0;
+        private int LoginIndex = 0;
 
         /// <summary>
         /// The number of nations successfully prepped without errors (e.g. moved region successfully).
         /// </summary>
-        private int PrepSuccesses { get; set; } = 0;
+        private int PrepSuccesses = 0;
 
         /// <summary>
         /// The current chk of the logged in nation.
         /// </summary>
-        private string CurrentChk { get; set; } = "";
+        private string CurrentChk = "";
 
         /// <summary>
         /// The current Local ID of the logged in nation.
         /// </summary>
-        private string CurrentLocalID { get; set; } = "";
+        private string CurrentLocalID = "";
 
         /// <summary>
         /// The current Pin of the logged in nation.
         /// </summary>
-        private string CurrentPin { get; set; } = "";
+        private string CurrentPin = "";
 
         /// <summary>
         /// The names of all the logins that failed.
         /// </summary>
-        private StringBuilder FailedLogins { get; set; } = new();
+        private StringBuilder FailedLogins = new();
 
         /// <summary>
         /// The text on the button.
@@ -161,7 +161,7 @@ namespace Henson.ViewModels
         private bool buttonsEnabled = true;
 
         /// <summary>
-        /// The log4net logger. It will emit messages as from PrepSelectedViewModel.
+        /// The log4net logger. It will emit messages as from PrepSelectedWindowViewModel.
         /// </summary>
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
 
@@ -171,7 +171,7 @@ namespace Henson.ViewModels
         /// <param name="nations">The list of nations from the parent <c>MainWindowViewModel</c>.</param>
         /// <param name="client">The client from the parent <c>MainWindowViewModel</c>.</param>
         /// <param name="target">The prefilled region from the target box.</param>
-        public PrepSelectedViewModel(List<NationGridViewModel> nations, NsClient client, string target)
+        public PrepSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string target)
         {
             Nations = nations;
             SelectedNations = Nations.Where(x => x.Checked && !x.Locked).Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
@@ -199,7 +199,7 @@ namespace Henson.ViewModels
                 switch(buttonText)
                 {
                     case "Login":
-                        var (chk, localId, pin) = Client.Login(currentNation) ?? default;
+                        var (chk, localId, pin) = await Client.Login(currentNation) ?? default;
                         if(chk != null)
                         {
                             CurrentChk = chk;
@@ -218,7 +218,7 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Apply WA":
-                        if(Client.ApplyWA(CurrentChk, CurrentPin))
+                        if(await Client.ApplyWA(CurrentChk, CurrentPin))
                         {
                             ButtonText = "Move to JP";
                             FooterText = $"Sent WA application on {currentNation.Name}.";
@@ -246,7 +246,7 @@ namespace Henson.ViewModels
                             return;
                         }
 
-                        if(!Client.MoveToJP(TargetRegion, CurrentLocalID, CurrentPin))
+                        if(!await Client.MoveToJP(TargetRegion, CurrentLocalID, CurrentPin))
                         {
                             FooterText = $"Moving {currentNation.Name} failed.";
                             AddToFailedLogins(currentNation.Name);

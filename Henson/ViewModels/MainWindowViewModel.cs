@@ -52,12 +52,12 @@ namespace Henson.ViewModels
         public ICommand AddNationCommand { get; }
 
         /// <summary>
-        /// Fired when the Remove Selected button in quick view is clicked.
+        /// Fired when the Remove button in quick view is clicked.
         /// </summary>
         public ICommand RemoveSelectedCommand { get; }
 
         /// <summary>
-        /// Fired when the Ping Selected button in quick view is clicked.
+        /// Fired when the Ping button in quick view is clicked.
         /// </summary>
         public ICommand PingSelectedCommand { get; }
 
@@ -67,9 +67,14 @@ namespace Henson.ViewModels
         public ICommand FindWACommand { get; }
 
         /// <summary>
-        /// Fired when the Prep Selected button in quick view is clicked.
+        /// Fired when the Prep button in quick view is clicked.
         /// </summary>
         public ICommand PrepSelectedCommand { get; }
+
+        /// <summary>
+        /// Fired when the Tag button in quick view is clicked.
+        /// </summary>
+        public ICommand TagSelectedCommand { get; }
 
         /// <summary>
         /// This interaction opens the Add Nation Dialog and returns a list of NationLoginViewModels
@@ -80,7 +85,12 @@ namespace Henson.ViewModels
         /// <summary>
         /// This interaction opens the Prep Selected window.
         /// </summary>
-        public Interaction<PrepSelectedViewModel, Unit> PrepSelectedDialog { get; } = new();
+        public Interaction<PrepSelectedWindowViewModel, Unit> PrepSelectedDialog { get; } = new();
+
+        /// <summary>
+        /// This interaction opens the Tag Selected window.
+        /// </summary>
+        public Interaction<TagSelectedWindowViewModel, Unit> TagSelectedDialog { get; } = new();
 
         /// <summary>
         /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
@@ -195,7 +205,7 @@ namespace Henson.ViewModels
                     ButtonsEnabled = false;
                     await Task.Delay(100);
 
-                    var nations = await Client.PingMany(result);
+                    var nations = await NsClient.RunMany(result, Client.Ping);
 
                     if(nations.Any(x => x == null))
                     {
@@ -254,17 +264,6 @@ namespace Henson.ViewModels
                 if(await UserAgentNotSet()) return;
                 
                 var selectedNations = Nations.Where(x => x.Checked).ToList();
-                if(selectedNations.Count == 0)
-                {
-                    var dialog = new MessageBoxViewModel(new MessageBoxStandardParams
-                    {
-                        ContentTitle = "No Nations Selected",
-                        ContentMessage = "Please select some nations first.",
-                        Icon = Icon.Info,
-                    });
-                    await MessageBoxDialog.Handle(dialog);
-                    return;
-                }
 
                 var nationLogins = selectedNations.Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
 
@@ -272,7 +271,7 @@ namespace Henson.ViewModels
                 ButtonsEnabled = false;
                 await Task.Delay(100);
 
-                var nations = await Client.PingMany(nationLogins);
+                var nations = await NsClient.RunMany(nationLogins, Client.Ping);
                 foreach(var n in nations)
                 {
                     if(n == null) continue;
@@ -362,7 +361,7 @@ namespace Henson.ViewModels
             {
                 if(await UserAgentNotSet()) return;
 
-                if(!Nations.Any(x => x.Checked && !x.Locked))
+                if(!Nations.Any(x => !x.Locked))
                 {
                     var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
                     {
@@ -377,7 +376,7 @@ namespace Henson.ViewModels
                 FooterText = "Opening prep window...";
                 await Task.Delay(100);
 
-                var dialog = new PrepSelectedViewModel(Nations.ToList(), Client, TargetRegion);
+                var dialog = new PrepSelectedWindowViewModel(Nations.ToList(), Client, TargetRegion);
                 await PrepSelectedDialog.Handle(dialog);
 
                 foreach(var n in Nations)
@@ -386,6 +385,48 @@ namespace Henson.ViewModels
                 }
 
                 FooterText = "Nations prepped!";
+            });
+
+            TagSelectedCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                if(await UserAgentNotSet()) return;
+
+                if(!Nations.Any(x => !x.Locked))
+                {
+                    var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "No Nations Selected",
+                        ContentMessage = "Please select some (unlocked) nations first.",
+                        Icon = Icon.Info,
+                    });
+                    await MessageBoxDialog.Handle(messageDialog);
+                    return;
+                }
+
+                FooterText = "Checking which nations have taggable RO perms...";
+
+                var SelectedNations = Nations.Where(x => x.Checked && !x.Locked).ToList();
+                var TaggableNations = (await NsClient.RunMany(SelectedNations, Client.IsROWithTagPerms)).Where(x => x != null)
+                                                     .Select(x => x!).ToList();
+
+                if(TaggableNations.Count == 0)
+                {
+                    var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "No Taggable Regions",
+                        ContentMessage = "None of the selected nations were in regions they could tag.",
+                        Icon = Icon.Info,
+                    });
+                    await MessageBoxDialog.Handle(messageDialog);
+                    return;
+                }
+
+                FooterText = "Opening tag window...";
+
+                var dialog = new TagSelectedWindowViewModel(TaggableNations, Client);
+                await TagSelectedDialog.Handle(dialog);
+
+                FooterText = "Regions tagged!";
             });
 
             //When any nation is checked or unchecked see if any nation is checked at all and set that value to a property
@@ -486,7 +527,7 @@ namespace Henson.ViewModels
             ButtonsEnabled = false;
             await Task.Delay(100);
 
-            var (chk, localId, pin) = Client.Login(nationLogin) ?? default;
+            var (chk, localId, pin) = await Client.Login(nationLogin) ?? default;
             if(chk != null)
             {
                 nation.Chk = chk;
@@ -534,7 +575,7 @@ namespace Henson.ViewModels
 
             ButtonsEnabled = false;
             await Task.Delay(100);
-            if(Client.ApplyWA(chk, currentPin))
+            if(await Client.ApplyWA(chk, currentPin))
             {
                 FooterText = $"{nation.Name} WA application successful!";
             }
@@ -603,7 +644,7 @@ namespace Henson.ViewModels
             ButtonsEnabled = false;
             await Task.Delay(100);
 
-            if(Client.MoveToJP(region, currentLocalID, currentPin))
+            if(await Client.MoveToJP(region, currentLocalID, currentPin))
             {
                 FooterText = $"{nation.Name} moved to {region}!";
                 nation.Region = char.ToUpper(region[0]) + region[1..];

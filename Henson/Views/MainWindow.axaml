@@ -48,6 +48,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <Button Command="{Binding OnLockSelectedClick}" Content="Lock/Unlock" IsEnabled="{Binding AnyNationSelected}"/>
             <Button Command="{Binding PingSelectedCommand}" Content="Ping" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
             <Button Command="{Binding PrepSelectedCommand}" Content="Prep" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
+            <Button Command="{Binding TagSelectedCommand}" Content="Tag" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
             <TextBlock VerticalAlignment="Center" Margin="10,0,0,0" Text="Current login: "/>
             <TextBlock VerticalAlignment="Center" Text="{Binding CurrentLoginUser}"/>
             <DockPanel HorizontalAlignment="Right">

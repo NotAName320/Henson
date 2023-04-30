@@ -32,7 +32,7 @@ using Avalonia.Media.Imaging;
 
 namespace Henson.Views
 {
-    public partial class PrepSelectedWindow : ReactiveWindow<PrepSelectedViewModel>
+    public partial class PrepSelectedWindow : ReactiveWindow<PrepSelectedWindowViewModel>
     {
         public PrepSelectedWindow()
         {
