@@ -40,7 +40,7 @@ namespace Henson.ViewModels
         public string Embassies
         {
             get => string.Join(',', _embassyList);
-            set => _embassyList = value.Split(',').ToList();
+            set => _embassyList = value.Split(',').Select(x => x.Trim()).ToList();
         }
         private List<string> _embassyList = new();
 
