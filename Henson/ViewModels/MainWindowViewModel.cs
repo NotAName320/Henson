@@ -455,8 +455,6 @@ namespace Henson.ViewModels
             //for buttons that need to be disabled in both situations
             this.WhenAnyValue(x => x.ButtonsEnabled, x => x.AnyNationSelected).Select(_ => ButtonsEnabled && AnyNationSelected)
                 .ToProperty(this, x => x.NationSelectedAndNoSiteRequests, out _nationSelectedAndNoSiteRequests);
-
-            //this.WhenAnyValue(x => x.Client.ManyCount).Select(_ => "")
         }
 
         /// <summary>
