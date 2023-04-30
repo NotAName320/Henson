@@ -136,7 +136,21 @@ namespace Henson.ViewModels
             }
         }
         private bool buttonsEnabled = true;
-        
+
+        /// <summary>
+        /// Boolean that controls the progress bar.
+        /// </summary>
+        public bool ShowProgressBar
+        {
+            get => showProgressBar;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref showProgressBar, value);
+            }
+        }
+        private bool showProgressBar = false;
+
+
         /// <summary>
         /// A boolean representation of whether any nation is selected in Nations at any time.
         /// </summary>
@@ -205,7 +219,9 @@ namespace Henson.ViewModels
                     ButtonsEnabled = false;
                     await Task.Delay(100);
 
-                    var nations = await NsClient.RunMany(result, Client.Ping);
+                    ShowProgressBar = true;
+                    var nations = await Client.RunMany(result, Client.Ping);
+                    ShowProgressBar = false;
 
                     if(nations.Any(x => x == null))
                     {
@@ -269,9 +285,11 @@ namespace Henson.ViewModels
 
                 FooterText = "Pinging nations...";
                 ButtonsEnabled = false;
-                await Task.Delay(100);
 
-                var nations = await NsClient.RunMany(nationLogins, Client.Ping);
+                ShowProgressBar = true;
+                var nations = await Client.RunMany(nationLogins, Client.Ping);
+                ShowProgressBar = false;
+
                 foreach(var n in nations)
                 {
                     if(n == null) continue;
@@ -406,8 +424,8 @@ namespace Henson.ViewModels
                 FooterText = "Checking which nations have taggable RO perms...";
 
                 var SelectedNations = Nations.Where(x => x.Checked && !x.Locked).ToList();
-                var TaggableNations = (await NsClient.RunMany(SelectedNations, Client.IsROWithTagPerms)).Where(x => x != null)
-                                                     .Select(x => x!).ToList();
+                var TaggableNations = (await Client.RunMany(SelectedNations, Client.IsROWithTagPerms)).Where(x => x != null)
+                                                   .Select(x => x!).ToList();
 
                 if(TaggableNations.Count == 0)
                 {
@@ -437,6 +455,8 @@ namespace Henson.ViewModels
             //for buttons that need to be disabled in both situations
             this.WhenAnyValue(x => x.ButtonsEnabled, x => x.AnyNationSelected).Select(_ => ButtonsEnabled && AnyNationSelected)
                 .ToProperty(this, x => x.NationSelectedAndNoSiteRequests, out _nationSelectedAndNoSiteRequests);
+
+            //this.WhenAnyValue(x => x.Client.ManyCount).Select(_ => "")
         }
 
         /// <summary>
@@ -796,6 +816,7 @@ namespace Henson.ViewModels
         /// </summary>
         private async void CheckIfLatestRelease()
         {
+            return;
             var currentVer = GetType().Assembly.GetName().Version!;
             var client = new GitHubClient(new ProductHeaderValue(Uri.EscapeDataString($"NotAName320/Henson v{currentVer}")));
             var latestRelease = await client.Repository.Release.GetLatest("NotAName320", "Henson");

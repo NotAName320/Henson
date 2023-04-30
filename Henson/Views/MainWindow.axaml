@@ -118,7 +118,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           </Grid>
       </TabItem>
     </TabControl>
-    <TextBlock Margin="10,0,0,10" Grid.Row="1" DockPanel.Dock="Bottom" Text="{Binding FooterText}"/>
+    <StackPanel HorizontalAlignment="Left" Margin="10,0,0,0" Grid.Row="1" Orientation="Horizontal">
+      <TextBlock Grid.Row="1" Text="{Binding FooterText}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+      <ProgressBar MinWidth="100" Height="18" IsVisible="{Binding ShowProgressBar}" ShowProgressText="False"
+                   Minimum="0" Value="{Binding Client.ManyCount}" Maximum="{Binding Client.ManyTotal}"/>
+      <!--Right now progress bar text is bugged, reinsert whenever https://github.com/AvaloniaUI/Avalonia/pull/8454
+      is backported-->
+    </StackPanel>
   </Grid>
 
 </Window>

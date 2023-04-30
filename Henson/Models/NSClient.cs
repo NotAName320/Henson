@@ -24,6 +24,7 @@ using Newtonsoft.Json.Linq;
 using NSDotnet;
 using NSDotnet.Enums;
 using Octokit;
+using ReactiveUI;
 using RestSharp;
 using System;
 using System.Collections.Generic;
@@ -34,7 +35,7 @@ using System.Xml;
 
 namespace Henson.Models
 {
-    public class NsClient
+    public class NsClient : ReactiveObject
     {
         /// <summary>
         /// A NSDotNet client that interacts with the NationStates API.
@@ -57,6 +58,32 @@ namespace Henson.Models
                 APIClient.UserAgent = Uri.EscapeDataString($"Henson v{GetType().Assembly.GetName().Version} developed by nation: Notanam in use by nation: {value}");
             }
         }
+
+        /// <summary>
+        /// The current index when running the same function multiple times with RunMany.
+        /// </summary>
+        public int ManyCount
+        {
+            get => manyCount;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref manyCount, value);
+            }
+        }
+        private int manyCount = 0;
+
+        /// <summary>
+        /// The current index when running the same function multiple times with RunMany.
+        /// </summary>
+        public int ManyTotal
+        {
+            get => manyTotal;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref manyTotal, value);
+            }
+        }
+        private int manyTotal = 0;
 
         /// <summary>
         /// A function that automatically gets the current unix second in string form.
@@ -108,14 +135,17 @@ namespace Henson.Models
         /// <param name="inputs">A list of data to insert.</param>
         /// <param name="function">The function to run.</param>
         /// <returns>A list of objects corresponding to what each login returned or <c>null</c> for each login failure.</returns>
-        public static async Task<List<TTwo?>> RunMany<TOne, TTwo>(List<TOne> inputs, Func<TOne, Task<TTwo?>> function)
+        public async Task<List<TTwo?>> RunMany<TOne, TTwo>(List<TOne> inputs, Func<TOne, Task<TTwo?>> function)
         {
+            ManyCount = 0;
+            ManyTotal = inputs.Count;
             List<TTwo?> results = new();
 
             foreach(var n in inputs)
             {
                 await Task.Delay(MultipleRequestsWaitTime);
                 results.Add(await function(n));
+                ManyCount++;
             }
 
             return results;
