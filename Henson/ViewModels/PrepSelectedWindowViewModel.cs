@@ -57,42 +57,42 @@ namespace Henson.ViewModels
         /// <summary>
         /// The list of all nations loaded by Henson.
         /// </summary>
-        private List<NationGridViewModel> Nations { get; set; }
+        private readonly List<NationGridViewModel> Nations;
 
         /// <summary>
         /// A list of nations selected by the user.
         /// </summary>
-        private List<NationLoginViewModel> SelectedNations { get; set; }
+        private readonly List<NationLoginViewModel> SelectedNations;
 
         /// <summary>
         /// The current index that the user is on.
         /// </summary>
-        private int LoginIndex { get; set; } = 0;
+        private int LoginIndex = 0;
 
         /// <summary>
         /// The number of nations successfully prepped without errors (e.g. moved region successfully).
         /// </summary>
-        private int PrepSuccesses { get; set; } = 0;
+        private int PrepSuccesses = 0;
 
         /// <summary>
         /// The current chk of the logged in nation.
         /// </summary>
-        private string CurrentChk { get; set; } = "";
+        private string CurrentChk = "";
 
         /// <summary>
         /// The current Local ID of the logged in nation.
         /// </summary>
-        private string CurrentLocalID { get; set; } = "";
+        private string CurrentLocalID = "";
 
         /// <summary>
         /// The current Pin of the logged in nation.
         /// </summary>
-        private string CurrentPin { get; set; } = "";
+        private string CurrentPin = "";
 
         /// <summary>
         /// The names of all the logins that failed.
         /// </summary>
-        private StringBuilder FailedLogins { get; set; } = new();
+        private StringBuilder FailedLogins = new();
 
         /// <summary>
         /// The text on the button.

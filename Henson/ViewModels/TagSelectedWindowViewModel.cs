@@ -191,34 +191,62 @@ namespace Henson.ViewModels
         private string flagFileName = "";
 
         /// <summary>
+        /// The current index that the user is on.
+        /// </summary>
+        public int LoginIndex
+        {
+            get => loginIndex;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref loginIndex, value);
+            }
+        }
+        private int loginIndex = 0;
+
+        /// <summary>
         /// An object storing the UserAgent and using it to make requests to NationStates via both API and site.
         /// </summary>
-        private NsClient Client { get; }
+        private readonly NsClient Client;
 
         /// <summary>
         /// The list of nations with RO perms to tag.
         /// </summary>
-        private List<NationGridViewModel> NationsToTag { get; set; }
+        private readonly List<NationGridViewModel> NationsToTag;
 
         /// <summary>
-        /// The current index that the user is on.
+        /// The embassy index that the user is on.
         /// </summary>
-        private int LoginIndex { get; set; } = 0;
+        private int EmbIndex = 0;
 
         /// <summary>
         /// The current chk of the logged in nation.
         /// </summary>
-        private string CurrentChk { get; set; } = "";
+        private string CurrentChk = "";
 
         /// <summary>
         /// The current Pin of the logged in nation.
         /// </summary>
-        private string CurrentPin { get; set; } = "";
+        private string CurrentPin = "";
+
+        /// <summary>
+        /// The current Banner ID uploaded to the region.
+        /// </summary>
+        private string CurrentBannerID = "";
+
+        /// <summary>
+        /// The current Flag ID uploaded to the region.
+        /// </summary>
+        private string CurrentFlagID = "";
 
         /// <summary>
         /// The names of all the logins that failed.
         /// </summary>
-        private StringBuilder FailedLogins { get; set; } = new();
+        private readonly StringBuilder FailedLogins = new();
+
+        /// <summary>
+        /// A list of embassies to close.
+        /// </summary>
+        private List<string> EmbassiesToClose = new();
 
         /// <summary>
         /// The log4net logger. It will emit messages as from TagSelectedWindowViewModel.
@@ -272,21 +300,33 @@ namespace Henson.ViewModels
                     return;
                 }
 
-                NationLoginViewModel currentNation = new(NationsToTag[LoginIndex].Name, NationsToTag[LoginIndex].Pass);
+                if(LoginIndex == NationsToTag.Count)
+                {
+                    MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Logins Complete",
+                        ContentMessage = $"All regions have been tagged. Please close the window now.",
+                        Icon = Icon.Info,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
+                    return;
+                }
+
+                NationGridViewModel currentNation = NationsToTag[LoginIndex];
 
                 ButtonsEnabled = false;
                 await Task.Delay(100);
-                switch(buttonText)
+                switch(buttonText) //very dumb mindless code who cares
                 {
                     case "Login":
-                        var (chk, localId, pin) = Client.Login(currentNation) ?? default;
+                        var (chk, localId, pin) = Client.Login(new NationLoginViewModel(currentNation.Name, currentNation.Pass)) ?? default;
                         if(chk != null)
                         {
                             CurrentChk = chk;
                             CurrentPin = pin;
 
                             FooterText = $"Logged in to {currentNation.Name}.";
-                            ButtonText = ""
+                            ButtonText = "Set WFE";
                         }
                         else
                         {
@@ -295,9 +335,123 @@ namespace Henson.ViewModels
                             LoginIndex++;
                         }
                         break;
-                    case "Change WFE":
+                    case "Set WFE":
+                        if(Client.SetWFE(currentNation.Region, CurrentChk, CurrentPin, WFE))
+                        {
+                            FooterText = $"Changed WFE of {currentNation.Region}!";
+                            ButtonText = "Upload Banner";
+                        }
+                        else
+                        {
+                            FooterText = $"Setting the WFE of {currentNation.Region} failed.";
+                            AddToFailedLogins(currentNation.Name);
+                            LoginIndex++;
+                            ButtonText = "Login";
+                        }
+                        break;
+                    case "Upload Banner":
+                        string? bannerID = Client.UploadBanner(currentNation.Region, CurrentChk, CurrentPin, BannerPath);
+                        if(bannerID != null)
+                        {
+                            CurrentBannerID = bannerID;
+                            FooterText = $"Uploaded banner to {currentNation.Region}!";
+                            ButtonText = "Upload Flag";
+                        }
+                        else
+                        {
+                            FooterText = $"Uploading a banner to {currentNation.Region} failed.";
+                            AddToFailedLogins(currentNation.Name);
+                            LoginIndex++;
+                            ButtonText = "Login";
+                        }
+                        break;
+                    case "Upload Flag":
+                        string? flagID = Client.UploadFlag(currentNation.Region, CurrentChk, CurrentPin, FlagPath);
+                        if(flagID != null)
+                        {
+                            CurrentFlagID = flagID;
+                            FooterText = $"Uploaded flag to {currentNation.Region}!";
+                            ButtonText = "Set Banner + Flag";
+                        }
+                        else
+                        {
+                            FooterText = $"Uploading a flag to {currentNation.Region} failed.";
+                            AddToFailedLogins(currentNation.Name);
+                            LoginIndex++;
+                            ButtonText = "Login";
+                        }
+                        break;
+                    case "Set Banner + Flag":
+                        if(Client.SetBannerFlag(currentNation.Region, CurrentChk, CurrentPin, CurrentBannerID, CurrentFlagID))
+                        {
+                            FooterText = $"Set banner and flag of {currentNation.Region}!";
+                            ButtonText = "Get Embassies";
+                        }
+                        else
+                        {
+                            FooterText = $"Setting banner and flag of {currentNation.Region} failed.";
+                            AddToFailedLogins(currentNation.Name);
+                            LoginIndex++;
+                            ButtonText = "Login";
+                        }
+                        break;
+                    case "Get Embassies":
+                        EmbassiesToClose = Client.GetEmbassies(currentNation.Region, CurrentPin);
+                        if(EmbassiesToClose.Count != 0)
+                        {
+                            FooterText = $"Found embassies in {currentNation.Region}!";
+                            ButtonText = "Close Embassy";
+                        }
+                        else
+                        {
+                            FooterText = $"Found no embassies to close in {currentNation.Region}.";
+                            ButtonText = "Request Embassy";
+                        }
+                        EmbIndex = 0;
+                        break;
+                    case "Close Embassy":
+                        if(EmbIndex == EmbassiesToClose.Count)
+                        {
+                            FooterText = "Done closing embassies!";
+                            ButtonText = "Request Embassy";
+                            EmbIndex = 0;
+                        }
+                        else
+                        {
+                            if(Client.CloseEmbassy(currentNation.Region, CurrentChk, CurrentPin, EmbassiesToClose[EmbIndex]))
+                            {
+                                FooterText = $"Successfully closed embassy {EmbassiesToClose[EmbIndex]}";
+                            }
+                            else
+                            {
+                                FooterText = $"Embassy closure failed, skipping...";
+                            }
+                            EmbIndex++;
+                        }
+                        break;
+                    case "Request Embassy":
+                        if(EmbIndex == _embassyList.Count)
+                        {
+                            FooterText = "Done requesting embassies!";
+                            LoginIndex++;
+                            ButtonText = "Login";
+                        }
+                        else
+                        {
+                            if(Client.RequestEmbassy(currentNation.Region, CurrentChk, CurrentPin, _embassyList[EmbIndex]))
+                            {
+                                FooterText = $"Successfully requested embassies with {_embassyList[EmbIndex]}";
+                            }
+                            else
+                            {
+                                FooterText = $"Embassy request failed, skipping...";
+                            }
+                            EmbIndex++;
+                        }
                         break;
                 }
+
+                ButtonsEnabled = true;
             });
 
             this.WhenAnyValue(x => x.LoginIndex).Select(_ => LoginIndex == NationsToTag.Count ? "" : NationsToTag[LoginIndex].Name)
@@ -313,7 +467,7 @@ namespace Henson.ViewModels
         /// <param name="loginName">The login name to be added.</param>
         private void AddToFailedLogins(string loginName)
         {
-            log.Error($"Prepping {loginName} failed");
+            log.Error($"Tagging with {loginName} failed");
             if(FailedLogins.ToString().Split("\n").Last().Length + loginName.Length + 2 > 75)
             {
                 FailedLogins.Append('\n');

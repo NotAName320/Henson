@@ -20,11 +20,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using Henson.ViewModels;
 using HtmlAgilityPack;
 using log4net;
+using Newtonsoft.Json.Linq;
 using NSDotnet;
+using NSDotnet.Enums;
+using Octokit;
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
@@ -81,7 +86,8 @@ namespace Henson.Models
         /// <returns>A <c>Nation</c> object with the nation's info or <c>null</c> if the login failed.</returns>
         public async Task<Nation?> Ping(NationLoginViewModel login)
         {
-            var response = await APIClient.MakeRequest(APILink + $"?nation={login.Name}&q=ping+name+flag+region", login.Pass);
+            APIClient.Auth = new NSAuth(AuthType.Password, login.Pass);
+            var response = await APIClient.MakeRequest(APILink + $"?nation={login.Name}&q=ping+name+flag+region");
 
             if(response == null || !response.IsSuccessStatusCode)
             {
@@ -248,6 +254,198 @@ namespace Henson.Models
 
             bool successful = response.Content != null && response.Content.Contains("Success!");
             if(!successful) log.Error($"Moving to JP {targetRegion} failed!");
+
+            return successful;
+        }
+
+        /// <summary>
+        /// Change the WFE of a region that a nation has permissions for.
+        /// </summary>
+        /// <param name="targetRegion">The name of the region to change the WFE of.</param>
+        /// <param name="chk">The chk recorded from a login.</param>
+        /// <param name="pin">The PIN recorded from a login.</param>
+        /// <param name="wfe">The WFE.</param>
+        /// <returns></returns>
+        public bool SetWFE(string targetRegion, string chk, string pin, string wfe)
+        {
+            RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
+            request.AddHeader("User-Agent", UserAgent);
+            request.AddParameter("page", "region_control");
+            request.AddParameter("chk", chk);
+            request.AddParameter("region", targetRegion);
+            request.AddParameter("setwfebutton", "1");
+            request.AddParameter("userclick", UserClick);
+            request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            //Convert to encoding
+            Encoding iso = Encoding.GetEncoding("ISO-8859-1");
+            request.AddParameter("message", iso.GetString(Encoding.Convert(Encoding.UTF8, iso, Encoding.UTF8.GetBytes(wfe))));
+
+            var response = HttpClient.Execute(request);
+
+            bool successful = response.Content != null && response.Content.Contains("World Factbook Entry updated!");
+            if(!successful) log.Error($"Changing WFE of {targetRegion} failed!");
+
+            return successful;
+        }
+
+        /// <summary>
+        /// Uploads a banner to the NationStates site.
+        /// </summary>
+        /// <param name="targetRegion">The region whose banner is being changed.</param>
+        /// <param name="chk">The chk recorded from a login.</param>
+        /// <param name="pin">The PIN recorded from a login.</param>
+        /// <param name="file">The path to the file being uploaded.</param>
+        /// <returns>The ID of the banner uploaded.</returns>
+        public string? UploadBanner(string targetRegion, string chk, string pin, string file)
+        {
+            RestRequest request = new("/cgi-bin/upload.cgi", Method.Post);
+            request.AddHeader("User-Agent", UserAgent);
+            request.AddParameter("page", "region_control");
+            request.AddParameter("uploadtype", "rbanner");
+            request.AddParameter("expect", "json");
+            request.AddParameter("chk", chk);
+            request.AddParameter("region", targetRegion);
+            request.AddParameter("userclick", UserClick);
+            request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            request.AddFile("file_upload_rbanner", file);
+
+            var response = HttpClient.Execute(request);
+
+            if(!response.IsSuccessStatusCode)
+            {
+                log.Error($"Uploading banner to {targetRegion} failed!");
+                return null;
+            }
+
+            return JObject.Parse(response.Content!)["id"]!.ToString();
+        }
+
+        /// <summary>
+        /// Uploads a flag to the NationStates site.
+        /// </summary>
+        /// <param name="targetRegion">The region whose banner is being changed.</param>
+        /// <param name="chk">The chk recorded from a login.</param>
+        /// <param name="pin">The PIN recorded from a login.</param>
+        /// <param name="file">The path to the file being uploaded.</param>
+        /// <returns>The ID of the banner uploaded.</returns>
+        public string? UploadFlag(string targetRegion, string chk, string pin, string file)
+        {
+            RestRequest request = new("/cgi-bin/upload.cgi", Method.Post);
+            request.AddHeader("User-Agent", UserAgent);
+            request.AddParameter("page", "region_control");
+            request.AddParameter("uploadtype", "rflag");
+            request.AddParameter("expect", "json");
+            request.AddParameter("chk", chk);
+            request.AddParameter("region", targetRegion);
+            request.AddParameter("userclick", UserClick);
+            request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            request.AddFile("file_upload_rflag", file);
+
+            var response = HttpClient.Execute(request);
+
+            if(!response.IsSuccessStatusCode)
+            {
+                log.Error($"Uploading flag to {targetRegion} failed!");
+                return null;
+            }
+
+            return JObject.Parse(response.Content!)["id"]!.ToString();
+        }
+
+        /// <summary>
+        /// Sets the banner and flag on the region.
+        /// </summary>
+        /// <param name="targetRegion">The region whose banner and flag is being changed.</param>
+        /// <param name="chk">The chk recorded from a login.</param>
+        /// <param name="pin">The PIN recorded from a login.</param>
+        /// <param name="bannerID">The banner ID from an earlier upload.</param>
+        /// <param name="flagID">The flag ID from an earlier upload.</param>
+        /// <returns></returns>
+        public bool SetBannerFlag(string targetRegion, string chk, string pin, string bannerID, string flagID)
+        {
+            RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
+            request.AddHeader("User-Agent", UserAgent);
+            request.AddParameter("page", "region_control");
+            request.AddParameter("chk", chk);
+            request.AddParameter("region", targetRegion);
+            request.AddParameter("newbanner", bannerID);
+            request.AddParameter("newflag", flagID);
+            request.AddParameter("saveflagandbannerchanges", "1");
+            request.AddParameter("flagmode", "flag");
+            request.AddParameter("newflagmode", "flag");
+            request.AddParameter("userclick", UserClick);
+            request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            var response = HttpClient.Execute(request);
+
+            bool successful = response.Content != null && response.Content.Contains("banner/flag updated!");
+            if(!successful) log.Error($"Setting banner and flag of {targetRegion} failed!");
+
+            return successful;
+        }
+
+        /// <summary>
+        /// Gets a list of embassies from the region.
+        /// </summary>
+        /// <param name="targetRegion">The region to get embassies from.</param>
+        /// <param name="pin">The PIN recorded from a login.</param>
+        /// <returns>A list of strings representing the embassies the region currently has.</returns>
+        public List<string> GetEmbassies(string targetRegion, string pin)
+        {
+            RestRequest request = new($"/template-overall=none/page=region_admin/region={targetRegion}", Method.Get);
+            request.AddCookie("pin", pin, "/", ".nationstates.net"); //Think I have to maintain the pin here but not sure, doesn't hurt anyway
+
+            var response = HttpClient.Execute(request);
+            HtmlDocument htmlDoc = new();
+            htmlDoc.LoadHtml(response.Content);
+
+            return htmlDoc.DocumentNode.Descendants().Where(x => x.HasClass("rlink")).Select(x => x.InnerText).ToList();
+        }
+
+        /// <summary>
+        /// Closes an embassy from a region.
+        /// </summary>
+        /// <param name="targetRegion">The region that the nation is currently in.</param>
+        /// <param name="chk">The chk recorded from a login.</param>
+        /// <param name="pin">The PIN recorded from a login.</param>
+        /// <param name="regionToClose">The region to close embassies with.</param>
+        /// <returns>Whether the closures were successful.</returns>
+        public bool CloseEmbassy(string targetRegion, string chk, string pin, string regionToClose)
+        {
+            RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
+            request.AddHeader("User-Agent", UserAgent);
+            request.AddParameter("page", "region_control");
+            request.AddParameter("chk", chk);
+            request.AddParameter("region", targetRegion);
+            request.AddParameter("rejectembassyregion", regionToClose);
+            request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            var response = HttpClient.Execute(request);
+
+            bool successful = response.Content != null && response.Content.Contains(" rejected.");
+            if(!successful) log.Error($"Rejecting embassy of {regionToClose} from {targetRegion} failed!");
+
+            return successful;
+        }
+
+        public bool RequestEmbassy(string targetRegion, string chk, string pin, string regionToRequest)
+        {
+            RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
+            request.AddHeader("User-Agent", UserAgent);
+            request.AddParameter("page", "region_control");
+            request.AddParameter("chk", chk);
+            request.AddParameter("region", targetRegion);
+            request.AddParameter("requestembassyregion", regionToRequest);
+            request.AddParameter("requestembassy", "1");
+            request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            var response = HttpClient.Execute(request);
+
+            bool successful = response.Content != null && response.Content.Contains(" has been sent.");
+            if(!successful) log.Error($"Requesting embassy of {regionToRequest} from {targetRegion} failed!");
 
             return successful;
         }
