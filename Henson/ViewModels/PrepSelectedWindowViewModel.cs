@@ -199,7 +199,7 @@ namespace Henson.ViewModels
                 switch(buttonText)
                 {
                     case "Login":
-                        var (chk, localId, pin) = Client.Login(currentNation) ?? default;
+                        var (chk, localId, pin) = await Client.Login(currentNation) ?? default;
                         if(chk != null)
                         {
                             CurrentChk = chk;
@@ -218,7 +218,7 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Apply WA":
-                        if(Client.ApplyWA(CurrentChk, CurrentPin))
+                        if(await Client.ApplyWA(CurrentChk, CurrentPin))
                         {
                             ButtonText = "Move to JP";
                             FooterText = $"Sent WA application on {currentNation.Name}.";
@@ -246,7 +246,7 @@ namespace Henson.ViewModels
                             return;
                         }
 
-                        if(!Client.MoveToJP(TargetRegion, CurrentLocalID, CurrentPin))
+                        if(!await Client.MoveToJP(TargetRegion, CurrentLocalID, CurrentPin))
                         {
                             FooterText = $"Moving {currentNation.Name} failed.";
                             AddToFailedLogins(currentNation.Name);

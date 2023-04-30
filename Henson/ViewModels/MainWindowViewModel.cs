@@ -527,7 +527,7 @@ namespace Henson.ViewModels
             ButtonsEnabled = false;
             await Task.Delay(100);
 
-            var (chk, localId, pin) = Client.Login(nationLogin) ?? default;
+            var (chk, localId, pin) = await Client.Login(nationLogin) ?? default;
             if(chk != null)
             {
                 nation.Chk = chk;
@@ -575,7 +575,7 @@ namespace Henson.ViewModels
 
             ButtonsEnabled = false;
             await Task.Delay(100);
-            if(Client.ApplyWA(chk, currentPin))
+            if(await Client.ApplyWA(chk, currentPin))
             {
                 FooterText = $"{nation.Name} WA application successful!";
             }
@@ -644,7 +644,7 @@ namespace Henson.ViewModels
             ButtonsEnabled = false;
             await Task.Delay(100);
 
-            if(Client.MoveToJP(region, currentLocalID, currentPin))
+            if(await Client.MoveToJP(region, currentLocalID, currentPin))
             {
                 FooterText = $"{nation.Name} moved to {region}!";
                 nation.Region = char.ToUpper(region[0]) + region[1..];

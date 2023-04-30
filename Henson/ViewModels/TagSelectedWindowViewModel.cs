@@ -18,7 +18,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
@@ -319,7 +318,7 @@ namespace Henson.ViewModels
                 switch(buttonText) //very dumb mindless code who cares
                 {
                     case "Login":
-                        var (chk, localId, pin) = Client.Login(new NationLoginViewModel(currentNation.Name, currentNation.Pass)) ?? default;
+                        var (chk, localId, pin) = await Client.Login(new NationLoginViewModel(currentNation.Name, currentNation.Pass)) ?? default;
                         if(chk != null)
                         {
                             CurrentChk = chk;
@@ -336,7 +335,7 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Set WFE":
-                        if(Client.SetWFE(currentNation.Region, CurrentChk, CurrentPin, WFE))
+                        if(await Client.SetWFE(currentNation.Region, CurrentChk, CurrentPin, WFE))
                         {
                             FooterText = $"Changed WFE of {currentNation.Region}!";
                             ButtonText = "Upload Banner";
@@ -350,7 +349,7 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Upload Banner":
-                        string? bannerID = Client.UploadBanner(currentNation.Region, CurrentChk, CurrentPin, BannerPath);
+                        string? bannerID = await Client.UploadBanner(currentNation.Region, CurrentChk, CurrentPin, BannerPath);
                         if(bannerID != null)
                         {
                             CurrentBannerID = bannerID;
@@ -366,7 +365,7 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Upload Flag":
-                        string? flagID = Client.UploadFlag(currentNation.Region, CurrentChk, CurrentPin, FlagPath);
+                        string? flagID = await Client.UploadFlag(currentNation.Region, CurrentChk, CurrentPin, FlagPath);
                         if(flagID != null)
                         {
                             CurrentFlagID = flagID;
@@ -382,7 +381,7 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Set Banner + Flag":
-                        if(Client.SetBannerFlag(currentNation.Region, CurrentChk, CurrentPin, CurrentBannerID, CurrentFlagID))
+                        if(await Client.SetBannerFlag(currentNation.Region, CurrentChk, CurrentPin, CurrentBannerID, CurrentFlagID))
                         {
                             FooterText = $"Set banner and flag of {currentNation.Region}!";
                             ButtonText = "Get Embassies";
@@ -396,7 +395,7 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Get Embassies":
-                        EmbassiesToClose = Client.GetEmbassies(currentNation.Region, CurrentPin);
+                        EmbassiesToClose = await Client.GetEmbassies(currentNation.Region, CurrentPin);
                         if(EmbassiesToClose.Count != 0)
                         {
                             FooterText = $"Found embassies in {currentNation.Region}!";
@@ -418,7 +417,7 @@ namespace Henson.ViewModels
                         }
                         else
                         {
-                            if(Client.CloseEmbassy(currentNation.Region, CurrentChk, CurrentPin, EmbassiesToClose[EmbIndex]))
+                            if(await Client.CloseEmbassy(currentNation.Region, CurrentChk, CurrentPin, EmbassiesToClose[EmbIndex]))
                             {
                                 FooterText = $"Successfully closed embassy {EmbassiesToClose[EmbIndex]}";
                             }
@@ -438,7 +437,7 @@ namespace Henson.ViewModels
                         }
                         else
                         {
-                            if(Client.RequestEmbassy(currentNation.Region, CurrentChk, CurrentPin, _embassyList[EmbIndex]))
+                            if(await Client.RequestEmbassy(currentNation.Region, CurrentChk, CurrentPin, _embassyList[EmbIndex]))
                             {
                                 FooterText = $"Successfully requested embassies with {_embassyList[EmbIndex]}";
                             }

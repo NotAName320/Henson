@@ -27,7 +27,6 @@ using Octokit;
 using RestSharp;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -177,7 +176,7 @@ namespace Henson.Models
         /// </summary>
         /// <param name="login">A username-password pair.</param>
         /// <returns>A tuple containg the chk, Local ID, and pin, or null if the login was unsuccessful.</returns>
-        public (string chk, string localId, string pin)? Login(NationLoginViewModel login)
+        public async Task<(string chk, string localId, string pin)?> Login(NationLoginViewModel login)
         {
             log.Info($"Logging in to {login.Name}");
             //non template=none region page allows us to get chk and localid in one request
@@ -189,7 +188,7 @@ namespace Henson.Models
             request.AddParameter("logging_in", "1");
             request.AddParameter("userclick", UserClick);
 
-            var response = HttpClient.Execute(request);
+            var response = await HttpClient.ExecuteAsync(request);
             HtmlDocument htmlDoc = new();
             htmlDoc.LoadHtml(response.Content);
 
@@ -215,7 +214,7 @@ namespace Henson.Models
         /// <param name="chk">The chk recorded from a login.</param>
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <returns>A boolean indicating whether or not the application was successfully sent.</returns>
-        public bool ApplyWA(string chk, string pin)
+        public async Task<bool> ApplyWA(string chk, string pin)
         {
             RestRequest request = new("/template-overall=none/page=UN_status", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
@@ -225,7 +224,7 @@ namespace Henson.Models
             request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
-            var response = HttpClient.Execute(request);
+            var response = await HttpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains("has been received!");
             if(!successful) log.Error($"Applying to WA failed!");
@@ -240,7 +239,7 @@ namespace Henson.Models
         /// <param name="localID">The Local ID recorded from a login.</param>
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <returns>A boolean indicating whether or not the move was successful.</returns>
-        public bool MoveToJP(string targetRegion, string localID, string pin)
+        public async Task<bool> MoveToJP(string targetRegion, string localID, string pin)
         {
             RestRequest request = new("/template-overall=none/page=change_region", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
@@ -250,7 +249,7 @@ namespace Henson.Models
             request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
-            var response = HttpClient.Execute(request);
+            var response = await HttpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains("Success!");
             if(!successful) log.Error($"Moving to JP {targetRegion} failed!");
@@ -266,7 +265,7 @@ namespace Henson.Models
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <param name="wfe">The WFE.</param>
         /// <returns></returns>
-        public bool SetWFE(string targetRegion, string chk, string pin, string wfe)
+        public async Task<bool> SetWFE(string targetRegion, string chk, string pin, string wfe)
         {
             RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
@@ -281,7 +280,7 @@ namespace Henson.Models
             Encoding iso = Encoding.GetEncoding("ISO-8859-1");
             request.AddParameter("message", iso.GetString(Encoding.Convert(Encoding.UTF8, iso, Encoding.UTF8.GetBytes(wfe))));
 
-            var response = HttpClient.Execute(request);
+            var response = await HttpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains("World Factbook Entry updated!");
             if(!successful) log.Error($"Changing WFE of {targetRegion} failed!");
@@ -297,7 +296,7 @@ namespace Henson.Models
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <param name="file">The path to the file being uploaded.</param>
         /// <returns>The ID of the banner uploaded.</returns>
-        public string? UploadBanner(string targetRegion, string chk, string pin, string file)
+        public async Task<string?> UploadBanner(string targetRegion, string chk, string pin, string file)
         {
             RestRequest request = new("/cgi-bin/upload.cgi", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
@@ -311,7 +310,7 @@ namespace Henson.Models
 
             request.AddFile("file_upload_rbanner", file);
 
-            var response = HttpClient.Execute(request);
+            var response = await HttpClient.ExecuteAsync(request);
 
             if(!response.IsSuccessStatusCode)
             {
@@ -330,7 +329,7 @@ namespace Henson.Models
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <param name="file">The path to the file being uploaded.</param>
         /// <returns>The ID of the banner uploaded.</returns>
-        public string? UploadFlag(string targetRegion, string chk, string pin, string file)
+        public async Task<string?> UploadFlag(string targetRegion, string chk, string pin, string file)
         {
             RestRequest request = new("/cgi-bin/upload.cgi", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
@@ -344,7 +343,7 @@ namespace Henson.Models
 
             request.AddFile("file_upload_rflag", file);
 
-            var response = HttpClient.Execute(request);
+            var response = await HttpClient.ExecuteAsync(request);
 
             if(!response.IsSuccessStatusCode)
             {
@@ -364,7 +363,7 @@ namespace Henson.Models
         /// <param name="bannerID">The banner ID from an earlier upload.</param>
         /// <param name="flagID">The flag ID from an earlier upload.</param>
         /// <returns></returns>
-        public bool SetBannerFlag(string targetRegion, string chk, string pin, string bannerID, string flagID)
+        public async Task<bool> SetBannerFlag(string targetRegion, string chk, string pin, string bannerID, string flagID)
         {
             RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
@@ -379,7 +378,7 @@ namespace Henson.Models
             request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
-            var response = HttpClient.Execute(request);
+            var response = await HttpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains("banner/flag updated!");
             if(!successful) log.Error($"Setting banner and flag of {targetRegion} failed!");
@@ -393,12 +392,12 @@ namespace Henson.Models
         /// <param name="targetRegion">The region to get embassies from.</param>
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <returns>A list of strings representing the embassies the region currently has.</returns>
-        public List<string> GetEmbassies(string targetRegion, string pin)
+        public async Task<List<string>> GetEmbassies(string targetRegion, string pin)
         {
             RestRequest request = new($"/template-overall=none/page=region_admin/region={targetRegion}", Method.Get);
             request.AddCookie("pin", pin, "/", ".nationstates.net"); //Think I have to maintain the pin here but not sure, doesn't hurt anyway
 
-            var response = HttpClient.Execute(request);
+            var response = await HttpClient.ExecuteAsync(request);
             HtmlDocument htmlDoc = new();
             htmlDoc.LoadHtml(response.Content);
 
@@ -413,7 +412,7 @@ namespace Henson.Models
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <param name="regionToClose">The region to close embassies with.</param>
         /// <returns>Whether the closures were successful.</returns>
-        public bool CloseEmbassy(string targetRegion, string chk, string pin, string regionToClose)
+        public async Task<bool> CloseEmbassy(string targetRegion, string chk, string pin, string regionToClose)
         {
             RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
@@ -423,7 +422,7 @@ namespace Henson.Models
             request.AddParameter("rejectembassyregion", regionToClose);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
-            var response = HttpClient.Execute(request);
+            var response = await HttpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains(" rejected.");
             if(!successful) log.Error($"Rejecting embassy of {regionToClose} from {targetRegion} failed!");
@@ -431,7 +430,7 @@ namespace Henson.Models
             return successful;
         }
 
-        public bool RequestEmbassy(string targetRegion, string chk, string pin, string regionToRequest)
+        public async Task<bool> RequestEmbassy(string targetRegion, string chk, string pin, string regionToRequest)
         {
             RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
@@ -442,7 +441,7 @@ namespace Henson.Models
             request.AddParameter("requestembassy", "1");
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
-            var response = HttpClient.Execute(request);
+            var response = await HttpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains(" has been sent.");
             if(!successful) log.Error($"Requesting embassy of {regionToRequest} from {targetRegion} failed!");
