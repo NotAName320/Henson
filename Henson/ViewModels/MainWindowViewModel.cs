@@ -814,7 +814,6 @@ namespace Henson.ViewModels
         /// </summary>
         private async void CheckIfLatestRelease()
         {
-            return;
             var currentVer = GetType().Assembly.GetName().Version!;
             var client = new GitHubClient(new ProductHeaderValue(Uri.EscapeDataString($"NotAName320/Henson v{currentVer}")));
             var latestRelease = await client.Repository.Release.GetLatest("NotAName320", "Henson");
