@@ -318,7 +318,7 @@ namespace Henson.ViewModels
                 switch(buttonText) //very dumb mindless code who cares
                 {
                     case "Login":
-                        var (chk, localId, pin) = await Client.Login(new NationLoginViewModel(currentNation.Name, currentNation.Pass)) ?? default;
+                        var (chk, localId, pin, region) = await Client.Login(new NationLoginViewModel(currentNation.Name, currentNation.Pass)) ?? default;
                         if(chk != null)
                         {
                             CurrentChk = chk;

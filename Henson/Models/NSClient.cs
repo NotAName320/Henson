@@ -176,7 +176,7 @@ namespace Henson.Models
         /// </summary>
         /// <param name="login">A username-password pair.</param>
         /// <returns>A tuple containg the chk, Local ID, and pin, or null if the login was unsuccessful.</returns>
-        public async Task<(string chk, string localId, string pin)?> Login(NationLoginViewModel login)
+        public async Task<(string chk, string localId, string pin, string region)?> Login(NationLoginViewModel login)
         {
             log.Info($"Logging in to {login.Name}");
             //non template=none region page allows us to get chk and localid in one request
@@ -192,12 +192,16 @@ namespace Henson.Models
             HtmlDocument htmlDoc = new();
             htmlDoc.LoadHtml(response.Content);
 
-            string chk, localId, pin;
+            string chk, localId, pin, region;
             try
             {
+                //idk how to explain this but it works
                 chk = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='chk']").Attributes["value"].Value;
                 localId = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='localid']").Attributes["value"].Value;
                 pin = response!.Headers!.ToList().Find(x => x.Name == "Set-Cookie")!.Value!.ToString()!.Split("; ")[0].Split('=')[1];
+                region = htmlDoc.DocumentNode.SelectSingleNode("//li[@id='panelregionbar']").FirstChild.Attributes["href"].Value
+                                .Replace("region=", "").Replace('_', ' ');
+                region = char.ToUpper(region[0]) + region[1..];
             }
             catch (Exception)
             {
@@ -205,7 +209,7 @@ namespace Henson.Models
                 return null;
             }
 
-            return (chk, localId, pin);
+            return (chk, localId, pin, region);
         }
 
         /// <summary>

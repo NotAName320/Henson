@@ -527,13 +527,18 @@ namespace Henson.ViewModels
             ButtonsEnabled = false;
             await Task.Delay(100);
 
-            var (chk, localId, pin) = await Client.Login(nationLogin) ?? default;
+            var (chk, localId, pin, region) = await Client.Login(nationLogin) ?? default;
             if(chk != null)
             {
                 nation.Chk = chk;
                 currentLocalID = localId;
                 currentPin = pin;
                 CurrentLoginUser = nation.Name;
+                if(region.ToLower() != nation.Region.ToLower())
+                {
+                    nation.Region = region;
+                    DbClient.ExecuteNonQuery($"UPDATE nations SET region = '{region}' WHERE name = '{nation.Name}'");
+                }
 
                 FooterText = $"Logged in to {nation.Name}";
             }

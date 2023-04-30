@@ -52,7 +52,7 @@ namespace Henson.ViewModels
         /// <summary>
         /// An object storing the UserAgent and using it to make requests to NationStates via both API and site.
         /// </summary>
-        private NsClient Client { get; }
+        private readonly NsClient Client;
 
         /// <summary>
         /// The list of all nations loaded by Henson.
@@ -92,7 +92,7 @@ namespace Henson.ViewModels
         /// <summary>
         /// The names of all the logins that failed.
         /// </summary>
-        private StringBuilder FailedLogins = new();
+        private readonly StringBuilder FailedLogins = new();
 
         /// <summary>
         /// The text on the button.
@@ -199,13 +199,21 @@ namespace Henson.ViewModels
                 switch(buttonText)
                 {
                     case "Login":
-                        var (chk, localId, pin) = await Client.Login(currentNation) ?? default;
+                        var (chk, localId, pin, region) = await Client.Login(currentNation) ?? default;
                         if(chk != null)
                         {
                             CurrentChk = chk;
                             CurrentLocalID = localId;
                             CurrentPin = pin;
                             CurrentLogin = currentNation.Name;
+
+                            //cant be bothered to change nations type to NationGridViewModel
+                            //have this dumb LINQ instead
+                            if(region.ToLower() != nations.Where(x => x.Name == currentNation.Name).First().Region.ToLower())
+                            {
+                                Nations.Where(x => x.Name == currentNation.Name).First().Region = region;
+                                DbClient.ExecuteNonQuery($"UPDATE nations SET region = '{region}' WHERE name = '{currentNation.Name}'");
+                            }
 
                             FooterText = $"Logged in to {currentNation.Name}.";
                             ButtonText = AlsoApplyWA ? "Apply WA" : "Move to JP";
@@ -246,7 +254,11 @@ namespace Henson.ViewModels
                             return;
                         }
 
-                        if(!await Client.MoveToJP(TargetRegion, CurrentLocalID, CurrentPin))
+                        if(Nations.Where(x => x.Name == currentNation.Name).First().Region.ToLower() == TargetRegion.ToLower())
+                        {
+                            FooterText = $"{currentNation.Name} already in {TargetRegion}!";
+                        }
+                        else if(!await Client.MoveToJP(TargetRegion, CurrentLocalID, CurrentPin))
                         {
                             FooterText = $"Moving {currentNation.Name} failed.";
                             AddToFailedLogins(currentNation.Name);
@@ -254,7 +266,8 @@ namespace Henson.ViewModels
                         else
                         {
                             FooterText = $"Moved {currentNation.Name} to {TargetRegion}.";
-                            Nations.Where(x => x.Name == currentNation.Name).First().Region = TargetRegion;
+                            Nations.Where(x => x.Name == currentNation.Name).First().Region = char.ToUpper(TargetRegion[0]) + TargetRegion[1..];
+                            DbClient.ExecuteNonQuery($"UPDATE nations SET region = '{char.ToUpper(TargetRegion[0]) + TargetRegion[1..]}' WHERE name = '{currentNation.Name}'");
                             PrepSuccesses++;
                         }
                         ButtonText = "Login";
