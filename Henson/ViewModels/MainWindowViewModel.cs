@@ -423,9 +423,13 @@ namespace Henson.ViewModels
 
                 FooterText = "Checking which nations have taggable RO perms...";
 
+                ButtonsEnabled = false;
+
                 var SelectedNations = Nations.Where(x => x.Checked && !x.Locked).ToList();
                 var TaggableNations = (await Client.RunMany(SelectedNations, Client.IsROWithTagPerms)).Where(x => x != null)
                                                    .Select(x => x!).ToList();
+
+                ButtonsEnabled = true;
 
                 if(TaggableNations.Count == 0)
                 {
