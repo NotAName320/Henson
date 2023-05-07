@@ -54,6 +54,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NSDotNet\src\NSDotNet.csproj" />
+    <ProjectReference Include="..\NSDotNet\src\NSDotnet.csproj" />
   </ItemGroup>
 </Project>
