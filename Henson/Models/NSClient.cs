@@ -454,9 +454,11 @@ namespace Henson.Models
             request.AddParameter("page", "region_control");
             request.AddParameter("chk", chk);
             request.AddParameter("region", targetRegion);
+            //looks like these 4 parameters conflict with each other... must modify getembassies to account for different classes of established embassies
             request.AddParameter("rejectembassyregion", regionToClose);
             request.AddParameter("cancelembassyregion", regionToClose);
             request.AddParameter("withdrawembassyregion", regionToClose);
+            request.AddParameter("abortembassyregion", regionToClose);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
             var response = await HttpClient.ExecuteAsync(request);
