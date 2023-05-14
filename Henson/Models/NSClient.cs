@@ -28,6 +28,7 @@ using ReactiveUI;
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -193,7 +194,7 @@ namespace Henson.Models
             XmlDocument doc = new();
             doc.LoadXml(await response.Content.ReadAsStringAsync());
             XmlNode root = doc.DocumentElement!;
-            XmlNodeList nodeList = root.SelectNodes($"descendant::OFFICER[NATION='{nation.Name.ToLower()}']")!;
+            XmlNodeList nodeList = root.SelectNodes($"descendant::OFFICER[NATION='{nation.Name.ToLower().Replace(' ', '_')}']")!;
 
             string authority = FindProperty(nodeList, "AUTHORITY");
 
@@ -439,7 +440,7 @@ namespace Henson.Models
         }
 
         /// <summary>
-        /// Closes an embassy from a region.
+        /// Closes/Rejects an offer/withdraws an offer for an embassy from a region.
         /// </summary>
         /// <param name="targetRegion">The region that the nation is currently in.</param>
         /// <param name="chk">The chk recorded from a login.</param>
@@ -454,11 +455,13 @@ namespace Henson.Models
             request.AddParameter("chk", chk);
             request.AddParameter("region", targetRegion);
             request.AddParameter("rejectembassyregion", regionToClose);
+            request.AddParameter("cancelembassyregion", regionToClose);
+            request.AddParameter("withdrawembassyregion", regionToClose);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
             var response = await HttpClient.ExecuteAsync(request);
 
-            bool successful = response.Content != null && response.Content.Contains(" rejected.");
+            bool successful = response.Content != null && (response.Content.Contains(" rejected.") || response.Content.Contains(" demolition.") || response.Content.Contains(" withdrawn."));
             if(!successful) log.Error($"Rejecting embassy of {regionToClose} from {targetRegion} failed!");
 
             return successful;

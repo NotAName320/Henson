@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Henson.Models;
 using log4net;
-using MessageBox.Avalonia.DTO;
+using MessageBox.Avalonia.DTO; 
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 
@@ -141,6 +141,46 @@ namespace Henson.ViewModels
         /// </summary>
         public string CurrentRegion => _currentRegion.Value;
         private readonly ObservableAsPropertyHelper<string> _currentRegion;
+
+        public bool EmbassiesEnabled
+        {
+            get => embassiesEnabled;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref embassiesEnabled, value);
+            }
+        }
+        private bool embassiesEnabled = false;
+
+        public bool FlagBannerEnabled
+        {
+            get => flagBannerEnabled;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref flagBannerEnabled, value);
+            }
+        }
+        private bool flagBannerEnabled = false;
+
+        public bool WFEEnabled
+        {
+            get => wFEEnabled;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref wFEEnabled, value);
+            }
+        }
+        private bool wFEEnabled = false;
+
+        public bool TagsEnabled
+        {
+            get => tagsEnabled;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref tagsEnabled, value);
+            }
+        }
+        private bool tagsEnabled = false;
 
         /// <summary>
         /// The text displayed in the footer of the window.
@@ -275,7 +315,21 @@ namespace Henson.ViewModels
 
             ActionButtonCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                if(WFE == "")
+                //if none of the tag features are enabled
+                if((new bool[] { EmbassiesEnabled, FlagBannerEnabled, WFEEnabled, TagsEnabled }).All(x => !x))
+                {
+                    MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Nothing Selected",
+                        ContentMessage = $"Please select something to do to the regions.",
+                        Icon = Icon.Error,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
+                    return;
+
+                }
+
+                if(WFEEnabled && WFE == "")
                 {
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
@@ -287,7 +341,7 @@ namespace Henson.ViewModels
                     return;
                 }
 
-                if(BannerPath == "" || FlagPath == "")
+                if(FlagBannerEnabled && (BannerPath == "" || FlagPath == ""))
                 {
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
@@ -315,7 +369,7 @@ namespace Henson.ViewModels
 
                 ButtonsEnabled = false;
                 await Task.Delay(100);
-                switch(buttonText) //very dumb mindless code who cares
+                switch(ButtonText) //very dumb mindless code who cares
                 {
                     case "Login":
                         var (chk, localId, pin, region) = await Client.Login(new NationLoginViewModel(currentNation.Name, currentNation.Pass)) ?? default;
@@ -325,7 +379,7 @@ namespace Henson.ViewModels
                             CurrentPin = pin;
 
                             FooterText = $"Logged in to {currentNation.Name}.";
-                            ButtonText = "Set WFE";
+                            GetNextButtonText();
                         }
                         else
                         {
@@ -338,7 +392,7 @@ namespace Henson.ViewModels
                         if(await Client.SetWFE(currentNation.Region, CurrentChk, CurrentPin, WFE))
                         {
                             FooterText = $"Changed WFE of {currentNation.Region}!";
-                            ButtonText = "Upload Banner";
+                            GetNextButtonText();
                         }
                         else
                         {
@@ -354,7 +408,7 @@ namespace Henson.ViewModels
                         {
                             CurrentBannerID = bannerID;
                             FooterText = $"Uploaded banner to {currentNation.Region}!";
-                            ButtonText = "Upload Flag";
+                            GetNextButtonText();
                         }
                         else
                         {
@@ -370,7 +424,7 @@ namespace Henson.ViewModels
                         {
                             CurrentFlagID = flagID;
                             FooterText = $"Uploaded flag to {currentNation.Region}!";
-                            ButtonText = "Set Banner + Flag";
+                            GetNextButtonText();
                         }
                         else
                         {
@@ -384,7 +438,7 @@ namespace Henson.ViewModels
                         if(await Client.SetBannerFlag(currentNation.Region, CurrentChk, CurrentPin, CurrentBannerID, CurrentFlagID))
                         {
                             FooterText = $"Set banner and flag of {currentNation.Region}!";
-                            ButtonText = "Get Embassies";
+                            GetNextButtonText();
                         }
                         else
                         {
@@ -472,6 +526,48 @@ namespace Henson.ViewModels
                 FailedLogins.Append('\n');
             }
             FailedLogins.Append(loginName + ", ");
+        }
+
+        /// <summary>
+        /// This switch statement reconciles the logic with the booleans and the ButtonText field to progress
+        /// the button to its next logical text. Somehow.
+        /// </summary>
+        private void GetNextButtonText()
+        {
+            switch(ButtonText)
+            {
+                case "Login":
+                    if(WFEEnabled)
+                    {
+                        ButtonText = "Set WFE";
+                        break;
+                    }
+                    goto case "Set WFE"; //no default fall through in C#, compiler gets mad
+                case "Set WFE":
+                    if(FlagBannerEnabled)
+                    {
+                        ButtonText = "Upload Banner";
+                        break;
+                    }
+                    goto case "Set Banner + Flag";
+                case "Upload Banner":
+                    ButtonText = "Upload Flag";
+                    break;
+                case "Upload Flag":
+                    ButtonText = "Set Banner + Flag";
+                    break;
+                case "Set Banner + Flag":
+                    if(EmbassiesEnabled)
+                    {
+                        ButtonText = "Get Embassies";
+                        break;
+                    }
+                    goto default;
+                default:
+                    ButtonText = "Login";
+                    LoginIndex++;
+                    break;
+            }
         }
     }
 }

@@ -40,19 +40,29 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <TextBlock Text="{Binding CurrentRegion}"/>
     </DockPanel>
     <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
+      <CheckBox IsChecked="{Binding EmbassiesEnabled}"/>
       <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Embassies:</TextBlock>
-      <TextBox MinWidth="200" MaxWidth="200" Text="{Binding Embassies}"/>
+      <TextBox MinWidth="200" MaxWidth="200" Text="{Binding Embassies}"
+               IsEnabled="{Binding EmbassiesEnabled}"/>
     </DockPanel>
     <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
+      <CheckBox IsChecked="{Binding FlagBannerEnabled}"/>
       <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Banner:</TextBlock>
-      <Button Margin="0,0,10,0" Command="{Binding BannerPickerCommand}">Browse...</Button>
+      <Button Margin="0,0,10,0" Command="{Binding BannerPickerCommand}"
+              IsEnabled="{Binding FlagBannerEnabled}">Browse...</Button>
       <TextBlock VerticalAlignment="Center" Margin="0,0,10,0" Text="{Binding BannerFileName}"/>
       <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Flag:</TextBlock>
-      <Button Margin="0,0,10,0" Command="{Binding FlagPickerCommand}">Browse...</Button>
+      <Button Margin="0,0,10,0" Command="{Binding FlagPickerCommand}"
+              IsEnabled="{Binding FlagBannerEnabled}">Browse...</Button>
       <TextBlock VerticalAlignment="Center" Text="{Binding FlagFileName}"/>
     </DockPanel>
-    <TextBlock DockPanel.Dock="Top" Margin="10,10,10,0">WFE:</TextBlock>
-    <TextBox DockPanel.Dock="Top" Margin="10" MinWidth="880" MaxWidth="880" MinHeight="250" MaxHeight="250" AcceptsReturn="True" Text="{Binding WFE}"/>
+    <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10,10,10,0">
+      <CheckBox IsChecked="{Binding WFEEnabled}"/>
+      <TextBlock DockPanel.Dock="Top" VerticalAlignment="Center">WFE:</TextBlock>
+    </DockPanel>
+    <TextBox DockPanel.Dock="Top" Margin="10" MinWidth="880" MaxWidth="880"
+             MinHeight="230" MaxHeight="230" AcceptsReturn="True"
+             IsEnabled="{Binding WFEEnabled}" Text="{Binding WFE}"/>
 
     <TextBlock DockPanel.Dock="Bottom" Margin="10,10,0,10"
                Text="{Binding FooterText}"/>
