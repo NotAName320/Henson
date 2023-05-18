@@ -1,4 +1,4 @@
-﻿/*
+/*
 Henson's NationStates client
 Copyright (C) 2023 NotAName320
 
@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml;
 
 namespace Henson.Models
@@ -312,9 +313,11 @@ namespace Henson.Models
             request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
+            // HTML Escape the wfe to preserve unicode
+            string Escaped = HttpUtility.HtmlEncode(wfe);
             //Convert to encoding
             Encoding iso = Encoding.GetEncoding("ISO-8859-1");
-            request.AddParameter("message", iso.GetString(Encoding.Convert(Encoding.UTF8, iso, Encoding.UTF8.GetBytes(wfe))));
+            request.AddParameter("message", iso.GetString(Encoding.Convert(Encoding.UTF8, iso, Encoding.UTF8.GetBytes(Escaped))));
 
             var response = await HttpClient.ExecuteAsync(request);
 
