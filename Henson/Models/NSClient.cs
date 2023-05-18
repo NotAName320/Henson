@@ -218,6 +218,9 @@ namespace Henson.Models
             request.AddParameter("userclick", UserClick);
 
             var response = await HttpClient.ExecuteAsync(request);
+
+            if(response.Content == null) return null;
+
             HtmlDocument htmlDoc = new();
             htmlDoc.LoadHtml(response.Content);
 
