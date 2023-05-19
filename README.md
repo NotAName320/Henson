@@ -49,6 +49,18 @@ successfully got Henson to work, please contact me and tell me how you did it!
 Simply drag the new files on top of the old ones and replace them. The program 
 will automatically update the settings file and database with new features!
 
+## Contributing
+Simply pull the repository from GitHub and open the solution with your IDE of 
+choice.
+
+For consistency's sake, please follow some general style guidelines
+- Braces on new line
+- No space between keyword and opening parenthesis (e.g. `if(condition)`)
+- Avoid long lines, no hard limit across the repository (yet)
+
+By making a pull request, you agree to release your code to my copyright to be 
+licensed under GPLv3.
+
 ## Acknowledgements
 Thanks to:
 - The people listed in the 
