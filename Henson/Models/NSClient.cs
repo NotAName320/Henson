@@ -316,14 +316,16 @@ namespace Henson.Models
             // HTML Escape the wfe to preserve unicode
             /// <remarks>Because HttpUtility.HtmlEncode does not cover the whole of
             /// the ASCII space, where some emoji lie, some extra work has to go in
-            /// to ensure that all characters are properly escaped</remakrs>
+            /// to ensure that all characters are properly escaped</remarks>
             string Escaped = String
                 .Join("",HttpUtility.HtmlEncode(wfe).ToArray()
                 .Select(c => (int)c > 127 ? $"&#{(int)c};" : ""+c));
             // Because we're converting to ISO, some things need to be un-escaped
             var AsciiEscape = new [] { "&amp;", "&lt;", "&gt;", "&quot;", "&#39;" };
             foreach(var seq in AsciiEscape)
+            {
                 Escaped = Escaped.Replace(seq, HttpUtility.HtmlDecode(seq));
+            }
             //Convert to encoding
             Encoding iso = Encoding.GetEncoding("ISO-8859-1");
             request.AddParameter("message", iso.GetString(Encoding.Convert(Encoding.UTF8, iso, Encoding.UTF8.GetBytes(Escaped))));
