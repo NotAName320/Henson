@@ -253,10 +253,15 @@ namespace Henson.ViewModels
         private readonly List<NationGridViewModel> NationsToTag;
 
         /// <summary>
-        /// The embassy index that the user is on.
+        /// The embassy closure index that the user is on.
         /// </summary>
-        private int EmbIndex = 0;
+        private int EmbCloseIndex = 0;
 
+        /// <summary>
+        /// The embassy opening index that the user is on.
+        /// </summary>
+        private int EmbOpenIndex = 0;
+        
         /// <summary>
         /// The current chk of the logged in nation.
         /// </summary>
@@ -285,7 +290,7 @@ namespace Henson.ViewModels
         /// <summary>
         /// A list of embassies to close.
         /// </summary>
-        private List<string> EmbassiesToClose = new();
+        private List<(string name, int type)>? EmbassiesToClose = new();
 
         /// <summary>
         /// The log4net logger. It will emit messages as from TagSelectedWindowViewModel.
@@ -449,8 +454,8 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Get Embassies":
-                        EmbassiesToClose = await Client.GetEmbassies(currentNation.Region, CurrentPin);
-                        if(EmbassiesToClose.Count != 0)
+                        EmbassiesToClose = await Client.GetEmbassies(currentNation.Region);
+                        if(EmbassiesToClose != null && EmbassiesToClose.Count != 0)
                         {
                             FooterText = $"Found embassies in {currentNation.Region}!";
                             ButtonText = "Close Embassy";
@@ -460,30 +465,28 @@ namespace Henson.ViewModels
                             FooterText = $"Found no embassies to close in {currentNation.Region}.";
                             ButtonText = "Request Embassy";
                         }
-                        EmbIndex = 0;
+                        EmbCloseIndex = 0;
                         break;
                     case "Close Embassy":
-                        if(EmbIndex == EmbassiesToClose.Count)
+                        if(EmbCloseIndex == EmbassiesToClose!.Count)
                         {
                             FooterText = "Done closing embassies!";
                             ButtonText = "Request Embassy";
-                            EmbIndex = 0;
+                            EmbOpenIndex = 0;
+                            break;
+                        }
+                        if(await Client.CloseEmbassy(currentNation.Region, CurrentChk, CurrentPin, 
+                               EmbassiesToClose[EmbCloseIndex].name, EmbassiesToClose[EmbCloseIndex].type))
+                        {
+                            FooterText = $"Successfully closed embassy with {EmbassiesToClose[EmbCloseIndex++].name}";
                         }
                         else
                         {
-                            if(await Client.CloseEmbassy(currentNation.Region, CurrentChk, CurrentPin, EmbassiesToClose[EmbIndex]))
-                            {
-                                FooterText = $"Successfully closed embassy {EmbassiesToClose[EmbIndex]}";
-                            }
-                            else
-                            {
-                                FooterText = $"Embassy closure failed, skipping...";
-                            }
-                            EmbIndex++;
+                            FooterText = $"Closing embassy with {EmbassiesToClose[EmbCloseIndex++].name} failed.";
                         }
                         break;
                     case "Request Embassy":
-                        if(EmbIndex == _embassyList.Count)
+                        if(EmbOpenIndex >= _embassyList.Count)
                         {
                             FooterText = "Done requesting embassies!";
                             LoginIndex++;
@@ -491,15 +494,15 @@ namespace Henson.ViewModels
                         }
                         else
                         {
-                            if(await Client.RequestEmbassy(currentNation.Region, CurrentChk, CurrentPin, _embassyList[EmbIndex]))
+                            if(await Client.RequestEmbassy(currentNation.Region, CurrentChk, CurrentPin, _embassyList[EmbOpenIndex]))
                             {
-                                FooterText = $"Successfully requested embassies with {_embassyList[EmbIndex]}";
+                                FooterText = $"Successfully requested embassies with {_embassyList[EmbOpenIndex]}";
                             }
                             else
                             {
                                 FooterText = $"Embassy request failed, skipping...";
                             }
-                            EmbIndex++;
+                            EmbOpenIndex++;
                         }
                         break;
                 }

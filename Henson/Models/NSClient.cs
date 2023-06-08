@@ -31,6 +31,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using DynamicData;
 
 namespace Henson.Models
 {
@@ -426,18 +427,34 @@ namespace Henson.Models
         /// Gets a list of embassies from the region.
         /// </summary>
         /// <param name="targetRegion">The region to get embassies from.</param>
-        /// <param name="pin">The PIN recorded from a login.</param>
-        /// <returns>A list of strings representing the embassies the region currently has.</returns>
-        public async Task<List<string>> GetEmbassies(string targetRegion, string pin)
+        /// <returns>A list of lists of strings representing the embassy relations has, or null if something went wrong.</returns>
+        public async Task<List<(string name, int type)>?> GetEmbassies(string targetRegion)
         {
-            RestRequest request = new($"/template-overall=none/page=region_admin/region={targetRegion}", Method.Get);
-            request.AddCookie("pin", pin, "/", ".nationstates.net"); //Think I have to maintain the pin here but not sure, doesn't hurt anyway
+            var response = await APIClient.MakeRequest(APILink + $"?region={targetRegion}&q=embassies");
+            
+            if(response == null || !response.IsSuccessStatusCode) return null;
+            
+            XmlDocument doc = new();
+            doc.LoadXml(await response.Content.ReadAsStringAsync());
+            XmlNode root = doc.DocumentElement!;
 
-            var response = await HttpClient.ExecuteAsync(request);
-            HtmlDocument htmlDoc = new();
-            htmlDoc.LoadHtml(response.Content);
-
-            return htmlDoc.DocumentNode.Descendants().Where(x => x.HasClass("rlink")).Select(x => x.InnerText).ToList();
+            List<(string name, int type)>? retVal = new();
+            foreach(var node in root.SelectNodes(".//EMBASSY")!.Cast<XmlNode>())
+            {
+                int embCode;                
+                if(node.Attributes?["type"] == null)
+                {
+                    embCode = 0;
+                }
+                else
+                {
+                    embCode = new[] { "invited", "pending", "requested" }.IndexOf(node.Attributes["type"]!.Value) + 1; //lol
+                    if(embCode == 0) continue; //double lol
+                }
+                retVal.Add(new(node.InnerText, embCode));
+            }
+            
+            return retVal;
         }
 
         /// <summary>
@@ -448,23 +465,24 @@ namespace Henson.Models
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <param name="regionToClose">The region to close embassies with.</param>
         /// <returns>Whether the closures were successful.</returns>
-        public async Task<bool> CloseEmbassy(string targetRegion, string chk, string pin, string regionToClose)
+        public async Task<bool> CloseEmbassy(string targetRegion, string chk, string pin, string regionToClose, int closeType)
         {
             RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
             request.AddParameter("page", "region_control");
             request.AddParameter("chk", chk);
             request.AddParameter("region", targetRegion);
-            //looks like these 4 parameters conflict with each other... must modify getembassies to account for different classes of established embassies
-            request.AddParameter("rejectembassyregion", regionToClose);
-            request.AddParameter("cancelembassyregion", regionToClose);
-            request.AddParameter("withdrawembassyregion", regionToClose);
-            request.AddParameter("abortembassyregion", regionToClose);
+
+            if(closeType == 0) request.AddParameter("cancelembassyregion", regionToClose);
+            else if(closeType == 1) request.AddParameter("rejectembassyregion", regionToClose);
+            else if(closeType == 2) request.AddParameter("abortembassyregion", regionToClose);
+            else request.AddParameter("withdrawembassyregion", regionToClose);
+            
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
             var response = await HttpClient.ExecuteAsync(request);
-
-            bool successful = response.Content != null && (response.Content.Contains(" rejected.") || response.Content.Contains(" demolition.") || response.Content.Contains(" withdrawn."));
+            
+            bool successful = response.Content != null && (response.Content.Contains(" rejected.") || response.Content.Contains(" demolition.") || response.Content.Contains(" withdrawn.") || response.Content.Contains(" aborted."));
             if(!successful) log.Error($"Rejecting embassy of {regionToClose} from {targetRegion} failed!");
 
             return successful;
