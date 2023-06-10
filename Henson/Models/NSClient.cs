@@ -159,7 +159,7 @@ namespace Henson.Models
         /// <returns>The name of the nation that is in the WA, or <c>null</c> if no nation was found.</returns>
         public async Task<string?> FindWA(List<NationGridViewModel> nations)
         {
-            var response = await APIClient.MakeRequest(APILink + $"?wa=1&q=members");
+            var response = await APIClient.MakeRequest(APILink + "?wa=1&q=members");
 
             if(response == null || !response.IsSuccessStatusCode) return null;
 
@@ -478,6 +478,7 @@ namespace Henson.Models
         /// <param name="chk">The chk recorded from a login.</param>
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <param name="regionToClose">The region to close embassies with.</param>
+        /// <param name="closeType">The type of embassy relationship that exists.</param>
         /// <returns>Whether the closures were successful.</returns>
         public async Task<bool> CloseEmbassy(string targetRegion, string chk, string pin, string regionToClose, int closeType)
         {
@@ -496,7 +497,11 @@ namespace Henson.Models
 
             var response = await HttpClient.ExecuteAsync(request);
             
-            bool successful = response.Content != null && (response.Content.Contains(" rejected.") || response.Content.Contains(" demolition.") || response.Content.Contains(" withdrawn.") || response.Content.Contains(" aborted."));
+            bool successful = response.Content != null &&
+                              (response.Content.Contains(" rejected.") ||
+                               response.Content.Contains(" demolition.") ||
+                               response.Content.Contains(" withdrawn.") ||
+                               response.Content.Contains(" aborted."));
             if(!successful) log.Error($"Rejecting embassy of {regionToClose} from {targetRegion} failed!");
 
             return successful;
@@ -517,6 +522,44 @@ namespace Henson.Models
 
             bool successful = response.Content != null && response.Content.Contains(" has been sent.");
             if(!successful) log.Error($"Requesting embassy of {regionToRequest} from {targetRegion} failed!");
+
+            return successful;
+        }
+
+        public async Task<bool> AddTag(string targetRegion, string chk, string pin, string tag)
+        {
+            RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
+            request.AddHeader("User-Agent", UserAgent);
+            request.AddParameter("page", "region_control");
+            request.AddParameter("chk", chk);
+            request.AddParameter("region", targetRegion);
+            request.AddParameter("add_tag", tag);
+            request.AddParameter("updatetagsbutton", "1");
+            request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            var response = await HttpClient.ExecuteAsync(request);
+            
+            bool successful = response.Content != null && response.Content.Contains(" updated!");
+            if(!successful) log.Error($"Adding tag {tag} to {targetRegion} failed!");
+
+            return successful;
+        }
+        
+        public async Task<bool> RemoveTag(string targetRegion, string chk, string pin, string tag)
+        {
+            RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
+            request.AddHeader("User-Agent", UserAgent);
+            request.AddParameter("page", "region_control");
+            request.AddParameter("chk", chk);
+            request.AddParameter("region", targetRegion);
+            request.AddParameter("remove_tag", tag);
+            request.AddParameter("updatetagsbutton", "1");
+            request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            var response = await HttpClient.ExecuteAsync(request);
+            
+            bool successful = response.Content != null && response.Content.Contains(" updated!");
+            if(!successful) log.Error($"Adding tag {tag} to {targetRegion} failed!");
 
             return successful;
         }

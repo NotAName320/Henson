@@ -377,7 +377,7 @@ namespace Henson.ViewModels
                 switch(ButtonText) //very dumb mindless code who cares
                 {
                     case "Login":
-                        var (chk, localId, pin, region) = await Client.Login(new NationLoginViewModel(currentNation.Name, currentNation.Pass)) ?? default;
+                        var (chk, _, pin, _) = await Client.Login(new NationLoginViewModel(currentNation.Name, currentNation.Pass)) ?? default;
                         if(chk != null)
                         {
                             CurrentChk = chk;
@@ -500,7 +500,7 @@ namespace Henson.ViewModels
                             }
                             else
                             {
-                                FooterText = $"Embassy request failed, skipping...";
+                                FooterText = "Embassy request failed, skipping...";
                             }
                             EmbOpenIndex++;
                         }
