@@ -37,8 +37,11 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Tomlyn;
 
 namespace Henson.ViewModels
@@ -96,6 +99,8 @@ namespace Henson.ViewModels
         /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
         /// </summary>
         public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
+
+        private static readonly Mutex Singleton = new(true, "hensonNS");
 
         /// <summary>
         /// The text displayed in the footer.
@@ -180,7 +185,7 @@ namespace Henson.ViewModels
         /// <summary>
         /// Represents the state of the input in the settings tab and not what current settings are loaded/saved.
         /// </summary>
-        private ProgramSettingsViewModel Settings { get; set; }
+        private ProgramSettingsViewModel Settings { get; }
 
         /// <summary>
         /// The log4net logger. It will emit messages as from MainWindowViewModel.
@@ -193,6 +198,8 @@ namespace Henson.ViewModels
         /// </summary>
         public MainWindowViewModel()
         {
+            RxApp.MainThreadScheduler.Schedule(CheckIfOnlyUsage);
+            
             log.Info($"Starting Henson... Version v{GetType().Assembly.GetName().Version} on platform {RuntimeInformation.RuntimeIdentifier}");
             if(File.Exists("henson.log.1")) File.Delete("henson.log.1"); //delete old log
 
@@ -264,11 +271,9 @@ namespace Henson.ViewModels
                 {
                     for(int i = Nations.Count - 1; i >= 0; i--)
                     {
-                        if(Nations[i].Checked)
-                        {
-                            DbClient.DeleteNation(Nations[i].Name);
-                            Nations.RemoveAt(i);
-                        }
+                        if(!Nations[i].Checked) continue;
+                        DbClient.DeleteNation(Nations[i].Name);
+                        Nations.RemoveAt(i);
                     }
 
                     FooterText = "Nations removed!";
@@ -848,18 +853,34 @@ namespace Henson.ViewModels
         /// </summary>
         private async void CheckIfUserAgentEmpty()
         {
-            if(Settings.UserAgent == "")
-            {
-                log.Warn("User agent has no value!");
-                await Task.Delay(100); //Stupidest hack ever, but wait till MessageBoxDialog is initialized before showing because this runs so fast
+            if(Settings.UserAgent != "") return;
+            log.Warn("User agent has no value!");
+            await Task.Delay(100); //Stupidest hack ever, but wait till MessageBoxDialog is initialized before showing because this runs so fast
 
-                MessageBoxViewModel dialog = new(new MessageBoxStandardParams
-                {
-                    ContentTitle = "User Agent Empty",
-                    ContentMessage = "You must set a user agent in Settings before being able to use the features of Henson.",
-                    Icon = Icon.Warning,
-                });
-                await MessageBoxDialog.Handle(dialog);
+            MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+            {
+                ContentTitle = "User Agent Empty",
+                ContentMessage = "You must set a user agent in Settings before being able to use the features of Henson.",
+                Icon = Icon.Warning,
+            });
+            await MessageBoxDialog.Handle(dialog);
+        }
+
+        private async void CheckIfOnlyUsage()
+        {
+            if(Singleton.WaitOne(TimeSpan.Zero, true)) return;
+            await Task.Delay(100);
+            MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+            {
+                ContentTitle = "Another Instance Running",
+                ContentMessage = "Another instance of Henson is already running on this computer.",
+                Icon = Icon.Error,
+            });
+            await MessageBoxDialog.Handle(dialog);
+            
+            if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopApp)
+            {
+                desktopApp.Shutdown();
             }
         }
     }

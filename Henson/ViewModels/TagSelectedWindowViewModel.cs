@@ -464,6 +464,7 @@ namespace Henson.ViewModels
                         {
                             FooterText = $"Found no embassies to close in {currentNation.Region}.";
                             ButtonText = "Request Embassy";
+                            EmbOpenIndex = 0;
                         }
                         EmbCloseIndex = 0;
                         break;
