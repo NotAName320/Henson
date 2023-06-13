@@ -493,7 +493,8 @@ namespace Henson.Models
                               (response.Content.Contains(" rejected.") ||
                                response.Content.Contains(" demolition.") ||
                                response.Content.Contains(" withdrawn.") ||
-                               response.Content.Contains(" aborted."));
+                               response.Content.Contains(" aborted.") ||
+                               response.Content.Contains(" cancelled."));
             if(!successful) log.Error($"Rejecting embassy of {regionToClose} from {targetRegion} failed!");
 
             return successful;

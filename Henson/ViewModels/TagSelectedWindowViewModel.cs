@@ -1,5 +1,5 @@
 ﻿/*
-View Model representing Tag Selected Window
+View Model representing Tag Selected Window. This file is a fucking mess!
 Copyright (C) 2023 NotAName320
 
 This program is free software: you can redistribute it and/or modify
@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
@@ -489,6 +490,7 @@ namespace Henson.ViewModels
                                  _embassyList.Contains(x.name.ToLower().Replace('_', ' '))) ^ x.type == 4 ||
                                 x.type == -1);
                             ButtonText = "Close Embassy";
+                            Debug.WriteLine(EmbassiesToClose);
                         }
                         else
                         {
