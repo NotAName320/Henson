@@ -73,4 +73,5 @@ suggestions on how to improve it
 - qekitor because of dumb raid chat challenges on 3/4/23
 
 ## Screenshot
-![hensonscreenshot](https://user-images.githubusercontent.com/27144780/228611624-e3651c54-9bf7-4bec-a10f-ad658f9816ed.png)
+![hensonss](https://github.com/NotAName320/Henson/assets/27144780/523942d1-5ae7-441c-9bfd-681c535e17a8)
+
