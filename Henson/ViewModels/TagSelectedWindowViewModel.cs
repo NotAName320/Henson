@@ -17,13 +17,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia.Controls;
+using DynamicData.Binding;
 using Henson.Models;
 using log4net;
 using MessageBox.Avalonia.DTO; 
@@ -48,6 +52,9 @@ namespace Henson.ViewModels
         /// The WFE to tag each region with.
         /// </summary>
         public string WFE { get; set; } = "";
+
+        public string? CurrentSelectedTag => (string?)CurrentSelectedItem?.Content;
+        public ComboBoxItem? CurrentSelectedItem { get; set; } = null;
 
         /// <summary>
         /// The full file path to the banner image.
@@ -110,6 +117,11 @@ namespace Henson.ViewModels
         /// The command fired when pressing the action button.
         /// </summary>
         public ICommand ActionButtonCommand { get; }
+        
+        /// <summary>
+        /// Fired when the Add/Remove button in the tag row is clicked.
+        /// </summary>
+        public ICommand AddRemoveTagCommand { get; }
 
         /// <summary>
         /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
@@ -147,6 +159,23 @@ namespace Henson.ViewModels
         /// </summary>
         public string CurrentRegion => _currentRegion.Value;
         private readonly ObservableAsPropertyHelper<string> _currentRegion;
+
+        public string RegionalTagsSelected => _regionalTagsSelected.Value;
+        private readonly ObservableAsPropertyHelper<string> _regionalTagsSelected;
+
+        private static string TagToRequest(string x) => x.Replace(":", "").Replace(' ', '_').ToLower();
+
+        private static readonly HashSet<string> UnremovableTags = new()
+        {
+            "Commended", "Condemned", "Liberated", "Injuncted", "Minuscule", "Small", "Medium", "Large", "Enormous",
+            "Gargantuan", "Featured", "Founderless", "Governorless", "New"
+        };
+
+        private List<string>? _optionalTagsDetected = new();
+
+        private List<string> TagsToAdd =>
+            SelectedTags.Except(_optionalTagsDetected ?? Array.Empty<string>().ToList()).ToList();
+        private List<string>? TagsToRemove => _optionalTagsDetected?.Except(SelectedTags).ToList();
 
         public bool EmbassiesEnabled
         {
@@ -264,15 +293,10 @@ namespace Henson.ViewModels
         private readonly List<NationGridViewModel> NationsToTag;
 
         /// <summary>
-        /// The embassy closure index that the user is on.
+        /// The index that the user is on for a specific subtask.
         /// </summary>
-        private int EmbCloseIndex = 0;
+        private int subIndex = 0;
 
-        /// <summary>
-        /// The embassy opening index that the user is on.
-        /// </summary>
-        private int EmbOpenIndex = 0;
-        
         /// <summary>
         /// The current chk of the logged in nation.
         /// </summary>
@@ -309,10 +333,13 @@ namespace Henson.ViewModels
 
         private HashSet<string> _whitelist;
 
+        private ObservableCollection<string> SelectedTags = new();
+
         /// <summary>
         /// The log4net logger. It will emit messages as from TagSelectedWindowViewModel.
         /// </summary>
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
+        private static readonly ILog log =
+            LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
 
         public TagSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string whitelist)
         {
@@ -345,6 +372,30 @@ namespace Henson.ViewModels
                 var result = await FilePickerDialog.Handle(dialog);
 
                 if(result != null) FlagPath = result[0];
+            });
+
+            AddRemoveTagCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                if(CurrentSelectedTag == null)
+                {
+                    MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Nothing Selected",
+                        ContentMessage = "Please select a tag to add/remove.",
+                        Icon = Icon.Error,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
+                    return;
+                }
+
+                if(SelectedTags.Contains(CurrentSelectedTag))
+                {
+                    SelectedTags.Remove(CurrentSelectedTag);
+                }
+                else
+                {
+                    SelectedTags.Add(CurrentSelectedTag);
+                }
             });
 
             ActionButtonCommand = ReactiveCommand.CreateFromTask(async () =>
@@ -420,7 +471,9 @@ namespace Henson.ViewModels
                 switch(ButtonText) //very dumb mindless code who cares
                 {
                     case "Login":
-                        var (chk, _, pin, _) = await Client.Login(new NationLoginViewModel(currentNation.Name, currentNation.Pass)) ?? default;
+                        var (chk, _, pin, _) =
+                            await Client.Login(new NationLoginViewModel(currentNation.Name, currentNation.Pass)) ??
+                            default;
                         if(chk != null)
                         {
                             CurrentChk = chk;
@@ -451,10 +504,11 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Upload Banner":
-                        string? bannerID = await Client.UploadBanner(currentNation.Region, CurrentChk, CurrentPin, BannerPath);
-                        if(bannerID != null)
+                        var bannerId =
+                            await Client.UploadBanner(currentNation.Region, CurrentChk, CurrentPin, BannerPath);
+                        if(bannerId != null)
                         {
-                            CurrentBannerID = bannerID;
+                            CurrentBannerID = bannerId;
                             FooterText = $"Uploaded banner to {currentNation.Region}!";
                             GetNextButtonText();
                         }
@@ -467,10 +521,10 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Upload Flag":
-                        string? flagID = await Client.UploadFlag(currentNation.Region, CurrentChk, CurrentPin, FlagPath);
-                        if(flagID != null)
+                        var flagId = await Client.UploadFlag(currentNation.Region, CurrentChk, CurrentPin, FlagPath);
+                        if(flagId != null)
                         {
-                            CurrentFlagID = flagID;
+                            CurrentFlagID = flagId;
                             FooterText = $"Uploaded flag to {currentNation.Region}!";
                             GetNextButtonText();
                         }
@@ -483,7 +537,8 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Set Banner + Flag":
-                        if(await Client.SetBannerFlag(currentNation.Region, CurrentChk, CurrentPin, CurrentBannerID, CurrentFlagID))
+                        if(await Client.SetBannerFlag(currentNation.Region, CurrentChk, CurrentPin, CurrentBannerID,
+                               CurrentFlagID))
                         {
                             FooterText = $"Set banner and flag of {currentNation.Region}!";
                             GetNextButtonText();
@@ -506,62 +561,149 @@ namespace Henson.ViewModels
                                  _embassyList.Contains(x.name.ToLower().Replace('_', ' '))) ^ x.type == 4 ||
                                 x.type == -1);
                             ButtonText = "Close Embassy";
-                            Debug.WriteLine(EmbassiesToClose);
                         }
                         else
                         {
                             FooterText = $"Found no embassies to close in {currentNation.Region}.";
                             ButtonText = "Request Embassy";
-                            EmbOpenIndex = 0;
+                            subIndex = 0;
                         }
-                        EmbCloseIndex = 0;
+                        subIndex = 0;
                         break;
                     case "Close Embassy":
-                        if(EmbCloseIndex == EmbassiesToClose!.Count)
+                        if(subIndex == EmbassiesToClose!.Count)
                         {
                             FooterText = "Done closing embassies!";
                             ButtonText = "Request Embassy";
-                            EmbOpenIndex = 0;
+                            subIndex = 0;
                             break;
                         }
+                        
+                        var embassyToClose = EmbassiesToClose[subIndex++];
                         if(await Client.CloseEmbassy(currentNation.Region, CurrentChk, CurrentPin, 
-                               EmbassiesToClose[EmbCloseIndex].name, EmbassiesToClose[EmbCloseIndex].type))
+                               embassyToClose.name, embassyToClose.type))
                         {
-                            FooterText = EmbassiesToClose[EmbCloseIndex].type == 4
-                                ? $"Successfully cancelled closure of embassy with {EmbassiesToClose[EmbCloseIndex++].name}"
-                                : $"Successfully closed embassy with {EmbassiesToClose[EmbCloseIndex++].name}";
+                            FooterText = embassyToClose.type == 4
+                                ? $"Successfully cancelled closure of embassy with {embassyToClose.name}"
+                                : $"Successfully closed embassy with {embassyToClose.name}";
                         }
                         else
                         {
-                            FooterText = $"Closing embassy with {EmbassiesToClose[EmbCloseIndex++].name} failed.";
+                            FooterText = $"Closing embassy with {embassyToClose.name} failed.";
                         }
                         break;
                     case "Request Embassy":
-                        if(EmbOpenIndex >= _embassyList.Count)
+                        if(subIndex >= _embassyList.Count)
                         {
                             FooterText = "Done requesting embassies!";
-                            LoginIndex++;
-                            successIndex++;
-                            ButtonText = "Login";
+
+                            if(TagsEnabled)
+                            {
+                                ButtonText = "Get Tags";
+                            }
+                            else
+                            {
+                                LoginIndex++;
+                                successIndex++;
+                                ButtonText = "Login";
+                            }
                         }
                         else
                         {
-                            if(AlreadyEstablishedEmbassies!.Contains(_embassyList[EmbOpenIndex]))
+                            var embassy = _embassyList[subIndex++];
+                            if(AlreadyEstablishedEmbassies!.Contains(embassy))
                             {
                                 FooterText =
-                                    $"Already established embassy with {_embassyList[EmbOpenIndex]}, skipping...";
+                                    $"Already established embassy with {embassy}, skipping...";
                             }
-                            else if(await Client.RequestEmbassy(currentNation.Region, CurrentChk, CurrentPin, _embassyList[EmbOpenIndex]))
+                            else if(await Client.RequestEmbassy(currentNation.Region, CurrentChk, CurrentPin, embassy))
                             {
-                                FooterText = $"Successfully requested embassies with {_embassyList[EmbOpenIndex]}";
+                                FooterText = $"Successfully requested embassies with {embassy}.";
                             }
                             else
                             {
                                 FooterText = "Embassy request failed/already done, skipping...";
                             }
-                            EmbOpenIndex++;
                         }
                         break;
+                    case "Get Tags":
+                        _optionalTagsDetected = (await Client.GetTags(currentNation.Region))?.Except(UnremovableTags)
+                            .ToList();
+                        subIndex = 0;
+                        if(_optionalTagsDetected != null && TagsToRemove!.Count != 0)
+                        {
+                            ButtonText = "Remove Tag";
+                            FooterText = $"Found tags to remove in {currentNation.Region}!";
+                        }
+                        else
+                        {
+                            if(TagsToAdd.Count != 0)
+                            {
+                                ButtonText = "Add Tag";
+                                FooterText = "No tags to remove... adding tags now.";
+                            }
+                            else
+                            {
+                                LoginIndex++;
+                                successIndex++;
+                                ButtonText = "Login";
+                                FooterText = "No tags to remove/add...";
+                            }
+                        }
+                        break;
+                    case "Remove Tag":
+                        if(subIndex == TagsToRemove!.Count)
+                        {
+                            if(TagsToAdd.Count != 0)
+                            {
+                                ButtonText = "Add Tag";
+                                FooterText = "Done removing tags! Adding tags now.";
+                                subIndex = 0;
+                            }
+                            else
+                            {
+                                LoginIndex++;
+                                successIndex++;
+                                ButtonText = "Login";
+                                FooterText = "Done removing tags! No tags to add...";
+                            }
+                        }
+                        else
+                        {
+                            var tag = TagsToRemove[subIndex++];
+                            if(await Client.RemoveTag(currentNation.Region, CurrentChk, CurrentPin, TagToRequest(tag)))
+                            {
+                                FooterText = $"Successfully removed tag {tag}";
+                            }
+                            else
+                            {
+                                FooterText = $"Failed to remove tag {tag}";
+                            }
+                        }
+                        break;
+                    case "Add Tag":
+                    {
+                        if(subIndex == TagsToAdd.Count)
+                        {
+                            LoginIndex++;
+                            successIndex++;
+                            ButtonText = "Login";
+                            FooterText = "Done adding tags!";
+                        }
+                        else
+                        {
+                            var tag = TagsToAdd[subIndex++];
+                            if(await Client.AddTag(currentNation.Region, CurrentChk, CurrentPin, TagToRequest(tag)))
+                            {
+                                FooterText = $"Successfully added tag {tag}";
+                            }
+                            else
+                            {
+                                FooterText = $"Failed to add tag {tag}";
+                            }
+                        }
+                        break;
+                    }
                 }
 
                 ButtonsEnabled = true;
@@ -574,6 +716,10 @@ namespace Henson.ViewModels
             this.WhenAnyValue(x => x.LoginIndex)
                 .Select(_ => LoginIndex == NationsToTag.Count ? "" : NationsToTag[LoginIndex].Region)
                 .ToProperty(this, x => x.CurrentRegion, out _currentRegion);
+
+            SelectedTags.ToObservableChangeSet().Select(_ =>
+                    SelectedTags.Count == 0 ? "" : "Current tags: " + string.Join(", ", SelectedTags))
+                .ToProperty(this, x => x.RegionalTagsSelected, out _regionalTagsSelected);
         }
 
         /// <summary>
@@ -626,6 +772,11 @@ namespace Henson.ViewModels
                     }
                     goto default;
                 default:
+                    if(TagsEnabled)
+                    {
+                        ButtonText = "Get Tags";
+                        break;
+                    }
                     ButtonText = "Login";
                     LoginIndex++;
                     break;

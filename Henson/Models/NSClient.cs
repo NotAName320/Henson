@@ -315,9 +315,9 @@ namespace Henson.Models
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
             // HTML Escape the wfe to preserve unicode
-            /// <remarks>Because HttpUtility.HtmlEncode does not cover the whole of
-            /// the ASCII space, where some emoji lie, some extra work has to go in
-            /// to ensure that all characters are properly escaped</remarks>
+            // Because HttpUtility.HtmlEncode does not cover the whole of
+            // the ASCII space, where some emoji lie, some extra work has to go in
+            // to ensure that all characters are properly escaped
             string Escaped = String
                 .Join("",HttpUtility.HtmlEncode(wfe).ToArray()
                 .Select(c => (int)c > 127 ? $"&#{(int)c};" : ""+c));
@@ -517,6 +517,19 @@ namespace Henson.Models
             if(!successful) log.Error($"Requesting embassy of {regionToRequest} from {targetRegion} failed!");
 
             return successful;
+        }
+
+        public async Task<List<string>?> GetTags(string targetRegion)
+        {
+            var response = await APIClient.MakeRequest(APILink + $"?region={targetRegion}&q=tags");
+            
+            if(response == null || !response.IsSuccessStatusCode) return null;
+
+            XmlDocument doc = new();
+            doc.LoadXml(await response.Content.ReadAsStringAsync());
+            XmlNode root = doc.DocumentElement!;
+
+            return root.SelectNodes(".//TAG")!.Cast<XmlNode>().Select(x => x.InnerText).ToList();
         }
 
         public async Task<bool> AddTag(string targetRegion, string chk, string pin, string tag)

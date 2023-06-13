@@ -19,7 +19,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:Henson.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="800"
@@ -31,10 +30,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         MinWidth="900" MinHeight="800"
         MaxWidth="900" MaxHeight="800">
   <!-- CanResize doesn't work on some Linux WMs https://github.com/AvaloniaUI/Avalonia/issues/8329 -->
-  
-  <Design.DataContext>
-    <vm:TagSelectedWindowViewModel/>
-  </Design.DataContext>
   
   <DockPanel LastChildFill="True">
     <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
@@ -63,6 +58,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               IsEnabled="{Binding FlagBannerEnabled}">Browse...</Button>
       <TextBlock VerticalAlignment="Center" Text="{Binding FlagFileName}"/>
     </DockPanel>
+    <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
+      <CheckBox IsChecked="{Binding TagsEnabled}"/>
+      <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Add tags:</TextBlock>
+      <ComboBox DockPanel.Dock="Left" IsEnabled="{Binding TagsEnabled}"
+                SelectedItem="{Binding CurrentSelectedItem}" Margin="0,0,10,0" Width="150">
+        <ComboBoxItem>Anime</ComboBoxItem>
+        <ComboBoxItem>Anti-Capitalist</ComboBoxItem>
+        <ComboBoxItem>Anti-Fascist</ComboBoxItem>
+        <ComboBoxItem>Colony</ComboBoxItem>
+        <ComboBoxItem>Communist</ComboBoxItem>
+        <ComboBoxItem>Imperialist</ComboBoxItem>
+        <ComboBoxItem>Invader</ComboBoxItem>
+        <ComboBoxItem>LGBT</ComboBoxItem>
+        <ComboBoxItem>Socialist</ComboBoxItem>
+      </ComboBox>
+      <Button Margin="0,0,10,0" Command="{Binding AddRemoveTagCommand}"
+              IsEnabled="{Binding TagsEnabled}">Add/Remove</Button>
+      <TextBlock VerticalAlignment="Center" Text="{Binding RegionalTagsSelected}"/>
+    </DockPanel>
     <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10,10,10,0">
       <CheckBox IsChecked="{Binding WFEEnabled}"/>
       <TextBlock DockPanel.Dock="Top" VerticalAlignment="Center">WFE:</TextBlock>
@@ -73,7 +87,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     <TextBlock DockPanel.Dock="Bottom" Margin="10,10,0,10"
                Text="{Binding FooterText}"/>
-    <Button Height="300" Width="880" Margin="10"
+    <Button Height="250" Width="880" Margin="10"
             DockPanel.Dock="Bottom"
             HorizontalContentAlignment="Center"
             VerticalContentAlignment="Center" FontSize="40"
