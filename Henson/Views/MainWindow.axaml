@@ -113,6 +113,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <TextBlock VerticalAlignment="Center" Grid.Row="2" Grid.Column="0">Embassy Whitelist:</TextBlock>
             <TextBox Margin="10,0,0,0" Grid.Row="2" Grid.Column="1" MinWidth="150" MaxWidth="150"
                      Text="{Binding Settings.EmbWhitelist}"/>
+            <Button Grid.Row="2" Grid.Column="2" Margin="10,0,0,0" Command="{Binding EmbassyHelpCommand}">?</Button>
             <Button Grid.Row="3" Grid.Column="0" Command="{Binding OnSaveSettingsClick}">Save</Button>
           </Grid>
       </TabItem>

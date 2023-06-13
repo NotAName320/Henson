@@ -78,6 +78,11 @@ namespace Henson.ViewModels
         /// Fired when the Tag button in quick view is clicked.
         /// </summary>
         public ICommand TagSelectedCommand { get; }
+        
+        /// <summary>
+        /// Fired when the question mark button is clicked on the settings page beside the embassy whitelist text box.
+        /// </summary>
+        public ICommand EmbassyHelpCommand { get; }
 
         /// <summary>
         /// This interaction opens the Add Nation Dialog and returns a list of NationLoginViewModels
@@ -457,6 +462,17 @@ namespace Henson.ViewModels
                 await TagSelectedDialog.Handle(dialog);
 
                 FooterText = "Regions tagged!";
+            });
+
+            EmbassyHelpCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Embassy Whitelist",
+                    ContentMessage = "Enter regions separated by commas\n(e.g. The Black Hawks, Ijaka, Agheasma).",
+                    Icon = Icon.Info,
+                });
+                await MessageBoxDialog.Handle(messageDialog);
             });
 
             //When any nation is checked or unchecked see if any nation is checked at all and set that value to a property

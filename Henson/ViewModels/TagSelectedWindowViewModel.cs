@@ -92,6 +92,11 @@ namespace Henson.ViewModels
         private string flagPath = "";
 
         /// <summary>
+        /// Fired when the question mark button is clicked on the settings page beside the embassy whitelist text box.
+        /// </summary>
+        public ICommand EmbassyHelpCommand { get; }
+        
+        /// <summary>
         /// Fired when the Browse... button beside the banner text is clicked.
         /// </summary>
         public ICommand BannerPickerCommand { get; }
@@ -313,7 +318,18 @@ namespace Henson.ViewModels
         {
             NationsToTag = nations;
             Client = client;
-            _whitelist = whitelist.Split(',').ToHashSet();
+            _whitelist = whitelist.Split(',').Select(x => x.Trim()).ToHashSet();
+            
+            EmbassyHelpCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Embassies",
+                    ContentMessage = "Enter regions separated by commas\n(e.g. The Black Hawks, Ijaka, Agheasma).",
+                    Icon = Icon.Info,
+                });
+                await MessageBoxDialog.Handle(messageDialog);
+            });
 
             BannerPickerCommand = ReactiveCommand.CreateFromTask(async () => 
             {
