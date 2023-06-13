@@ -41,6 +41,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <Button Command="{Binding FindWACommand}" Content="Find WA" IsEnabled="{Binding ButtonsEnabled}"/>
             <Button Command="{Binding OnSelectNationsClick}" Content="Select/Unselect All"/>
             <Button Command="{Binding RemoveSelectedCommand}" Content="Remove" IsEnabled="{Binding AnyNationSelected}"/>
+            <Button Command="{Binding ExportSelectedCommand}" Content="Export" IsEnabled="{Binding AnyNationSelected}"/>
             <Button Command="{Binding OnLockSelectedClick}" Content="Lock/Unlock" IsEnabled="{Binding AnyNationSelected}"/>
             <Button Command="{Binding PingSelectedCommand}" Content="Ping" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
             <Button Command="{Binding PrepSelectedCommand}" Content="Prep" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>

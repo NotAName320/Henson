@@ -57,8 +57,8 @@ namespace Henson.Views
         {
             //Need to write an error handler for this sometime
             var dialog = new OpenFileDialog();
-            dialog.Filters!.Add(new FileDialogFilter() { Name = "Swarm/Shine config", Extensions = { "json", "toml" } });
-            dialog.Filters.Add(new FileDialogFilter() { Name = "All Files", Extensions = { "*" } });
+            dialog.Filters!.Add(new FileDialogFilter { Name = "Swarm/Shine config", Extensions = { "json", "toml" } });
+            dialog.Filters.Add(new FileDialogFilter { Name = "All Files", Extensions = { "*" } });
 
             var result = await dialog.ShowAsync(this);
             SetClosing(result == null); //If no file is selected, cancel window closing action

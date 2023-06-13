@@ -43,6 +43,7 @@ namespace Henson.Views
             this.WhenActivated(d => d(ViewModel!.PrepSelectedDialog.RegisterHandler(ShowPrepSelectedDialog)));
             this.WhenActivated(d => d(ViewModel!.TagSelectedDialog.RegisterHandler(ShowTagSelectedDialog)));
             this.WhenActivated(d => d(ViewModel!.MessageBoxDialog.RegisterHandler(ShowMessageBoxDialog)));
+            this.WhenActivated(d => d(ViewModel!.FileSaveDialog.RegisterHandler(ShowFilePickerDialog)));
         }
 
         private async Task ShowAddNationDialog(InteractionContext<AddNationWindowViewModel, List<NationLoginViewModel>?> interaction)
@@ -90,6 +91,22 @@ namespace Henson.Views
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
 
             var result = await messageBox.ShowDialog(this);
+            interaction.SetOutput(result);
+        }
+        
+        
+        private async Task ShowFilePickerDialog(InteractionContext<ViewModelBase, string?> interaction)
+        {
+            //Need to write an error handler for this sometime
+            var dialog = new SaveFileDialog
+            {
+                InitialFileName = "export.txt"
+            };
+            dialog.Filters!.Add(new FileDialogFilter { Name = "Dossier list", Extensions = { "txt" } });
+            dialog.Filters.Add(new FileDialogFilter { Name = "Swarm/Shine config", Extensions = { "json" } });
+            dialog.Filters.Add(new FileDialogFilter { Name = "All Files", Extensions = { "*" } });
+
+            var result = await dialog.ShowAsync(this);
             interaction.SetOutput(result);
         }
     }

@@ -37,11 +37,13 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Newtonsoft.Json;
 using Tomlyn;
 
 namespace Henson.ViewModels
@@ -58,6 +60,11 @@ namespace Henson.ViewModels
         /// Fired when the Remove button in quick view is clicked.
         /// </summary>
         public ICommand RemoveSelectedCommand { get; }
+        
+        /// <summary>
+        /// Fired when the Export button in quick view is clicked.
+        /// </summary>
+        public ICommand ExportSelectedCommand { get; }
 
         /// <summary>
         /// Fired when the Ping button in quick view is clicked.
@@ -104,6 +111,12 @@ namespace Henson.ViewModels
         /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
         /// </summary>
         public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
+        
+        /// <summary>
+        /// This interaction opens the a file window, and returns a string with the path to save to,
+        /// or null if the window is closed without a pick.
+        /// </summary>
+        public Interaction<ViewModelBase, string?> FileSaveDialog { get; } = new();
 
         private static readonly Mutex Singleton = new(true, "hensonNS");
 
@@ -259,6 +272,40 @@ namespace Henson.ViewModels
                     ButtonsEnabled = true;
                     FooterText = "Finished loading!";
                 }
+            });
+
+            ExportSelectedCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var selectedNations = Nations.Where(x => x.Checked).ToList();
+                
+                var dialog = new ViewModelBase();
+                var result = await FileSaveDialog.Handle(dialog);
+
+                if(result == null) return;
+
+                if(result.EndsWith(".json"))
+                {
+                    var nationPasswordPairs = selectedNations.ToDictionary(n => n.Name, n => n.Pass);
+                    
+                    await using StreamWriter sw = new(result);
+                    sw.Write(JsonConvert.SerializeObject(new Dictionary<string, Dictionary<string, string>>
+                    {
+                        { "nations", nationPasswordPairs }
+                    }, Formatting.Indented));
+                }
+                else
+                {
+                    StringBuilder sb = new();
+                    foreach(var n in selectedNations)
+                    {
+                        sb.Append($"{n.Name}\n");
+                    }
+                    
+                    await using StreamWriter sw = new(result);
+                    sw.Write(sb);
+                }
+
+                FooterText = $"{selectedNations.Count} nations exported!";
             });
 
             RemoveSelectedCommand = ReactiveCommand.CreateFromTask(async () =>
