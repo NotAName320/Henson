@@ -300,7 +300,7 @@ namespace Henson.ViewModels
                     if(n == null) continue;
 
                     //There has to be an easier way to do this
-                    int index = Nations.IndexOf(Nations.Where(x => x.Name.ToLower() == n.Name.ToLower()).First());
+                    int index = Nations.IndexOf(Nations.First(x => x.Name.ToLower() == n.Name.ToLower()));
                     DbClient.ExecuteNonQuery("UPDATE nations SET " +
                         $"name = '{n.Name}', " +
                         $"region = '{n.Region}', " +
@@ -384,7 +384,7 @@ namespace Henson.ViewModels
             {
                 if(await UserAgentNotSet()) return;
 
-                if(!Nations.Any(x => !x.Locked))
+                if(Nations.Where(x => x.Checked).All(x => x.Locked))
                 {
                     var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
                     {
@@ -413,8 +413,10 @@ namespace Henson.ViewModels
             TagSelectedCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if(await UserAgentNotSet()) return;
+                
+                var SelectedNations = Nations.Where(x => x.Checked && !x.Locked).ToList();
 
-                if(!Nations.Any(x => !x.Locked))
+                if(SelectedNations.Count == 0)
                 {
                     var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
                     {
@@ -429,10 +431,11 @@ namespace Henson.ViewModels
                 FooterText = "Checking which nations have taggable RO perms...";
 
                 ButtonsEnabled = false;
-
-                var SelectedNations = Nations.Where(x => x.Checked && !x.Locked).ToList();
+                
+                ShowProgressBar = true;
                 var TaggableNations = (await Client.RunMany(SelectedNations, Client.IsROWithTagPerms)).Where(x => x != null)
                                                    .Select(x => x!).ToList();
+                ShowProgressBar = false;
 
                 ButtonsEnabled = true;
 
@@ -450,7 +453,7 @@ namespace Henson.ViewModels
 
                 FooterText = "Opening tag window...";
 
-                var dialog = new TagSelectedWindowViewModel(TaggableNations, Client);
+                var dialog = new TagSelectedWindowViewModel(TaggableNations, Client, Settings.EmbWhitelist);
                 await TagSelectedDialog.Handle(dialog);
 
                 FooterText = "Regions tagged!";
@@ -516,6 +519,7 @@ namespace Henson.ViewModels
 
             model["user_agent"] = Settings.UserAgent;
             model["theme"] = Settings.Theme == 1 ? "dark" : "light";
+            model["emb_whitelist"] = Settings.EmbWhitelist;
 
             var workingPath = Path.GetDirectoryName(AppContext.BaseDirectory)!;
             var path = Path.Combine(workingPath, "settings.toml");
@@ -776,13 +780,19 @@ namespace Henson.ViewModels
             {
                 retVal.UserAgent = (string)model["user_agent"];
             }
-            catch (KeyNotFoundException) { model["user_agent"] = ""; }
+            catch(KeyNotFoundException) { model["user_agent"] = ""; }
 
             try
             {
                 retVal.Theme = ((string)model["theme"]).ToLower() == "dark" ? 1 : 0;
             }
-            catch (KeyNotFoundException) { model["theme"] = "light"; }
+            catch(KeyNotFoundException) { model["theme"] = "light"; }
+
+            try
+            {
+                retVal.EmbWhitelist = (string)model["emb_whitelist"];
+            }
+            catch(KeyNotFoundException) { model["emb_whitelist"] = ""; }
 
             File.WriteAllText(path, Toml.FromModel(model));
 
@@ -866,6 +876,9 @@ namespace Henson.ViewModels
             await MessageBoxDialog.Handle(dialog);
         }
 
+        /// <summary>
+        /// Checks if this instance is the only instance of Henson running, and closes this instance if it is not.
+        /// </summary>
         private async void CheckIfOnlyUsage()
         {
             if(Singleton.WaitOne(TimeSpan.Zero, true)) return;

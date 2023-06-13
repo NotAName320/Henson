@@ -42,5 +42,15 @@ namespace Henson.ViewModels
             }
         }
         private int theme = 0;
+
+        public string EmbWhitelist
+        {
+            get => embWhitelist;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref embWhitelist, value);
+            }
+        }
+        private string embWhitelist = "";
     }
 }

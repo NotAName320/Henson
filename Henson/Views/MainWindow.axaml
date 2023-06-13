@@ -32,11 +32,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height=".97*"/>
-      <RowDefinition Height=".03*"/>
-    </Grid.RowDefinitions>
+  <Grid RowDefinitions=".97*,.03*">
     <TabControl Grid.Row="0">
       <TabItem Header="Quick View">
         <DockPanel>
@@ -105,21 +101,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <TextBlock Text="WIP. Soon, you'll be able to create multiple puppets here, with default settings of your liking!"/>
       </TabItem>
       <TabItem Header="Settings">
-          <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,Auto,Auto">
+          <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto,Auto">
             <TextBlock VerticalAlignment="Center" Grid.Row="0" Grid.Column="0">User Agent:</TextBlock>
             <TextBox Margin="10,0,0,10" Grid.Row="0" Grid.Column="1" MinWidth="150" MaxWidth="150"
                      Text="{Binding Settings.UserAgent}" Watermark="Nation Name..."/>
             <TextBlock VerticalAlignment="Center" Grid.Row="1" Grid.Column="0">Theme:</TextBlock>
-            <ComboBox Margin="10,0,0,0" Grid.Row="1" Grid.Column="1" SelectedIndex="{Binding Settings.Theme}">
+            <ComboBox Margin="10,0,0,10" Grid.Row="1" Grid.Column="1" SelectedIndex="{Binding Settings.Theme}">
               <ComboBoxItem>Light</ComboBoxItem>
               <ComboBoxItem>Dark</ComboBoxItem>
             </ComboBox>
-            <Button Grid.Row="2" Command="{Binding OnSaveSettingsClick}">Save</Button>
+            <TextBlock VerticalAlignment="Center" Grid.Row="2" Grid.Column="0">Embassy Whitelist:</TextBlock>
+            <TextBox Margin="10,0,0,0" Grid.Row="2" Grid.Column="1" MinWidth="150" MaxWidth="150"
+                     Text="{Binding Settings.EmbWhitelist}"/>
+            <Button Grid.Row="3" Grid.Column="0" Command="{Binding OnSaveSettingsClick}">Save</Button>
           </Grid>
       </TabItem>
     </TabControl>
     <StackPanel HorizontalAlignment="Left" Margin="10,0,0,0" Grid.Row="1" Orientation="Horizontal">
-      <TextBlock Grid.Row="1" Text="{Binding FooterText}" Margin="0,0,10,0" VerticalAlignment="Center"/>
+      <TextBlock Text="{Binding FooterText}" Margin="0,0,10,0" VerticalAlignment="Center"/>
       <ProgressBar MinWidth="100" Height="18" IsVisible="{Binding ShowProgressBar}" ShowProgressText="False"
                    Minimum="0" Value="{Binding Client.ManyCount}" Maximum="{Binding Client.ManyTotal}"/>
       <!--Right now progress bar text is bugged, reinsert whenever https://github.com/AvaloniaUI/Avalonia/pull/8454

@@ -455,16 +455,7 @@ namespace Henson.Models
             List<(string name, int type)>? retVal = new();
             foreach(var node in root.SelectNodes(".//EMBASSY")!.Cast<XmlNode>())
             {
-                int embCode;                
-                if(node.Attributes?["type"] == null)
-                {
-                    embCode = 0;
-                }
-                else
-                {
-                    embCode = new[] { "invited", "pending", "requested" }.IndexOf(node.Attributes["type"]!.Value) + 1; //lol
-                    if(embCode == 0) continue; //double lol
-                }
+                var embCode = new[] { null, "invited", "pending", "requested", "closing" }.IndexOf(node.Attributes?["type"]?.Value);
                 retVal.Add(new(node.InnerText, embCode));
             }
             
@@ -491,7 +482,8 @@ namespace Henson.Models
             if(closeType == 0) request.AddParameter("cancelembassyregion", regionToClose);
             else if(closeType == 1) request.AddParameter("rejectembassyregion", regionToClose);
             else if(closeType == 2) request.AddParameter("abortembassyregion", regionToClose);
-            else request.AddParameter("withdrawembassyregion", regionToClose);
+            else if(closeType == 3) request.AddParameter("withdrawembassyregion", regionToClose);
+            else request.AddParameter("cancelembassyclosureregion", regionToClose);
             
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 

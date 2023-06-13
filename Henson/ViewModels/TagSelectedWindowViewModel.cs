@@ -241,6 +241,11 @@ namespace Henson.ViewModels
             }
         }
         private int loginIndex = 0;
+        
+        /// <summary>
+        /// The amount of successful tags.
+        /// </summary>
+        private int successIndex = 0;
 
         /// <summary>
         /// An object storing the UserAgent and using it to make requests to NationStates via both API and site.
@@ -292,15 +297,22 @@ namespace Henson.ViewModels
         /// </summary>
         private List<(string name, int type)>? EmbassiesToClose = new();
 
+        private HashSet<string>? AlreadyEstablishedEmbassies => EmbassiesToClose
+            ?.Select(x => x.name.ToLower().Replace('_', ' '))
+            .Intersect(_embassyList.Select(x => x.ToLower().Replace('_', ' '))).ToHashSet();
+
+        private HashSet<string> _whitelist;
+
         /// <summary>
         /// The log4net logger. It will emit messages as from TagSelectedWindowViewModel.
         /// </summary>
         private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
 
-        public TagSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client)
+        public TagSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string whitelist)
         {
             NationsToTag = nations;
             Client = client;
+            _whitelist = whitelist.Split(',').ToHashSet();
 
             BannerPickerCommand = ReactiveCommand.CreateFromTask(async () => 
             {
@@ -321,12 +333,12 @@ namespace Henson.ViewModels
             ActionButtonCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 //if none of the tag features are enabled
-                if((new bool[] { EmbassiesEnabled, FlagBannerEnabled, WFEEnabled, TagsEnabled }).All(x => !x))
+                if(new[] { EmbassiesEnabled, FlagBannerEnabled, WFEEnabled, TagsEnabled }.All(x => !x))
                 {
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
                         ContentTitle = "Nothing Selected",
-                        ContentMessage = $"Please select something to do to the regions.",
+                        ContentMessage = "Please select something to do to the regions.",
                         Icon = Icon.Error,
                     });
                     await MessageBoxDialog.Handle(dialog);
@@ -339,7 +351,7 @@ namespace Henson.ViewModels
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
                         ContentTitle = "No WFE",
-                        ContentMessage = $"Please set a WFE to tag regions with.",
+                        ContentMessage = "Please set a WFE to tag regions with.",
                         Icon = Icon.Error,
                     });
                     await MessageBoxDialog.Handle(dialog);
@@ -351,7 +363,7 @@ namespace Henson.ViewModels
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
                         ContentTitle = "No Banner/Flag",
-                        ContentMessage = $"Please upload both a banner/flag to tag regions with.",
+                        ContentMessage = "Please upload both a banner/flag to tag regions with.",
                         Icon = Icon.Error,
                     });
                     await MessageBoxDialog.Handle(dialog);
@@ -360,10 +372,24 @@ namespace Henson.ViewModels
 
                 if(LoginIndex == NationsToTag.Count)
                 {
+                    FooterText = $"Tagging complete! {successIndex}/{NationsToTag.Count} regions successfully tagged!";
+                    
+                    string messageContent;
+                    if(successIndex != NationsToTag.Count && FailedLogins.Length != 0)
+                    {
+                        FailedLogins.Remove(FailedLogins.Length - 2, 2);
+                        messageContent =
+                            $"All regions have been tagged. Please close the window now. Tagging with the following failed:\n{FailedLogins}";
+                    }
+                    else
+                    {
+                        messageContent = "All regions have been tagged. Please close the window now.";
+                    }
+                    
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
                         ContentTitle = "Logins Complete",
-                        ContentMessage = $"All regions have been tagged. Please close the window now.",
+                        ContentMessage = messageContent,
                         Icon = Icon.Info,
                     });
                     await MessageBoxDialog.Handle(dialog);
@@ -458,6 +484,10 @@ namespace Henson.ViewModels
                         if(EmbassiesToClose != null && EmbassiesToClose.Count != 0)
                         {
                             FooterText = $"Found embassies in {currentNation.Region}!";
+                            EmbassiesToClose.RemoveAll(x =>
+                                (_whitelist.Contains(x.name.ToLower().Replace('_', ' ')) ||
+                                 _embassyList.Contains(x.name.ToLower().Replace('_', ' '))) ^ x.type == 4 ||
+                                x.type == -1);
                             ButtonText = "Close Embassy";
                         }
                         else
@@ -479,7 +509,9 @@ namespace Henson.ViewModels
                         if(await Client.CloseEmbassy(currentNation.Region, CurrentChk, CurrentPin, 
                                EmbassiesToClose[EmbCloseIndex].name, EmbassiesToClose[EmbCloseIndex].type))
                         {
-                            FooterText = $"Successfully closed embassy with {EmbassiesToClose[EmbCloseIndex++].name}";
+                            FooterText = EmbassiesToClose[EmbCloseIndex].type == 4
+                                ? $"Successfully cancelled closure of embassy with {EmbassiesToClose[EmbCloseIndex++].name}"
+                                : $"Successfully closed embassy with {EmbassiesToClose[EmbCloseIndex++].name}";
                         }
                         else
                         {
@@ -491,17 +523,23 @@ namespace Henson.ViewModels
                         {
                             FooterText = "Done requesting embassies!";
                             LoginIndex++;
+                            successIndex++;
                             ButtonText = "Login";
                         }
                         else
                         {
-                            if(await Client.RequestEmbassy(currentNation.Region, CurrentChk, CurrentPin, _embassyList[EmbOpenIndex]))
+                            if(AlreadyEstablishedEmbassies!.Contains(_embassyList[EmbOpenIndex]))
+                            {
+                                FooterText =
+                                    $"Already established embassy with {_embassyList[EmbOpenIndex]}, skipping...";
+                            }
+                            else if(await Client.RequestEmbassy(currentNation.Region, CurrentChk, CurrentPin, _embassyList[EmbOpenIndex]))
                             {
                                 FooterText = $"Successfully requested embassies with {_embassyList[EmbOpenIndex]}";
                             }
                             else
                             {
-                                FooterText = "Embassy request failed, skipping...";
+                                FooterText = "Embassy request failed/already done, skipping...";
                             }
                             EmbOpenIndex++;
                         }
@@ -511,10 +549,12 @@ namespace Henson.ViewModels
                 ButtonsEnabled = true;
             });
 
-            this.WhenAnyValue(x => x.LoginIndex).Select(_ => LoginIndex == NationsToTag.Count ? "" : NationsToTag[LoginIndex].Name)
+            this.WhenAnyValue(x => x.LoginIndex)
+                .Select(_ => LoginIndex == NationsToTag.Count ? "" : NationsToTag[LoginIndex].Name)
                 .ToProperty(this, x => x.CurrentNation, out _currentNation);
 
-            this.WhenAnyValue(x => x.LoginIndex).Select(_ => LoginIndex == NationsToTag.Count ? "" : NationsToTag[LoginIndex].Region)
+            this.WhenAnyValue(x => x.LoginIndex)
+                .Select(_ => LoginIndex == NationsToTag.Count ? "" : NationsToTag[LoginIndex].Region)
                 .ToProperty(this, x => x.CurrentRegion, out _currentRegion);
         }
 

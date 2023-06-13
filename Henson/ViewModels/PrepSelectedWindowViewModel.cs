@@ -211,7 +211,7 @@ namespace Henson.ViewModels
                             //have this dumb LINQ instead
                             if(region.ToLower() != nations.Where(x => x.Name == currentNation.Name).First().Region.ToLower())
                             {
-                                Nations.Where(x => x.Name == currentNation.Name).First().Region = region;
+                                Nations.First(x => x.Name == currentNation.Name).Region = region;
                                 DbClient.ExecuteNonQuery($"UPDATE nations SET region = '{region}' WHERE name = '{currentNation.Name}'");
                             }
 
@@ -266,7 +266,7 @@ namespace Henson.ViewModels
                         else
                         {
                             FooterText = $"Moved {currentNation.Name} to {TargetRegion}.";
-                            Nations.Where(x => x.Name == currentNation.Name).First().Region = char.ToUpper(TargetRegion[0]) + TargetRegion[1..];
+                            Nations.First(x => x.Name == currentNation.Name).Region = char.ToUpper(TargetRegion[0]) + TargetRegion[1..];
                             DbClient.ExecuteNonQuery($"UPDATE nations SET region = '{char.ToUpper(TargetRegion[0]) + TargetRegion[1..]}' WHERE name = '{currentNation.Name}'");
                             PrepSuccesses++;
                         }
