@@ -232,9 +232,11 @@ namespace Henson.Models
                 //idk how to explain this but it works
                 chk = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='chk']").Attributes["value"].Value;
                 localId = htmlDoc.DocumentNode.SelectSingleNode("//input[@name='localid']").Attributes["value"].Value;
-                pin = response!.Headers!.ToList().Find(x => x.Name == "Set-Cookie")!.Value!.ToString()!.Split("; ")[0].Split('=')[1];
-                region = htmlDoc.DocumentNode.SelectSingleNode("//li[@id='panelregionbar']").FirstChild.Attributes["href"].Value
-                                .Replace("region=", "").Replace('_', ' ');
+                pin = response.Headers!.ToList().Find(x => x.Name == "Set-Cookie")!.Value!.ToString()!.Split("; ")[0].Split('=')[1];
+                region = htmlDoc.DocumentNode
+                    .SelectSingleNode(
+                        "//li[@id='panelregionbar' or a[@class='STANDOUT' and starts-with(@href, 'region=')]]")
+                    .FirstChild.Attributes["href"].Value.Replace("region=", "").Replace('_', ' ');
                 region = char.ToUpper(region[0]) + region[1..];
             }
             catch (Exception)
