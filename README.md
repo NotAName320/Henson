@@ -72,6 +72,8 @@ stuff for me
 suggestions on how to improve it
 - qekitor because of dumb raid chat challenges on 3/4/23
 
+_**"If I have seen further, it is by standing on the shoulders of giants."**_ -Isaac Newton
+
 ## Screenshot
 ![hensonss](https://github.com/NotAName320/Henson/assets/27144780/523942d1-5ae7-441c-9bfd-681c535e17a8)
 
