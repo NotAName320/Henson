@@ -352,7 +352,7 @@ namespace Henson.ViewModels
                 var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
                 {
                     ContentTitle = "Embassies",
-                    ContentMessage = "Enter regions separated by commas\n(e.g. The Black Hawks, Ijaka, Agheasma).",
+                    ContentMessage = "Enter regions separated by commas\n(e.g. Red Front, Ijaka, Agheasma).",
                     Icon = Icon.Info,
                 });
                 await MessageBoxDialog.Handle(messageDialog);
