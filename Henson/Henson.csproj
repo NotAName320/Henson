@@ -39,6 +39,7 @@
     <PackageReference Include="System.Data.SQLite" Version="1.0.117" />
     <PackageReference Include="Tomlyn" Version="0.16.2" />
     <PackageReference Include="XamlNameReferenceGenerator" Version="1.6.1" />
+    <PackageReference Include="Dotnet.Bundle" Version="*" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Views\AddNationWindow.axaml.cs">
@@ -56,4 +57,17 @@
   <ItemGroup>
     <ProjectReference Include="..\NSDotNet\src\NSDotnet.csproj" />
   </ItemGroup>
+  <PropertyGroup>
+    <CFBundleName>Henson</CFBundleName> <!-- Also defines .app file name -->
+    <CFBundleDisplayName>Henson</CFBundleDisplayName>
+    <CFBundleIdentifier>me.notana</CFBundleIdentifier>
+    <CFBundleVersion>1.4.1</CFBundleVersion>
+    <CFBundleShortVersionString>1.4.1</CFBundleShortVersionString>
+    <CFBundlePackageType>APPL</CFBundlePackageType>
+    <CFBundleSignature>????</CFBundleSignature>
+    <CFBundleExecutable>Henson</CFBundleExecutable>
+    <CFBundleIconFile>Henson.icns</CFBundleIconFile> <!-- Will be copied from output directory -->
+    <NSPrincipalClass>NSApplication</NSPrincipalClass>
+    <NSHighResolutionCapable>true</NSHighResolutionCapable>
+  </PropertyGroup>
 </Project>
