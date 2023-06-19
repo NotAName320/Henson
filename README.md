@@ -40,10 +40,16 @@ and download the latest version.
 4. Run `./Henson` or double click the Henson file. Enjoy!
 
 ## Installation (MacOS)
-Uh, you're on your own here. I've provided the binaries for both x64 and ARM 
-Macs, but I don't have the hardware to test either. If someone has a Mac and 
-successfully got Henson to work, please contact me and tell me how you did it! 
-(or even better file a pull request)
+1. Install the latest version of the .NET runtime or SDK, which you can find
+[here](https://dotnet.microsoft.com/en-us/download). Do not install the Arm64
+version, even if you have a Mac with an Apple Silicon processor.
+2. Go to the [releases page](https://github.com/NotAName320/Henson/releases) and
+download the latest `osx-x64` version. (Once again, avoid the Arm64 version.)
+3. Extract the files to a directory of your choice, then run
+`chmod +x ./Henson` in that directory.
+4. Run `./Henson`. You'll likely get a series of errors that various files
+are from unidentified developers. In System Preferences, under Privacy & Security, you should see a prompt about this. Click 'Open Anyway' and then
+run `./Henson` again. You may need to repeat this process a few times.
 
 ## Updating Henson
 Simply drag the new files on top of the old ones and replace them. The program 
