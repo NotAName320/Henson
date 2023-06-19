@@ -41,10 +41,10 @@ and download the latest version.
 
 ## Installation (MacOS)
 1. Install the latest version of the .NET runtime or SDK, which you can find
-[here](https://dotnet.microsoft.com/en-us/download). Do not install the Arm64
+[here](https://dotnet.microsoft.com/en-us/download). Do not install the arm64
 version, even if you have a Mac with an Apple Silicon processor.
 2. Go to the [releases page](https://github.com/NotAName320/Henson/releases) and
-download the latest `osx-x64` version. (Once again, avoid the Arm64 version.)
+download the latest `osx-x64` version. (Once again, avoid the arm64 version.)
 3. Extract the files to a directory of your choice, then run
 `chmod +x ./Henson` in that directory.
 4. Run `./Henson`. You'll likely get a series of errors that various files
