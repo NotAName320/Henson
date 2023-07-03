@@ -21,7 +21,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -323,6 +325,11 @@ namespace Henson.ViewModels
         private readonly StringBuilder _failedLogins = new();
 
         /// <summary>
+        /// Links to all of the tags that succeeded.
+        /// </summary>
+        private readonly StringBuilder _successfulTags = new();
+
+        /// <summary>
         /// A list of embassies to close.
         /// </summary>
         private List<(string name, int type)>? _embassiesToClose = new();
@@ -452,6 +459,14 @@ namespace Henson.ViewModels
                     else
                     {
                         messageContent = "All regions have been tagged. Please close the window now.";
+                    }
+
+                    if(_successfulTags.Length != 0)
+                    {
+                        var workingPath = Path.GetDirectoryName(AppContext.BaseDirectory)!;
+                        Directory.CreateDirectory(Path.Combine(workingPath, "taglogs"));
+                        var path = Path.Combine(workingPath, "taglogs", $"{DateTime.Now:MM-dd-yyyy HHmmss} Tags.txt");
+                        File.WriteAllText(path, _successfulTags.ToString());
                     }
                     
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
@@ -603,6 +618,7 @@ namespace Henson.ViewModels
                             }
                             else
                             {
+                                AddToSuccessfulTags(currentNation.Region);
                                 LoginIndex++;
                                 _successIndex++;
                                 ButtonText = "Login";
@@ -644,6 +660,7 @@ namespace Henson.ViewModels
                             }
                             else
                             {
+                                AddToSuccessfulTags(currentNation.Region);
                                 LoginIndex++;
                                 _successIndex++;
                                 ButtonText = "Login";
@@ -662,6 +679,7 @@ namespace Henson.ViewModels
                             }
                             else
                             {
+                                AddToSuccessfulTags(currentNation.Region);
                                 LoginIndex++;
                                 _successIndex++;
                                 ButtonText = "Login";
@@ -685,6 +703,7 @@ namespace Henson.ViewModels
                     {
                         if(_subIndex == TagsToAdd.Count)
                         {
+                            AddToSuccessfulTags(currentNation.Region);
                             LoginIndex++;
                             _successIndex++;
                             ButtonText = "Login";
@@ -736,6 +755,12 @@ namespace Henson.ViewModels
             _failedLogins.Append(loginName + ", ");
         }
 
+        private void AddToSuccessfulTags(string regionName)
+        {
+            _successfulTags.Append("https://www.nationstates.net/region=" + regionName.Replace(' ', '_').ToLower() +
+                                   '\n');
+        }
+
         /// <summary>
         /// This switch statement reconciles the logic with the booleans and the ButtonText field to progress
         /// the button to its next logical text. Somehow.
@@ -778,7 +803,9 @@ namespace Henson.ViewModels
                         break;
                     }
                     ButtonText = "Login";
+                    AddToSuccessfulTags(CurrentRegion);
                     LoginIndex++;
+                    _successIndex++;
                     break;
             }
         }
