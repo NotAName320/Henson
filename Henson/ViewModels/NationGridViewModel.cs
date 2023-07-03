@@ -42,7 +42,7 @@ namespace Henson.ViewModels
         public string? Chk { get; set; } = null;
 
         public ICommand Login { get; }
-        public ICommand ApplyWA { get; }
+        public ICommand ApplyWa { get; }
         public ReactiveCommand<string, Unit> MoveTo { get; }
 
         public MainWindowViewModel Parent { get; set; }
@@ -66,11 +66,11 @@ namespace Henson.ViewModels
 
         private readonly Nation _nation;
 
-        public NationGridViewModel(Nation nation, bool _checked, bool _locked, MainWindowViewModel parent)
+        public NationGridViewModel(Nation nation, bool @checked, bool locked, MainWindowViewModel parent)
         {
             _nation = nation;
-            this._checked = _checked;
-            this._locked = _locked;
+            this._checked = @checked;
+            this._locked = locked;
             Parent = parent; //This is a dumb solution to a dumb problem: not being able to access parent VMs in a DataGrid.
 
             Login = ReactiveCommand.CreateFromTask(async () =>
@@ -78,7 +78,7 @@ namespace Henson.ViewModels
                 await Parent.OnNationLoginClick(this);
             });
 
-            ApplyWA = ReactiveCommand.CreateFromTask(async () =>
+            ApplyWa = ReactiveCommand.CreateFromTask(async () =>
             {
                 await Parent.OnNationApplyWAClick(this);
             });

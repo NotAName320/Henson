@@ -25,32 +25,42 @@ namespace Henson.ViewModels
     {
         public string UserAgent
         {
-            get => userAgent;
+            get => _userAgent;
             set
             {
-                this.RaiseAndSetIfChanged(ref userAgent, value);
+                this.RaiseAndSetIfChanged(ref _userAgent, value);
             }
         }
-        private string userAgent = "";
+        private string _userAgent = "";
 
         public int Theme
         {
-            get => theme;
+            get => _theme;
             set
             {
-                this.RaiseAndSetIfChanged(ref theme, value);
+                this.RaiseAndSetIfChanged(ref _theme, value);
             }
         }
-        private int theme = 0;
+        private int _theme = 0;
 
         public string EmbWhitelist
         {
-            get => embWhitelist;
+            get => _embWhitelist;
             set
             {
-                this.RaiseAndSetIfChanged(ref embWhitelist, value);
+                this.RaiseAndSetIfChanged(ref _embWhitelist, value);
             }
         }
-        private string embWhitelist = "";
+        private string _embWhitelist = "";
+        
+        public string JumpPoint
+        {
+            get => _jumpPoint;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _jumpPoint, value);
+            }
+        }
+        private string _jumpPoint = "";
     }
 }

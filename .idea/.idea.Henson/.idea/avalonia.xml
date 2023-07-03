@@ -3,7 +3,9 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+        <entry key="Henson/Views/AddNationWindow.axaml" value="Henson/Henson.csproj" />
         <entry key="Henson/Views/MainWindow.axaml" value="Henson/Henson.csproj" />
+        <entry key="Henson/Views/PrepSelectedWindow.axaml" value="Henson/Henson.csproj" />
         <entry key="Henson/Views/TagSelectedWindow.axaml" value="Henson/Henson.csproj" />
       </map>
     </option>

@@ -78,12 +78,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <TextBlock VerticalAlignment="Center" Text="{Binding RegionalTagsSelected}"/>
     </DockPanel>
     <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10,10,10,0">
-      <CheckBox IsChecked="{Binding WFEEnabled}"/>
+      <CheckBox IsChecked="{Binding WfeEnabled}"/>
       <TextBlock DockPanel.Dock="Top" VerticalAlignment="Center">WFE:</TextBlock>
     </DockPanel>
     <TextBox DockPanel.Dock="Top" Margin="10" MinWidth="880" MaxWidth="880"
              MinHeight="230" MaxHeight="230" AcceptsReturn="True"
-             IsEnabled="{Binding WFEEnabled}" Text="{Binding WFE}"/>
+             IsEnabled="{Binding WfeEnabled}" Text="{Binding Wfe}"/>
 
     <TextBlock DockPanel.Dock="Bottom" Margin="10,10,0,10"
                Text="{Binding FooterText}"/>

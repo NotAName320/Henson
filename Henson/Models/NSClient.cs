@@ -41,7 +41,7 @@ namespace Henson.Models
         /// <summary>
         /// A NSDotNet client that interacts with the NationStates API.
         /// </summary>
-        public NSAPI APIClient { get; } = NSAPI.Instance;
+        public NSAPI ApiClient { get; } = NSAPI.Instance;
 
         /// <summary>
         /// An HTTP Client that interacts with the NationStates site.
@@ -53,10 +53,10 @@ namespace Henson.Models
         /// </summary>
         public string UserAgent
         {
-            get => APIClient.UserAgent;
+            get => ApiClient.UserAgent;
             set
             {
-                APIClient.UserAgent = Uri.EscapeDataString($"Henson v{GetType().Assembly.GetName().Version} developed by nation: Notanam in use by nation: {value}");
+                ApiClient.UserAgent = Uri.EscapeDataString($"Henson v{GetType().Assembly.GetName().Version} developed by nation: Notanam in use by nation: {value}");
             }
         }
 
@@ -65,26 +65,26 @@ namespace Henson.Models
         /// </summary>
         public int ManyCount
         {
-            get => manyCount;
+            get => _manyCount;
             set
             {
-                this.RaiseAndSetIfChanged(ref manyCount, value);
+                this.RaiseAndSetIfChanged(ref _manyCount, value);
             }
         }
-        private int manyCount = 0;
+        private int _manyCount = 0;
 
         /// <summary>
         /// The current index when running the same function multiple times with RunMany.
         /// </summary>
         public int ManyTotal
         {
-            get => manyTotal;
+            get => _manyTotal;
             set
             {
-                this.RaiseAndSetIfChanged(ref manyTotal, value);
+                this.RaiseAndSetIfChanged(ref _manyTotal, value);
             }
         }
-        private int manyTotal = 0;
+        private int _manyTotal = 0;
 
         /// <summary>
         /// A function that automatically gets the current unix second in string form.
@@ -99,12 +99,12 @@ namespace Henson.Models
         /// <summary>
         /// The link to the NationStates API.
         /// </summary>
-        private const string APILink = "https://www.nationstates.net/cgi-bin/api.cgi";
+        private const string ApiLink = "https://www.nationstates.net/cgi-bin/api.cgi";
 
         /// <summary>
         /// The log4net logger. It will emit messages as from NSClient.
         /// </summary>
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
 
         /// <summary>
         /// Pings a nation via the API and sends info back.
@@ -113,12 +113,12 @@ namespace Henson.Models
         /// <returns>A <c>Nation</c> object with the nation's info or <c>null</c> if the login failed.</returns>
         public async Task<Nation?> Ping(NationLoginViewModel login)
         {
-            APIClient.Auth = new NSAuth(AuthType.Password, login.Pass);
-            var response = await APIClient.MakeRequest(APILink + $"?nation={login.Name}&q=ping+name+flag+region");
+            ApiClient.Auth = new NSAuth(AuthType.Password, login.Pass);
+            var response = await ApiClient.MakeRequest(ApiLink + $"?nation={login.Name}&q=ping+name+flag+region");
 
             if(response == null || !response.IsSuccessStatusCode)
             {
-                log.Error($"Failed to ping {login.Name}");
+                Log.Error($"Failed to ping {login.Name}");
                 return null;
             }
 
@@ -157,9 +157,9 @@ namespace Henson.Models
         /// </summary>
         /// <param name="nations">A list of nations.</param>
         /// <returns>The name of the nation that is in the WA, or <c>null</c> if no nation was found.</returns>
-        public async Task<string?> FindWA(List<NationGridViewModel> nations)
+        public async Task<string?> FindWa(List<NationGridViewModel> nations)
         {
-            var response = await APIClient.MakeRequest(APILink + "?wa=1&q=members");
+            var response = await ApiClient.MakeRequest(ApiLink + "?wa=1&q=members");
 
             if(response == null || !response.IsSuccessStatusCode) return null;
 
@@ -185,9 +185,9 @@ namespace Henson.Models
         /// </summary>
         /// <param name="nation">The nation to check.</param>
         /// <returns>The nation right back, or <c>null</c> if the nation didn't have perms.</returns>
-        public async Task<NationGridViewModel?> IsROWithTagPerms(NationGridViewModel nation)
+        public async Task<NationGridViewModel?> IsRoWithTagPerms(NationGridViewModel nation)
         {
-            var response = await APIClient.MakeRequest(APILink + $"?region={nation.Region}&q=officers");
+            var response = await ApiClient.MakeRequest(ApiLink + $"?region={nation.Region}&q=officers");
 
             if(response == null || !response.IsSuccessStatusCode) return null;
 
@@ -209,7 +209,7 @@ namespace Henson.Models
         /// <returns>A tuple containg the chk, Local ID, and pin, or null if the login was unsuccessful.</returns>
         public async Task<(string chk, string localId, string pin, string region)?> Login(NationLoginViewModel login)
         {
-            log.Info($"Logging in to {login.Name}");
+            Log.Info($"Logging in to {login.Name}");
             //non template=none region page allows us to get chk and localid in one request
             //shoutout to sweeze
             RestRequest request = new("/region=notas_region", Method.Get);
@@ -241,7 +241,7 @@ namespace Henson.Models
             }
             catch (Exception)
             {
-                log.Error($"Logging in to {login.Name} failed!");
+                Log.Error($"Logging in to {login.Name} failed!");
                 return null;
             }
 
@@ -254,7 +254,7 @@ namespace Henson.Models
         /// <param name="chk">The chk recorded from a login.</param>
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <returns>A boolean indicating whether or not the application was successfully sent.</returns>
-        public async Task<bool> ApplyWA(string chk, string pin)
+        public async Task<bool> ApplyWa(string chk, string pin)
         {
             RestRequest request = new("/template-overall=none/page=UN_status", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
@@ -267,7 +267,7 @@ namespace Henson.Models
             var response = await HttpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains("has been received!");
-            if(!successful) log.Error($"Applying to WA failed!");
+            if(!successful) Log.Error($"Applying to WA failed!");
 
             return successful;
         }
@@ -276,14 +276,14 @@ namespace Henson.Models
         /// Moves a nation to another region.
         /// </summary>
         /// <param name="targetRegion">The name of the region to move to.</param>
-        /// <param name="localID">The Local ID recorded from a login.</param>
+        /// <param name="localId">The Local ID recorded from a login.</param>
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <returns>A boolean indicating whether or not the move was successful.</returns>
-        public async Task<bool> MoveToJP(string targetRegion, string localID, string pin)
+        public async Task<bool> MoveToJp(string targetRegion, string localId, string pin)
         {
             RestRequest request = new("/template-overall=none/page=change_region", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
-            request.AddParameter("localid", localID);
+            request.AddParameter("localid", localId);
             request.AddParameter("region_name", targetRegion);
             request.AddParameter("move_region", "1");
             request.AddParameter("userclick", UserClick);
@@ -292,7 +292,7 @@ namespace Henson.Models
             var response = await HttpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains("Success!");
-            if(!successful) log.Error($"Moving to JP {targetRegion} failed!");
+            if(!successful) Log.Error($"Moving to JP {targetRegion} failed!");
 
             return successful;
         }
@@ -305,7 +305,7 @@ namespace Henson.Models
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <param name="wfe">The WFE.</param>
         /// <returns></returns>
-        public async Task<bool> SetWFE(string targetRegion, string chk, string pin, string wfe)
+        public async Task<bool> SetWfe(string targetRegion, string chk, string pin, string wfe)
         {
             RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
@@ -320,23 +320,23 @@ namespace Henson.Models
             // Because HttpUtility.HtmlEncode does not cover the whole of
             // the ASCII space, where some emoji lie, some extra work has to go in
             // to ensure that all characters are properly escaped
-            string Escaped = String
+            string escaped = String
                 .Join("",HttpUtility.HtmlEncode(wfe).ToArray()
                 .Select(c => (int)c > 127 ? $"&#{(int)c};" : ""+c));
             // Because we're converting to ISO, some things need to be un-escaped
-            var AsciiEscape = new [] { "&amp;", "&lt;", "&gt;", "&quot;", "&#39;" };
-            foreach(var seq in AsciiEscape)
+            var asciiEscape = new [] { "&amp;", "&lt;", "&gt;", "&quot;", "&#39;" };
+            foreach(var seq in asciiEscape)
             {
-                Escaped = Escaped.Replace(seq, HttpUtility.HtmlDecode(seq));
+                escaped = escaped.Replace(seq, HttpUtility.HtmlDecode(seq));
             }
             //Convert to encoding
             Encoding iso = Encoding.GetEncoding("ISO-8859-1");
-            request.AddParameter("message", iso.GetString(Encoding.Convert(Encoding.UTF8, iso, Encoding.UTF8.GetBytes(Escaped))));
+            request.AddParameter("message", iso.GetString(Encoding.Convert(Encoding.UTF8, iso, Encoding.UTF8.GetBytes(escaped))));
 
             var response = await HttpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains("World Factbook Entry updated!");
-            if(!successful) log.Error($"Changing WFE of {targetRegion} failed!");
+            if(!successful) Log.Error($"Changing WFE of {targetRegion} failed!");
 
             return successful;
         }
@@ -367,7 +367,7 @@ namespace Henson.Models
 
             if(!response.IsSuccessStatusCode)
             {
-                log.Error($"Uploading banner to {targetRegion} failed!");
+                Log.Error($"Uploading banner to {targetRegion} failed!");
                 return null;
             }
 
@@ -400,7 +400,7 @@ namespace Henson.Models
 
             if(!response.IsSuccessStatusCode)
             {
-                log.Error($"Uploading flag to {targetRegion} failed!");
+                Log.Error($"Uploading flag to {targetRegion} failed!");
                 return null;
             }
 
@@ -413,18 +413,18 @@ namespace Henson.Models
         /// <param name="targetRegion">The region whose banner and flag is being changed.</param>
         /// <param name="chk">The chk recorded from a login.</param>
         /// <param name="pin">The PIN recorded from a login.</param>
-        /// <param name="bannerID">The banner ID from an earlier upload.</param>
-        /// <param name="flagID">The flag ID from an earlier upload.</param>
+        /// <param name="bannerId">The banner ID from an earlier upload.</param>
+        /// <param name="flagId">The flag ID from an earlier upload.</param>
         /// <returns></returns>
-        public async Task<bool> SetBannerFlag(string targetRegion, string chk, string pin, string bannerID, string flagID)
+        public async Task<bool> SetBannerFlag(string targetRegion, string chk, string pin, string bannerId, string flagId)
         {
             RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
             request.AddHeader("User-Agent", UserAgent);
             request.AddParameter("page", "region_control");
             request.AddParameter("chk", chk);
             request.AddParameter("region", targetRegion);
-            request.AddParameter("newbanner", bannerID);
-            request.AddParameter("newflag", flagID);
+            request.AddParameter("newbanner", bannerId);
+            request.AddParameter("newflag", flagId);
             request.AddParameter("saveflagandbannerchanges", "1");
             request.AddParameter("flagmode", "flag");
             request.AddParameter("newflagmode", "flag");
@@ -434,7 +434,7 @@ namespace Henson.Models
             var response = await HttpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains("banner/flag updated!");
-            if(!successful) log.Error($"Setting banner and flag of {targetRegion} failed!");
+            if(!successful) Log.Error($"Setting banner and flag of {targetRegion} failed!");
 
             return successful;
         }
@@ -446,7 +446,7 @@ namespace Henson.Models
         /// <returns>A list of lists of strings representing the embassy relations has, or null if something went wrong.</returns>
         public async Task<List<(string name, int type)>?> GetEmbassies(string targetRegion)
         {
-            var response = await APIClient.MakeRequest(APILink + $"?region={targetRegion}&q=embassies");
+            var response = await ApiClient.MakeRequest(ApiLink + $"?region={targetRegion}&q=embassies");
             
             if(response == null || !response.IsSuccessStatusCode) return null;
             
@@ -497,7 +497,7 @@ namespace Henson.Models
                                response.Content.Contains(" withdrawn.") ||
                                response.Content.Contains(" aborted.") ||
                                response.Content.Contains(" cancelled."));
-            if(!successful) log.Error($"Rejecting embassy of {regionToClose} from {targetRegion} failed!");
+            if(!successful) Log.Error($"Rejecting embassy of {regionToClose} from {targetRegion} failed!");
 
             return successful;
         }
@@ -516,14 +516,14 @@ namespace Henson.Models
             var response = await HttpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains(" has been sent.");
-            if(!successful) log.Error($"Requesting embassy of {regionToRequest} from {targetRegion} failed!");
+            if(!successful) Log.Error($"Requesting embassy of {regionToRequest} from {targetRegion} failed!");
 
             return successful;
         }
 
         public async Task<List<string>?> GetTags(string targetRegion)
         {
-            var response = await APIClient.MakeRequest(APILink + $"?region={targetRegion}&q=tags");
+            var response = await ApiClient.MakeRequest(ApiLink + $"?region={targetRegion}&q=tags");
             
             if(response == null || !response.IsSuccessStatusCode) return null;
 
@@ -548,7 +548,7 @@ namespace Henson.Models
             var response = await HttpClient.ExecuteAsync(request);
             
             bool successful = response.Content != null && response.Content.Contains(" updated!");
-            if(!successful) log.Error($"Adding tag {tag} to {targetRegion} failed!");
+            if(!successful) Log.Error($"Adding tag {tag} to {targetRegion} failed!");
 
             return successful;
         }
@@ -567,7 +567,7 @@ namespace Henson.Models
             var response = await HttpClient.ExecuteAsync(request);
             
             bool successful = response.Content != null && response.Content.Contains(" updated!");
-            if(!successful) log.Error($"Adding tag {tag} to {targetRegion} failed!");
+            if(!successful) Log.Error($"Adding tag {tag} to {targetRegion} failed!");
 
             return successful;
         }

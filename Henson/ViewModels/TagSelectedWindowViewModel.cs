@@ -51,7 +51,7 @@ namespace Henson.ViewModels
         /// <summary>
         /// The WFE to tag each region with.
         /// </summary>
-        public string WFE { get; set; } = "";
+        public string Wfe { get; set; } = "";
 
         public string? CurrentSelectedTag => (string?)CurrentSelectedItem?.Content;
         public ComboBoxItem? CurrentSelectedItem { get; set; } = null;
@@ -61,42 +61,42 @@ namespace Henson.ViewModels
         /// </summary>
         public string BannerPath
         {
-            get => bannerPath;
+            get => _bannerPath;
             set
             {
-                bannerPath = value;
-                if(bannerPath != "" && bannerPath.Contains('/'))
+                _bannerPath = value;
+                if(_bannerPath != "" && _bannerPath.Contains('/'))
                 {
-                    BannerFileName = bannerPath.Split('/').Last();
+                    BannerFileName = _bannerPath.Split('/').Last();
                 }
-                else if(bannerPath != "" && bannerPath.Contains('\\'))
+                else if(_bannerPath != "" && _bannerPath.Contains('\\'))
                 {
-                    BannerFileName = bannerPath.Split('\\').Last();
+                    BannerFileName = _bannerPath.Split('\\').Last();
                 }
             }
         }
-        private string bannerPath = "";
+        private string _bannerPath = "";
 
         /// <summary>
         /// The full file path to the flag image.
         /// </summary>
         public string FlagPath
         {
-            get => flagPath;
+            get => _flagPath;
             set
             {
-                flagPath = value;
-                if(flagPath != "" && flagPath.Contains('/'))
+                _flagPath = value;
+                if(_flagPath != "" && _flagPath.Contains('/'))
                 {
-                    FlagFileName = flagPath.Split('/').Last();
+                    FlagFileName = _flagPath.Split('/').Last();
                 }
-                else if(flagPath != "" && flagPath.Contains('\\'))
+                else if(_flagPath != "" && _flagPath.Contains('\\'))
                 {
-                    FlagFileName = flagPath.Split('\\').Last();
+                    FlagFileName = _flagPath.Split('\\').Last();
                 }
             }
         }
-        private string flagPath = "";
+        private string _flagPath = "";
 
         /// <summary>
         /// Fired when the question mark button is clicked on the settings page beside the embassy whitelist text box.
@@ -140,13 +140,13 @@ namespace Henson.ViewModels
         /// </summary>
         public string ButtonText
         {
-            get => buttonText;
+            get => _buttonText;
             set
             {
-                this.RaiseAndSetIfChanged(ref buttonText, value);
+                this.RaiseAndSetIfChanged(ref _buttonText, value);
             }
         }
-        private string buttonText = "Login";
+        private string _buttonText = "Login";
 
         /// <summary>
         /// The current logged in nation.
@@ -174,61 +174,61 @@ namespace Henson.ViewModels
         private List<string>? _optionalTagsDetected = new();
 
         private List<string> TagsToAdd =>
-            SelectedTags.Except(_optionalTagsDetected ?? Array.Empty<string>().ToList()).ToList();
-        private List<string>? TagsToRemove => _optionalTagsDetected?.Except(SelectedTags).ToList();
+            _selectedTags.Except(_optionalTagsDetected ?? Array.Empty<string>().ToList()).ToList();
+        private List<string>? TagsToRemove => _optionalTagsDetected?.Except(_selectedTags).ToList();
 
         public bool EmbassiesEnabled
         {
-            get => embassiesEnabled;
+            get => _embassiesEnabled;
             set
             {
-                this.RaiseAndSetIfChanged(ref embassiesEnabled, value);
+                this.RaiseAndSetIfChanged(ref _embassiesEnabled, value);
             }
         }
-        private bool embassiesEnabled = false;
+        private bool _embassiesEnabled = false;
 
         public bool FlagBannerEnabled
         {
-            get => flagBannerEnabled;
+            get => _flagBannerEnabled;
             set
             {
-                this.RaiseAndSetIfChanged(ref flagBannerEnabled, value);
+                this.RaiseAndSetIfChanged(ref _flagBannerEnabled, value);
             }
         }
-        private bool flagBannerEnabled = false;
+        private bool _flagBannerEnabled = false;
 
-        public bool WFEEnabled
+        public bool WfeEnabled
         {
-            get => wFEEnabled;
+            get => _wFeEnabled;
             set
             {
-                this.RaiseAndSetIfChanged(ref wFEEnabled, value);
+                this.RaiseAndSetIfChanged(ref _wFeEnabled, value);
             }
         }
-        private bool wFEEnabled = false;
+        private bool _wFeEnabled = false;
 
         public bool TagsEnabled
         {
-            get => tagsEnabled;
+            get => _tagsEnabled;
             set
             {
-                this.RaiseAndSetIfChanged(ref tagsEnabled, value);
+                this.RaiseAndSetIfChanged(ref _tagsEnabled, value);
             }
         }
-        private bool tagsEnabled = false;
+        private bool _tagsEnabled = false;
 
         /// <summary>
         /// The text displayed in the footer of the window.
         /// </summary>
         public string FooterText
         {
-            get => footerText;
+            get => _footerText;
             set
             {
-                this.RaiseAndSetIfChanged(ref footerText, value);
+                this.RaiseAndSetIfChanged(ref _footerText, value);
             }
         }
-        private string footerText = "Click Login to start.";
+        private string _footerText = "Click Login to start.";
 
         /// <summary>
         /// Boolean that controls the enabling and disabling of buttons that send requests
@@ -236,115 +236,115 @@ namespace Henson.ViewModels
         /// </summary>
         public bool ButtonsEnabled
         {
-            get => buttonsEnabled;
+            get => _buttonsEnabled;
             set
             {
-                this.RaiseAndSetIfChanged(ref buttonsEnabled, value);
+                this.RaiseAndSetIfChanged(ref _buttonsEnabled, value);
             }
         }
-        private bool buttonsEnabled = true;
+        private bool _buttonsEnabled = true;
 
         public string BannerFileName
         {
-            get => bannerFileName;
+            get => _bannerFileName;
             set
             {
-                this.RaiseAndSetIfChanged(ref bannerFileName, value);
+                this.RaiseAndSetIfChanged(ref _bannerFileName, value);
             }
         }
-        private string bannerFileName = "";
+        private string _bannerFileName = "";
 
         public string FlagFileName
         {
-            get => flagFileName;
+            get => _flagFileName;
             set
             {
-                this.RaiseAndSetIfChanged(ref flagFileName, value);
+                this.RaiseAndSetIfChanged(ref _flagFileName, value);
             }
         }
-        private string flagFileName = "";
+        private string _flagFileName = "";
 
         /// <summary>
         /// The current index that the user is on.
         /// </summary>
         public int LoginIndex
         {
-            get => loginIndex;
+            get => _loginIndex;
             set
             {
-                this.RaiseAndSetIfChanged(ref loginIndex, value);
+                this.RaiseAndSetIfChanged(ref _loginIndex, value);
             }
         }
-        private int loginIndex = 0;
+        private int _loginIndex = 0;
         
         /// <summary>
         /// The amount of successful tags.
         /// </summary>
-        private int successIndex = 0;
+        private int _successIndex = 0;
 
         /// <summary>
         /// An object storing the UserAgent and using it to make requests to NationStates via both API and site.
         /// </summary>
-        private readonly NsClient Client;
+        private readonly NsClient _client;
 
         /// <summary>
         /// The list of nations with RO perms to tag.
         /// </summary>
-        private readonly List<NationGridViewModel> NationsToTag;
+        private readonly List<NationGridViewModel> _nationsToTag;
 
         /// <summary>
         /// The index that the user is on for a specific subtask.
         /// </summary>
-        private int subIndex = 0;
+        private int _subIndex = 0;
 
         /// <summary>
         /// The current chk of the logged in nation.
         /// </summary>
-        private string CurrentChk = "";
+        private string _currentChk = "";
 
         /// <summary>
         /// The current Pin of the logged in nation.
         /// </summary>
-        private string CurrentPin = "";
+        private string _currentPin = "";
 
         /// <summary>
         /// The current Banner ID uploaded to the region.
         /// </summary>
-        private string CurrentBannerID = "";
+        private string _currentBannerId = "";
 
         /// <summary>
         /// The current Flag ID uploaded to the region.
         /// </summary>
-        private string CurrentFlagID = "";
+        private string _currentFlagId = "";
 
         /// <summary>
         /// The names of all the logins that failed.
         /// </summary>
-        private readonly StringBuilder FailedLogins = new();
+        private readonly StringBuilder _failedLogins = new();
 
         /// <summary>
         /// A list of embassies to close.
         /// </summary>
-        private List<(string name, int type)>? EmbassiesToClose = new();
+        private List<(string name, int type)>? _embassiesToClose = new();
 
-        private HashSet<string>? AlreadyEstablishedEmbassies => EmbassiesToClose
+        private HashSet<string>? AlreadyEstablishedEmbassies => _embassiesToClose
             ?.Select(x => x.name.ToLower().Replace('_', ' '))
             .Intersect(_embassyList.Select(x => x.ToLower().Replace('_', ' '))).ToHashSet();
 
         private HashSet<string> _whitelist;
 
-        private ObservableCollection<string> SelectedTags = new();
+        private ObservableCollection<string> _selectedTags = new();
 
         /// <summary>
         /// The log4net logger. It will emit messages as from TagSelectedWindowViewModel.
         /// </summary>
-        private static readonly ILog log =
+        private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
 
         public TagSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string whitelist)
         {
-            NationsToTag = nations;
-            Client = client;
+            _nationsToTag = nations;
+            _client = client;
             _whitelist = whitelist.Split(',').Select(x => x.Trim()).ToHashSet();
             
             EmbassyHelpCommand = ReactiveCommand.CreateFromTask(async () =>
@@ -388,20 +388,20 @@ namespace Henson.ViewModels
                     return;
                 }
 
-                if(SelectedTags.Contains(CurrentSelectedTag))
+                if(_selectedTags.Contains(CurrentSelectedTag))
                 {
-                    SelectedTags.Remove(CurrentSelectedTag);
+                    _selectedTags.Remove(CurrentSelectedTag);
                 }
                 else
                 {
-                    SelectedTags.Add(CurrentSelectedTag);
+                    _selectedTags.Add(CurrentSelectedTag);
                 }
             });
 
             ActionButtonCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 //if none of the tag features are enabled
-                if(new[] { EmbassiesEnabled, FlagBannerEnabled, WFEEnabled, TagsEnabled }.All(x => !x))
+                if(new[] { EmbassiesEnabled, FlagBannerEnabled, WfeEnabled, TagsEnabled }.All(x => !x))
                 {
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
@@ -414,7 +414,7 @@ namespace Henson.ViewModels
 
                 }
 
-                if(WFEEnabled && WFE == "")
+                if(WfeEnabled && Wfe == "")
                 {
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
@@ -438,16 +438,16 @@ namespace Henson.ViewModels
                     return;
                 }
 
-                if(LoginIndex == NationsToTag.Count)
+                if(LoginIndex == _nationsToTag.Count)
                 {
-                    FooterText = $"Tagging complete! {successIndex}/{NationsToTag.Count} regions successfully tagged!";
+                    FooterText = $"Tagging complete! {_successIndex}/{_nationsToTag.Count} regions successfully tagged!";
                     
                     string messageContent;
-                    if(successIndex != NationsToTag.Count && FailedLogins.Length != 0)
+                    if(_successIndex != _nationsToTag.Count && _failedLogins.Length != 0)
                     {
-                        FailedLogins.Remove(FailedLogins.Length - 2, 2);
+                        _failedLogins.Remove(_failedLogins.Length - 2, 2);
                         messageContent =
-                            $"All regions have been tagged. Please close the window now. Tagging with the following failed:\n{FailedLogins}";
+                            $"All regions have been tagged. Please close the window now. Tagging with the following failed:\n{_failedLogins}";
                     }
                     else
                     {
@@ -464,7 +464,7 @@ namespace Henson.ViewModels
                     return;
                 }
 
-                NationGridViewModel currentNation = NationsToTag[LoginIndex];
+                NationGridViewModel currentNation = _nationsToTag[LoginIndex];
 
                 ButtonsEnabled = false;
                 await Task.Delay(100);
@@ -472,12 +472,12 @@ namespace Henson.ViewModels
                 {
                     case "Login":
                         var (chk, _, pin, _) =
-                            await Client.Login(new NationLoginViewModel(currentNation.Name, currentNation.Pass)) ??
+                            await _client.Login(new NationLoginViewModel(currentNation.Name, currentNation.Pass)) ??
                             default;
                         if(chk != null)
                         {
-                            CurrentChk = chk;
-                            CurrentPin = pin;
+                            _currentChk = chk;
+                            _currentPin = pin;
 
                             FooterText = $"Logged in to {currentNation.Name}.";
                             GetNextButtonText();
@@ -490,7 +490,7 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Set WFE":
-                        if(await Client.SetWFE(currentNation.Region, CurrentChk, CurrentPin, WFE))
+                        if(await _client.SetWfe(currentNation.Region, _currentChk, _currentPin, Wfe))
                         {
                             FooterText = $"Changed WFE of {currentNation.Region}!";
                             GetNextButtonText();
@@ -505,10 +505,10 @@ namespace Henson.ViewModels
                         break;
                     case "Upload Banner":
                         var bannerId =
-                            await Client.UploadBanner(currentNation.Region, CurrentChk, CurrentPin, BannerPath);
+                            await _client.UploadBanner(currentNation.Region, _currentChk, _currentPin, BannerPath);
                         if(bannerId != null)
                         {
-                            CurrentBannerID = bannerId;
+                            _currentBannerId = bannerId;
                             FooterText = $"Uploaded banner to {currentNation.Region}!";
                             GetNextButtonText();
                         }
@@ -521,10 +521,10 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Upload Flag":
-                        var flagId = await Client.UploadFlag(currentNation.Region, CurrentChk, CurrentPin, FlagPath);
+                        var flagId = await _client.UploadFlag(currentNation.Region, _currentChk, _currentPin, FlagPath);
                         if(flagId != null)
                         {
-                            CurrentFlagID = flagId;
+                            _currentFlagId = flagId;
                             FooterText = $"Uploaded flag to {currentNation.Region}!";
                             GetNextButtonText();
                         }
@@ -537,8 +537,8 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Set Banner + Flag":
-                        if(await Client.SetBannerFlag(currentNation.Region, CurrentChk, CurrentPin, CurrentBannerID,
-                               CurrentFlagID))
+                        if(await _client.SetBannerFlag(currentNation.Region, _currentChk, _currentPin, _currentBannerId,
+                               _currentFlagId))
                         {
                             FooterText = $"Set banner and flag of {currentNation.Region}!";
                             GetNextButtonText();
@@ -552,11 +552,11 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Get Embassies":
-                        EmbassiesToClose = await Client.GetEmbassies(currentNation.Region);
-                        if(EmbassiesToClose != null && EmbassiesToClose.Count != 0)
+                        _embassiesToClose = await _client.GetEmbassies(currentNation.Region);
+                        if(_embassiesToClose != null && _embassiesToClose.Count != 0)
                         {
                             FooterText = $"Found embassies in {currentNation.Region}!";
-                            EmbassiesToClose.RemoveAll(x =>
+                            _embassiesToClose.RemoveAll(x =>
                                 (_whitelist.Contains(x.name.ToLower().Replace('_', ' ')) ||
                                  _embassyList.Contains(x.name.ToLower().Replace('_', ' '))) ^ x.type == 4 ||
                                 x.type == -1);
@@ -566,21 +566,21 @@ namespace Henson.ViewModels
                         {
                             FooterText = $"Found no embassies to close in {currentNation.Region}.";
                             ButtonText = "Request Embassy";
-                            subIndex = 0;
+                            _subIndex = 0;
                         }
-                        subIndex = 0;
+                        _subIndex = 0;
                         break;
                     case "Close Embassy":
-                        if(subIndex == EmbassiesToClose!.Count)
+                        if(_subIndex == _embassiesToClose!.Count)
                         {
                             FooterText = "Done closing embassies!";
                             ButtonText = "Request Embassy";
-                            subIndex = 0;
+                            _subIndex = 0;
                             break;
                         }
                         
-                        var embassyToClose = EmbassiesToClose[subIndex++];
-                        if(await Client.CloseEmbassy(currentNation.Region, CurrentChk, CurrentPin, 
+                        var embassyToClose = _embassiesToClose[_subIndex++];
+                        if(await _client.CloseEmbassy(currentNation.Region, _currentChk, _currentPin, 
                                embassyToClose.name, embassyToClose.type))
                         {
                             FooterText = embassyToClose.type == 4
@@ -593,7 +593,7 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Request Embassy":
-                        if(subIndex >= _embassyList.Count)
+                        if(_subIndex >= _embassyList.Count)
                         {
                             FooterText = "Done requesting embassies!";
 
@@ -604,19 +604,19 @@ namespace Henson.ViewModels
                             else
                             {
                                 LoginIndex++;
-                                successIndex++;
+                                _successIndex++;
                                 ButtonText = "Login";
                             }
                         }
                         else
                         {
-                            var embassy = _embassyList[subIndex++];
+                            var embassy = _embassyList[_subIndex++];
                             if(AlreadyEstablishedEmbassies!.Contains(embassy))
                             {
                                 FooterText =
                                     $"Already established embassy with {embassy}, skipping...";
                             }
-                            else if(await Client.RequestEmbassy(currentNation.Region, CurrentChk, CurrentPin, embassy))
+                            else if(await _client.RequestEmbassy(currentNation.Region, _currentChk, _currentPin, embassy))
                             {
                                 FooterText = $"Successfully requested embassies with {embassy}.";
                             }
@@ -627,9 +627,9 @@ namespace Henson.ViewModels
                         }
                         break;
                     case "Get Tags":
-                        _optionalTagsDetected = (await Client.GetTags(currentNation.Region))?.Except(UnremovableTags)
+                        _optionalTagsDetected = (await _client.GetTags(currentNation.Region))?.Except(UnremovableTags)
                             .ToList();
-                        subIndex = 0;
+                        _subIndex = 0;
                         if(_optionalTagsDetected != null && TagsToRemove!.Count != 0)
                         {
                             ButtonText = "Remove Tag";
@@ -645,33 +645,33 @@ namespace Henson.ViewModels
                             else
                             {
                                 LoginIndex++;
-                                successIndex++;
+                                _successIndex++;
                                 ButtonText = "Login";
                                 FooterText = "No tags to remove/add...";
                             }
                         }
                         break;
                     case "Remove Tag":
-                        if(subIndex == TagsToRemove!.Count)
+                        if(_subIndex == TagsToRemove!.Count)
                         {
                             if(TagsToAdd.Count != 0)
                             {
                                 ButtonText = "Add Tag";
                                 FooterText = "Done removing tags! Adding tags now.";
-                                subIndex = 0;
+                                _subIndex = 0;
                             }
                             else
                             {
                                 LoginIndex++;
-                                successIndex++;
+                                _successIndex++;
                                 ButtonText = "Login";
                                 FooterText = "Done removing tags! No tags to add...";
                             }
                         }
                         else
                         {
-                            var tag = TagsToRemove[subIndex++];
-                            if(await Client.RemoveTag(currentNation.Region, CurrentChk, CurrentPin, TagToRequest(tag)))
+                            var tag = TagsToRemove[_subIndex++];
+                            if(await _client.RemoveTag(currentNation.Region, _currentChk, _currentPin, TagToRequest(tag)))
                             {
                                 FooterText = $"Successfully removed tag {tag}";
                             }
@@ -683,17 +683,17 @@ namespace Henson.ViewModels
                         break;
                     case "Add Tag":
                     {
-                        if(subIndex == TagsToAdd.Count)
+                        if(_subIndex == TagsToAdd.Count)
                         {
                             LoginIndex++;
-                            successIndex++;
+                            _successIndex++;
                             ButtonText = "Login";
                             FooterText = "Done adding tags!";
                         }
                         else
                         {
-                            var tag = TagsToAdd[subIndex++];
-                            if(await Client.AddTag(currentNation.Region, CurrentChk, CurrentPin, TagToRequest(tag)))
+                            var tag = TagsToAdd[_subIndex++];
+                            if(await _client.AddTag(currentNation.Region, _currentChk, _currentPin, TagToRequest(tag)))
                             {
                                 FooterText = $"Successfully added tag {tag}";
                             }
@@ -710,15 +710,15 @@ namespace Henson.ViewModels
             });
 
             this.WhenAnyValue(x => x.LoginIndex)
-                .Select(_ => LoginIndex == NationsToTag.Count ? "" : NationsToTag[LoginIndex].Name)
+                .Select(_ => LoginIndex == _nationsToTag.Count ? "" : _nationsToTag[LoginIndex].Name)
                 .ToProperty(this, x => x.CurrentNation, out _currentNation);
 
             this.WhenAnyValue(x => x.LoginIndex)
-                .Select(_ => LoginIndex == NationsToTag.Count ? "" : NationsToTag[LoginIndex].Region)
+                .Select(_ => LoginIndex == _nationsToTag.Count ? "" : _nationsToTag[LoginIndex].Region)
                 .ToProperty(this, x => x.CurrentRegion, out _currentRegion);
 
-            SelectedTags.ToObservableChangeSet().Select(_ =>
-                    SelectedTags.Count == 0 ? "" : "Current tags: " + string.Join(", ", SelectedTags))
+            _selectedTags.ToObservableChangeSet().Select(_ =>
+                    _selectedTags.Count == 0 ? "" : "Current tags: " + string.Join(", ", _selectedTags))
                 .ToProperty(this, x => x.RegionalTagsSelected, out _regionalTagsSelected);
         }
 
@@ -728,12 +728,12 @@ namespace Henson.ViewModels
         /// <param name="loginName">The login name to be added.</param>
         private void AddToFailedLogins(string loginName)
         {
-            log.Error($"Tagging with {loginName} failed");
-            if(FailedLogins.ToString().Split("\n").Last().Length + loginName.Length + 2 > 75)
+            Log.Error($"Tagging with {loginName} failed");
+            if(_failedLogins.ToString().Split("\n").Last().Length + loginName.Length + 2 > 75)
             {
-                FailedLogins.Append('\n');
+                _failedLogins.Append('\n');
             }
-            FailedLogins.Append(loginName + ", ");
+            _failedLogins.Append(loginName + ", ");
         }
 
         /// <summary>
@@ -745,7 +745,7 @@ namespace Henson.ViewModels
             switch(ButtonText)
             {
                 case "Login":
-                    if(WFEEnabled)
+                    if(WfeEnabled)
                     {
                         ButtonText = "Set WFE";
                         break;

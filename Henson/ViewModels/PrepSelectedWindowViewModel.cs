@@ -52,99 +52,99 @@ namespace Henson.ViewModels
         /// <summary>
         /// An object storing the UserAgent and using it to make requests to NationStates via both API and site.
         /// </summary>
-        private readonly NsClient Client;
+        private readonly NsClient _client;
 
         /// <summary>
         /// The list of all nations loaded by Henson.
         /// </summary>
-        private readonly List<NationGridViewModel> Nations;
+        private readonly List<NationGridViewModel> _nations;
 
         /// <summary>
         /// A list of nations selected by the user.
         /// </summary>
-        private readonly List<NationLoginViewModel> SelectedNations;
+        private readonly List<NationLoginViewModel> _selectedNations;
 
         /// <summary>
         /// The current index that the user is on.
         /// </summary>
-        private int LoginIndex = 0;
+        private int _loginIndex = 0;
 
         /// <summary>
         /// The number of nations successfully prepped without errors (e.g. moved region successfully).
         /// </summary>
-        private int PrepSuccesses = 0;
+        private int _prepSuccesses = 0;
 
         /// <summary>
         /// The current chk of the logged in nation.
         /// </summary>
-        private string CurrentChk = "";
+        private string _currentChk = "";
 
         /// <summary>
         /// The current Local ID of the logged in nation.
         /// </summary>
-        private string CurrentLocalID = "";
+        private string _currentLocalId = "";
 
         /// <summary>
         /// The current Pin of the logged in nation.
         /// </summary>
-        private string CurrentPin = "";
+        private string _currentPin = "";
 
         /// <summary>
         /// The names of all the logins that failed.
         /// </summary>
-        private readonly StringBuilder FailedLogins = new();
+        private readonly StringBuilder _failedLogins = new();
 
         /// <summary>
         /// The text on the button.
         /// </summary>
         public string ButtonText
         {
-            get => buttonText;
+            get => _buttonText;
             set
             {
-                this.RaiseAndSetIfChanged(ref buttonText, value);
+                this.RaiseAndSetIfChanged(ref _buttonText, value);
             }
         }
-        private string buttonText = "Login";
+        private string _buttonText = "Login";
 
         /// <summary>
         /// Whether or not the Apply WA? checkox is checked.
         /// </summary>
-        public bool AlsoApplyWA
+        public bool AlsoApplyWa
         {
-            get => alsoApplyWA;
+            get => _alsoApplyWa;
             set
             {
-                this.RaiseAndSetIfChanged(ref alsoApplyWA, value);
+                this.RaiseAndSetIfChanged(ref _alsoApplyWa, value);
             }
         }
-        private bool alsoApplyWA = true;
+        private bool _alsoApplyWa = true;
 
         /// <summary>
         /// The value displayed by the current login text block in the window.
         /// </summary>
         public string CurrentLogin
         {
-            get => currentLogin;
+            get => _currentLogin;
             set
             {
-                this.RaiseAndSetIfChanged(ref currentLogin, value);
+                this.RaiseAndSetIfChanged(ref _currentLogin, value);
             }
         }
-        private string currentLogin = "";
+        private string _currentLogin = "";
 
         /// <summary>
         /// The text displayed in the footer of the window.
         /// </summary>
         public string FooterText
         {
-            get => footerText;
+            get => _footerText;
             set
             {
-                this.RaiseAndSetIfChanged(ref footerText, value);
+                this.RaiseAndSetIfChanged(ref _footerText, value);
             }
         }
-        private string footerText = "Click Login to start.";
+        private string _footerText = "Click Login to start.";
 
         /// <summary>
         /// Boolean that controls the enabling and disabling of buttons that send requests
@@ -152,18 +152,18 @@ namespace Henson.ViewModels
         /// </summary>
         public bool ButtonsEnabled
         {
-            get => buttonsEnabled;
+            get => _buttonsEnabled;
             set
             {
-                this.RaiseAndSetIfChanged(ref buttonsEnabled, value);
+                this.RaiseAndSetIfChanged(ref _buttonsEnabled, value);
             }
         }
-        private bool buttonsEnabled = true;
+        private bool _buttonsEnabled = true;
 
         /// <summary>
         /// The log4net logger. It will emit messages as from PrepSelectedWindowViewModel.
         /// </summary>
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
 
         /// <summary>
         /// Constructs a new <c>PrepSelectedViewModel</c>.
@@ -173,14 +173,14 @@ namespace Henson.ViewModels
         /// <param name="target">The prefilled region from the target box.</param>
         public PrepSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string target)
         {
-            Nations = nations;
-            SelectedNations = Nations.Where(x => x.Checked && !x.Locked).Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
-            Client = client;
+            _nations = nations;
+            _selectedNations = _nations.Where(x => x.Checked && !x.Locked).Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
+            _client = client;
             TargetRegion = target;
 
             ActionButtonCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                if(LoginIndex == SelectedNations.Count)
+                if(_loginIndex == _selectedNations.Count)
                 {
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
@@ -192,41 +192,41 @@ namespace Henson.ViewModels
                     return;
                 }
 
-                NationLoginViewModel currentNation = SelectedNations[LoginIndex];
+                NationLoginViewModel currentNation = _selectedNations[_loginIndex];
 
                 ButtonsEnabled = false;
                 await Task.Delay(100);
-                switch(buttonText)
+                switch(_buttonText)
                 {
                     case "Login":
-                        var (chk, localId, pin, region) = await Client.Login(currentNation) ?? default;
+                        var (chk, localId, pin, region) = await _client.Login(currentNation) ?? default;
                         if(chk != null)
                         {
-                            CurrentChk = chk;
-                            CurrentLocalID = localId;
-                            CurrentPin = pin;
+                            _currentChk = chk;
+                            _currentLocalId = localId;
+                            _currentPin = pin;
                             CurrentLogin = currentNation.Name;
 
                             //cant be bothered to change nations type to NationGridViewModel
                             //have this dumb LINQ instead
-                            if(region.ToLower() != nations.Where(x => x.Name == currentNation.Name).First().Region.ToLower())
+                            if(region!.ToLower() != nations.First(x => x.Name == currentNation.Name).Region.ToLower())
                             {
-                                Nations.First(x => x.Name == currentNation.Name).Region = region;
+                                _nations.First(x => x.Name == currentNation.Name).Region = region;
                                 DbClient.ExecuteNonQuery($"UPDATE nations SET region = '{region}' WHERE name = '{currentNation.Name}'");
                             }
 
                             FooterText = $"Logged in to {currentNation.Name}.";
-                            ButtonText = AlsoApplyWA ? "Apply WA" : "Move to JP";
+                            ButtonText = AlsoApplyWa ? "Apply WA" : "Move to JP";
                         }
                         else
                         {
                             FooterText = $"Login to {currentNation.Name} failed.";
                             AddToFailedLogins(currentNation.Name);
-                            LoginIndex++;
+                            _loginIndex++;
                         }
                         break;
                     case "Apply WA":
-                        if(await Client.ApplyWA(CurrentChk, CurrentPin))
+                        if(await _client.ApplyWa(_currentChk, _currentPin))
                         {
                             ButtonText = "Move to JP";
                             FooterText = $"Sent WA application on {currentNation.Name}.";
@@ -238,7 +238,7 @@ namespace Henson.ViewModels
 
                             ButtonText = "Login";
                             CurrentLogin = "";
-                            LoginIndex++;
+                            _loginIndex++;
                         }
                         break;
                     case "Move to JP":
@@ -254,11 +254,11 @@ namespace Henson.ViewModels
                             return;
                         }
 
-                        if(Nations.Where(x => x.Name == currentNation.Name).First().Region.ToLower() == TargetRegion.ToLower())
+                        if(_nations.Where(x => x.Name == currentNation.Name).First().Region.ToLower() == TargetRegion.ToLower())
                         {
                             FooterText = $"{currentNation.Name} already in {TargetRegion}!";
                         }
-                        else if(!await Client.MoveToJP(TargetRegion, CurrentLocalID, CurrentPin))
+                        else if(!await _client.MoveToJp(TargetRegion, _currentLocalId, _currentPin))
                         {
                             FooterText = $"Moving {currentNation.Name} failed.";
                             AddToFailedLogins(currentNation.Name);
@@ -266,27 +266,27 @@ namespace Henson.ViewModels
                         else
                         {
                             FooterText = $"Moved {currentNation.Name} to {TargetRegion}.";
-                            Nations.First(x => x.Name == currentNation.Name).Region = char.ToUpper(TargetRegion[0]) + TargetRegion[1..];
+                            _nations.First(x => x.Name == currentNation.Name).Region = char.ToUpper(TargetRegion[0]) + TargetRegion[1..];
                             DbClient.ExecuteNonQuery($"UPDATE nations SET region = '{char.ToUpper(TargetRegion[0]) + TargetRegion[1..]}' WHERE name = '{currentNation.Name}'");
-                            PrepSuccesses++;
+                            _prepSuccesses++;
                         }
                         ButtonText = "Login";
-                        LoginIndex++;
-                        if(LoginIndex == SelectedNations.Count)
+                        _loginIndex++;
+                        if(_loginIndex == _selectedNations.Count)
                         {
-                            FooterText += $" {PrepSuccesses}/{SelectedNations.Count} prepped successfully!";
+                            FooterText += $" {_prepSuccesses}/{_selectedNations.Count} prepped successfully!";
                         }
                         break;
                 }
 
-                if(LoginIndex == SelectedNations.Count && FailedLogins.Length != 0)
+                if(_loginIndex == _selectedNations.Count && _failedLogins.Length != 0)
                 {
-                    FailedLogins.Remove(FailedLogins.Length - 2, 2);
+                    _failedLogins.Remove(_failedLogins.Length - 2, 2);
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
                         ContentTitle = "Some Logins Failed",
-                        ContentMessage = $"The following nations failed to be prepped ({SelectedNations.Count-PrepSuccesses}/{SelectedNations.Count}):" +
-                        $"\n{FailedLogins}\n\nCheck the log for more info.",
+                        ContentMessage = $"The following nations failed to be prepped ({_selectedNations.Count-_prepSuccesses}/{_selectedNations.Count}):" +
+                        $"\n{_failedLogins}\n\nCheck the log for more info.",
                         Icon = Icon.Warning,
                     });
                     await MessageBoxDialog.Handle(dialog);
@@ -303,12 +303,12 @@ namespace Henson.ViewModels
         /// <param name="loginName">The login name to be added.</param>
         private void AddToFailedLogins(string loginName)
         {
-            log.Error($"Prepping {loginName} failed");
-            if(FailedLogins.ToString().Split("\n").Last().Length + loginName.Length + 2 > 75)
+            Log.Error($"Prepping {loginName} failed");
+            if(_failedLogins.ToString().Split("\n").Last().Length + loginName.Length + 2 > 75)
             {
-                FailedLogins.Append('\n');
+                _failedLogins.Append('\n');
             }
-            FailedLogins.Append(loginName + ", ");
+            _failedLogins.Append(loginName + ", ");
         }
     }
 }

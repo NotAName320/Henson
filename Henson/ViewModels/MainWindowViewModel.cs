@@ -73,7 +73,7 @@ namespace Henson.ViewModels
         /// <summary>
         /// Fired when the Find WA button in quick view is clicked.
         /// </summary>
-        public ICommand FindWACommand { get; }
+        public ICommand FindWaCommand { get; }
 
         /// <summary>
         /// Fired when the Prep button in quick view is clicked.
@@ -122,11 +122,11 @@ namespace Henson.ViewModels
         /// <summary>
         /// The text displayed in the footer.
         /// </summary>
-        private string footerText = "Welcome to Henson!";
+        private string _footerText = "Welcome to Henson!";
         public string FooterText
         {
-            get => footerText;
-            set => this.RaiseAndSetIfChanged(ref footerText, value);
+            get => _footerText;
+            set => this.RaiseAndSetIfChanged(ref _footerText, value);
         }
 
         /// <summary>
@@ -134,10 +134,10 @@ namespace Henson.ViewModels
         /// </summary>
         public string CurrentLoginUser
         {
-            get => currentLoginUser;
-            set => this.RaiseAndSetIfChanged(ref currentLoginUser, value);
+            get => _currentLoginUser;
+            set => this.RaiseAndSetIfChanged(ref _currentLoginUser, value);
         }
-        private string currentLoginUser = "";
+        private string _currentLoginUser = "";
 
         /// <summary>
         /// The target region in the quick view's text box, only used in the code to pass on
@@ -151,26 +151,26 @@ namespace Henson.ViewModels
         /// </summary>
         public bool ButtonsEnabled
         {
-            get => buttonsEnabled;
+            get => _buttonsEnabled;
             set
             {
-                this.RaiseAndSetIfChanged(ref buttonsEnabled, value);
+                this.RaiseAndSetIfChanged(ref _buttonsEnabled, value);
             }
         }
-        private bool buttonsEnabled = true;
+        private bool _buttonsEnabled = true;
 
         /// <summary>
         /// Boolean that controls the progress bar.
         /// </summary>
         public bool ShowProgressBar
         {
-            get => showProgressBar;
+            get => _showProgressBar;
             set
             {
-                this.RaiseAndSetIfChanged(ref showProgressBar, value);
+                this.RaiseAndSetIfChanged(ref _showProgressBar, value);
             }
         }
-        private bool showProgressBar = false;
+        private bool _showProgressBar = false;
 
 
         /// <summary>
@@ -185,9 +185,9 @@ namespace Henson.ViewModels
         public bool NationSelectedAndNoSiteRequests => _nationSelectedAndNoSiteRequests.Value;
         private readonly ObservableAsPropertyHelper<bool> _nationSelectedAndNoSiteRequests;
 
-        private string currentLocalID = ""; //should probably store that in the object or the chk here for constitency
+        private string _currentLocalId = ""; //should probably store that in the object or the chk here for constitency
 
-        private string currentPin = "";
+        private string _currentPin = "";
 
         /// <summary>
         /// An object storing the UserAgent and using it to make requests to NationStates via both API and site.
@@ -207,7 +207,7 @@ namespace Henson.ViewModels
         /// <summary>
         /// The log4net logger. It will emit messages as from MainWindowViewModel.
         /// </summary>
-        private static readonly ILog log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
 
         /// <summary>
         /// Constructs a new <c>MainWindowViewModel</c>.
@@ -217,7 +217,7 @@ namespace Henson.ViewModels
         {
             RxApp.MainThreadScheduler.Schedule(CheckIfOnlyUsage);
             
-            log.Info($"Starting Henson... Version v{GetType().Assembly.GetName().Version} on platform {RuntimeInformation.RuntimeIdentifier}");
+            Log.Info($"Starting Henson... Version v{GetType().Assembly.GetName().Version} on platform {RuntimeInformation.RuntimeIdentifier}");
             if(File.Exists("henson.log.1")) File.Delete("henson.log.1"); //delete old log
 
             Settings = LoadSettings();
@@ -394,14 +394,14 @@ namespace Henson.ViewModels
                 ButtonsEnabled = true;
             });
 
-            FindWACommand = ReactiveCommand.CreateFromTask(async () =>
+            FindWaCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if(await UserAgentNotSet()) return;
                 FooterText = "Finding WA nation...";
                 ButtonsEnabled = false;
                 await Task.Delay(100);
 
-                var result = await Client.FindWA(Nations.ToList());
+                var result = await Client.FindWa(Nations.ToList());
 
                 ButtonsEnabled = true;
 
@@ -450,7 +450,8 @@ namespace Henson.ViewModels
                 FooterText = "Opening prep window...";
                 await Task.Delay(100);
 
-                var dialog = new PrepSelectedWindowViewModel(Nations.ToList(), Client, TargetRegion);
+                var dialog = new PrepSelectedWindowViewModel(Nations.ToList(), Client,
+                    TargetRegion == "" ? Settings.JumpPoint : TargetRegion);
                 await PrepSelectedDialog.Handle(dialog);
 
                 foreach(var n in Nations)
@@ -465,9 +466,9 @@ namespace Henson.ViewModels
             {
                 if(await UserAgentNotSet()) return;
                 
-                var SelectedNations = Nations.Where(x => x.Checked && !x.Locked).ToList();
+                var selectedNations = Nations.Where(x => x.Checked && !x.Locked).ToList();
 
-                if(SelectedNations.Count == 0)
+                if(selectedNations.Count == 0)
                 {
                     var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
                     {
@@ -484,13 +485,13 @@ namespace Henson.ViewModels
                 ButtonsEnabled = false;
                 
                 ShowProgressBar = true;
-                var TaggableNations = (await Client.RunMany(SelectedNations, Client.IsROWithTagPerms)).Where(x => x != null)
+                var taggableNations = (await Client.RunMany(selectedNations, Client.IsRoWithTagPerms)).Where(x => x != null)
                                                    .Select(x => x!).ToList();
                 ShowProgressBar = false;
 
                 ButtonsEnabled = true;
 
-                if(TaggableNations.Count == 0)
+                if(taggableNations.Count == 0)
                 {
                     var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
                     {
@@ -504,7 +505,7 @@ namespace Henson.ViewModels
 
                 FooterText = "Opening tag window...";
 
-                var dialog = new TagSelectedWindowViewModel(TaggableNations, Client, Settings.EmbWhitelist);
+                var dialog = new TagSelectedWindowViewModel(taggableNations, Client, Settings.EmbWhitelist);
                 await TagSelectedDialog.Handle(dialog);
 
                 FooterText = "Regions tagged!";
@@ -550,13 +551,13 @@ namespace Henson.ViewModels
                 return;
             }
 
-            bool OppositeAllTrueOrFalse = !selectedNations.All(x => x.Locked);
+            bool oppositeAllTrueOrFalse = !selectedNations.All(x => x.Locked);
             foreach(var nation in selectedNations)
             {
-                nation.Locked = OppositeAllTrueOrFalse;
+                nation.Locked = oppositeAllTrueOrFalse;
                 DbClient.ExecuteNonQuery($"UPDATE nations SET locked = {nation.Locked} WHERE name = '{nation.Name}'");
             }
-            FooterText = "Selected nation(s) " + (OppositeAllTrueOrFalse ? "locked!" : "unlocked!");
+            FooterText = "Selected nation(s) " + (oppositeAllTrueOrFalse ? "locked!" : "unlocked!");
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
         }
 
@@ -565,10 +566,10 @@ namespace Henson.ViewModels
         /// </summary>
         public void OnSelectNationsClick()
         {
-            bool OppositeAllTrueOrFalse = !Nations.All(x => x.Checked);
+            bool oppositeAllTrueOrFalse = !Nations.All(x => x.Checked);
             foreach(var nation in Nations)
             {
-                nation.Checked = OppositeAllTrueOrFalse;
+                nation.Checked = oppositeAllTrueOrFalse;
             }
         }
 
@@ -582,6 +583,7 @@ namespace Henson.ViewModels
             model["user_agent"] = Settings.UserAgent;
             model["theme"] = Settings.Theme == 1 ? "dark" : "light";
             model["emb_whitelist"] = Settings.EmbWhitelist;
+            model["jump_point"] = Settings.JumpPoint;
 
             var workingPath = Path.GetDirectoryName(AppContext.BaseDirectory)!;
             var path = Path.Combine(workingPath, "settings.toml");
@@ -589,7 +591,7 @@ namespace Henson.ViewModels
 
             SetSettings();
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-            FooterText = $"Settings updated.";
+            FooterText = "Settings updated.";
 
             //easter egg :)
             Process process = new();
@@ -624,10 +626,10 @@ namespace Henson.ViewModels
             if(chk != null)
             {
                 nation.Chk = chk;
-                currentLocalID = localId;
-                currentPin = pin;
+                _currentLocalId = localId;
+                _currentPin = pin;
                 CurrentLoginUser = nation.Name;
-                if(region.ToLower() != nation.Region.ToLower())
+                if(region!.ToLower() != nation.Region.ToLower())
                 {
                     nation.Region = region;
                     DbClient.ExecuteNonQuery($"UPDATE nations SET region = '{region}' WHERE name = '{nation.Name}'");
@@ -673,14 +675,14 @@ namespace Henson.ViewModels
 
             ButtonsEnabled = false;
             await Task.Delay(100);
-            if(await Client.ApplyWA(chk, currentPin))
+            if(await Client.ApplyWa(chk, _currentPin))
             {
                 FooterText = $"{nation.Name} WA application successful!";
             }
             else
             {
                 CurrentLoginUser = "";
-                currentLocalID = "";
+                _currentLocalId = "";
                 FooterText = $"{nation.Name} WA application failed... please log in again.";
                 await Task.Delay(100);
 
@@ -742,7 +744,7 @@ namespace Henson.ViewModels
             ButtonsEnabled = false;
             await Task.Delay(100);
 
-            if(await Client.MoveToJP(region, currentLocalID, currentPin))
+            if(await Client.MoveToJp(region, _currentLocalId, _currentPin))
             {
                 FooterText = $"{nation.Name} moved to {region}!";
                 nation.Region = char.ToUpper(region[0]) + region[1..];
@@ -773,7 +775,7 @@ namespace Henson.ViewModels
         /// current login.</returns>
         private async Task<bool> NationEqualsLogin(NationGridViewModel nation)
         {
-            if(nation.Name != currentLoginUser)
+            if(nation.Name != _currentLoginUser)
             {
                 MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                 {
@@ -855,6 +857,13 @@ namespace Henson.ViewModels
                 retVal.EmbWhitelist = (string)model["emb_whitelist"];
             }
             catch(KeyNotFoundException) { model["emb_whitelist"] = ""; }
+            
+            try
+            {
+                retVal.JumpPoint = (string)model["jump_point"];
+            }
+            catch(KeyNotFoundException) { model["jump_point"] = ""; }
+
 
             File.WriteAllText(path, Toml.FromModel(model));
 
@@ -866,18 +875,18 @@ namespace Henson.ViewModels
         /// </summary>
         private void SetSettings()
         {
-            log.Info(Settings.UserAgent == "" ? "User agent set to empty string!" : $"User agent set to {Settings.UserAgent}");
+            Log.Info(Settings.UserAgent == "" ? "User agent set to empty string!" : $"User agent set to {Settings.UserAgent}");
             Client.UserAgent = Settings.UserAgent;
 
             var theme = (FluentTheme)Avalonia.Application.Current!.Styles[0]; //yes we are fishing blindly for the FluentTheme within Styles
             if(Settings.Theme == 1)
             {
-                log.Info("Theme set to Dark");
+                Log.Info("Theme set to Dark");
                 theme.Mode = FluentThemeMode.Dark;
             }
             else
             {
-                log.Info("Theme set to Light");
+                Log.Info("Theme set to Light");
                 theme.Mode = FluentThemeMode.Light;
             }
 
@@ -901,7 +910,7 @@ namespace Henson.ViewModels
 
             if(new Version(latestRelease.TagName.Replace("v", "")) <= currentVer) return;
 
-            log.Warn($"Newer version now available! Current version: v{currentVer}, latest version on GitHub: {latestRelease.TagName}");
+            Log.Warn($"Newer version now available! Current version: v{currentVer}, latest version on GitHub: {latestRelease.TagName}");
 
             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
             {
@@ -926,7 +935,7 @@ namespace Henson.ViewModels
         private async void CheckIfUserAgentEmpty()
         {
             if(Settings.UserAgent != "") return;
-            log.Warn("User agent has no value!");
+            Log.Warn("User agent has no value!");
             await Task.Delay(100); //Stupidest hack ever, but wait till MessageBoxDialog is initialized before showing because this runs so fast
 
             MessageBoxViewModel dialog = new(new MessageBoxStandardParams

@@ -37,7 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
     </DockPanel>
     <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
       <TextBlock VerticalAlignment="Center" Margin="0,0,18,0">Apply to WA?</TextBlock>
-      <CheckBox IsChecked="{Binding AlsoApplyWA}"/>
+      <CheckBox IsChecked="{Binding AlsoApplyWa}"/>
     </DockPanel>
     <DockPanel DockPanel.Dock="Top" Margin="10">
       <TextBlock Text="Current Login: "/>
