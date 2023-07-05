@@ -31,6 +31,7 @@
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="0.10.19" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.19" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
+    <PackageReference Include="HyperText.Avalonia" Version="1.0.0" />
     <PackageReference Include="log4net" Version="2.0.15" />
     <PackageReference Include="MessageBox.Avalonia" Version="2.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

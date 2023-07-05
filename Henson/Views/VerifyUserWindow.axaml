@@ -1,0 +1,22 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:HyperText.Avalonia.Controls;assembly=HyperText.Avalonia"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="250"
+        x:Class="Henson.Views.VerifyUserWindow"
+        Width="400" Height="150" CanResize="False"
+        MinWidth="400" MinHeight="150"
+        MaxWidth="400" MaxHeight="150"
+        Title="Verify Nation" Icon="/Assets/henson-icon.ico"
+        WindowStartupLocation="CenterOwner">
+    <StackPanel VerticalAlignment="Center">
+        <DockPanel HorizontalAlignment="Left" Margin="10,10,0,0">
+            <TextBlock Margin="0,0,5,0">Please open</TextBlock>
+            <controls:Hyperlink Alias="this" Url="https://www.nationstates.net/page=verify_login"/>
+            <TextBlock Margin="5,0,0,0">page and paste the code below.</TextBlock>
+        </DockPanel>
+        <TextBox Margin="10,10,10,0" MaxHeight="100" Text="{Binding Checksum}"/>
+        <Button Margin="10" Command="{Binding SubmitCommand}">Submit</Button>
+    </StackPanel>
+</Window>

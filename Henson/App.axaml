@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:Henson"
+             xmlns:htavalonia="clr-namespace:HyperText.Avalonia;assembly=HyperText.Avalonia"
              x:Class="Henson.App">
     <Application.DataTemplates>
         <local:ViewLocator/>
@@ -30,5 +31,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <!-- Visual Studio gets mad if we don't have this below line
       even though it's immediately overridden at runtime -->
       <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
+      <htavalonia:HyperLinkStyle/>
     </Application.Styles>
 </Application>

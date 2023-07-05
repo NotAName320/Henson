@@ -27,6 +27,7 @@ using ReactiveUI;
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -200,6 +201,12 @@ namespace Henson.Models
 
             return authority.Contains('A') && authority.Contains('C') && authority.Contains('E') ? nation : null;
             
+        }
+
+        public async Task<bool> VerifyNation(string nationName, string checksum)
+        {
+            var response = await ApiClient.MakeRequest(ApiLink + $"?a=verify&nation={nationName}&checksum={checksum}");
+            return response != null && (await response.Content.ReadAsStringAsync()).Contains('1');
         }
 
         /// <summary>

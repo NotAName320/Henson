@@ -38,6 +38,7 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -116,6 +117,11 @@ namespace Henson.ViewModels
         /// or null if the window is closed without a pick.
         /// </summary>
         public Interaction<ViewModelBase, string?> FileSaveDialog { get; } = new();
+
+        /// <summary>
+        /// This interaction opens a dialog in which a user can verify their username.
+        /// </summary>
+        public Interaction<VerifyUserWindowViewModel, string?> VerifyUserDialog { get; } = new();
 
         private static readonly Mutex Singleton = new(true, "hensonNS");
 
@@ -576,8 +582,69 @@ namespace Henson.ViewModels
         /// <summary>
         /// Fired when Save is clicked in the settings menu.
         /// </summary>
-        public void OnSaveSettingsClick()
+        public async void OnSaveSettingsClick()
         {
+            var oldUserAgent = Client.UserAgent.Replace(Uri.EscapeDataString(
+                $"Henson v{GetType().Assembly.GetName().Version} developed by nation: Notanam in use by nation: "), "");
+            
+            //easter egg :)
+            Process process = new();
+            process.StartInfo.UseShellExecute = true;
+            if(Settings.UserAgent == "092436")
+            {
+                process.StartInfo.FileName = "https://www.youtube.com/watch?v=WS3Lkc6Gzlk";
+                process.Start();
+                Settings.UserAgent = oldUserAgent;
+                return;
+            }
+            if(Settings.UserAgent == "051690")
+            {
+                process.StartInfo.FileName = "https://www.youtube.com/watch?v=57ta7mkgrOU";
+                process.Start();
+                Settings.UserAgent = oldUserAgent;
+                return;
+            }
+
+            if(Settings.UserAgent != oldUserAgent)
+            {
+                if(!Regex.IsMatch(Settings.UserAgent, @"^[A-Za-z0-9 _]+$"))
+                {
+                    MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Invalid Nation Name",
+                        ContentMessage = "Please type a valid nation name.",
+                        Icon = Icon.Error,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
+                    Settings.UserAgent = oldUserAgent;
+                    return;
+                }
+                var verifyDialog = new VerifyUserWindowViewModel();
+                var result = await VerifyUserDialog.Handle(verifyDialog);
+
+                if(result == null || !await Client.VerifyNation(Settings.UserAgent, result))
+                {
+                    Settings.UserAgent = oldUserAgent;
+                    MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Verification Failed",
+                        ContentMessage = "Your verification code didn't work, so the User Agent was not changed.",
+                        Icon = Icon.Error,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
+                }
+                else
+                {
+                    MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Verification Succeeded",
+                        ContentMessage = "Your nation was successfully verified.",
+                        Icon = Icon.Info,
+                    });
+                    await MessageBoxDialog.Handle(dialog);
+                }
+            }
+            
             var model = Toml.ToModel("");
 
             model["user_agent"] = Settings.UserAgent;
@@ -592,20 +659,6 @@ namespace Henson.ViewModels
             SetSettings();
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
             FooterText = "Settings updated.";
-
-            //easter egg :)
-            Process process = new();
-            process.StartInfo.UseShellExecute = true;
-            if(Settings.UserAgent == "092436")
-            {
-                process.StartInfo.FileName = "https://www.youtube.com/watch?v=WS3Lkc6Gzlk";
-                process.Start();
-            }
-            if(Settings.UserAgent == "051690")
-            {
-                process.StartInfo.FileName = "https://www.youtube.com/watch?v=57ta7mkgrOU";
-                process.Start();
-            }
         }
 
         /// <summary>
