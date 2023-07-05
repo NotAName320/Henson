@@ -120,7 +120,7 @@ namespace Henson.ViewModels
                     return null;
                 }
 
-                return new List<NationLoginViewModel>() { new NationLoginViewModel(ImportOneUser, ImportOnePass) };
+                return new List<NationLoginViewModel> { new(ImportOneUser, ImportOnePass) };
             });
 
             ImportManyCommand = ReactiveCommand.CreateFromTask(async () =>
