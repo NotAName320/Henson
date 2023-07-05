@@ -170,7 +170,7 @@ namespace Henson.ViewModels
         private static readonly HashSet<string> UnremovableTags = new()
         {
             "Commended", "Condemned", "Liberated", "Injuncted", "Minuscule", "Small", "Medium", "Large", "Enormous",
-            "Gargantuan", "Featured", "Founderless", "Governorless", "New"
+            "Gargantuan", "Featured", "Founderless", "Governorless", "New", "Frontier"
         };
 
         private List<string>? _optionalTagsDetected = new();
