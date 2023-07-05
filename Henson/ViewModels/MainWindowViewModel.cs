@@ -654,7 +654,7 @@ namespace Henson.ViewModels
 
             var workingPath = Path.GetDirectoryName(AppContext.BaseDirectory)!;
             var path = Path.Combine(workingPath, "settings.toml");
-            File.WriteAllText(path, Toml.FromModel(model));
+            await File.WriteAllTextAsync(path, Toml.FromModel(model));
 
             SetSettings();
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
