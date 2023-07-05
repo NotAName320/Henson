@@ -757,8 +757,7 @@ namespace Henson.ViewModels
 
         private void AddToSuccessfulTags(string regionName)
         {
-            _successfulTags.Append("https://www.nationstates.net/region=" + regionName.Replace(' ', '_').ToLower() +
-                                   '\n');
+            _successfulTags.Append($"https://www.nationstates.net/region={regionName.Replace(' ', '_').ToLower()}\n");
         }
 
         /// <summary>
