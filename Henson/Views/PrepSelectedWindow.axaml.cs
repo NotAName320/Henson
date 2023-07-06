@@ -19,7 +19,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using Avalonia.Controls;
 using Avalonia.Platform;
-using Avalonia;
 using Avalonia.ReactiveUI;
 using Henson.ViewModels;
 using MessageBox.Avalonia.Enums;
