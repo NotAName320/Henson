@@ -230,12 +230,13 @@ namespace Henson.ViewModels
             SetSettings();
 
             RxApp.MainThreadScheduler.Schedule(CheckIfLatestRelease);
-
             DbClient.CreateDbIfNotExists();
-
             RxApp.MainThreadScheduler.Schedule(LoadNations);
-
             RxApp.MainThreadScheduler.Schedule(CheckIfUserAgentEmpty);
+            if(Settings.UserAgent != "")
+            {
+                RxApp.MainThreadScheduler.Schedule(VerifyUser);
+            }
 
             AddNationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -473,26 +474,48 @@ namespace Henson.ViewModels
                 if(await UserAgentNotSet()) return;
                 
                 var selectedNations = Nations.Where(x => x.Checked && !x.Locked).ToList();
-
+                
                 if(selectedNations.Count == 0)
                 {
                     var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
                     {
                         ContentTitle = "No Nations Selected",
-                        ContentMessage = "Please select some (unlocked) nations first.",
+                        ContentMessage = "Please select some (unlocked) nations not in the JP first.",
                         Icon = Icon.Info,
                     });
                     await MessageBoxDialog.Handle(messageDialog);
                     return;
                 }
+                
+                var nationLogins = selectedNations.Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
+
+                FooterText = "Pinging nations...";
+                ButtonsEnabled = false;
+
+                ShowProgressBar = true;
+                var nations = await Client.RunMany(nationLogins, Client.Ping);
+
+                foreach(var n in nations)
+                {
+                    if(n == null) continue;
+
+                    //There has to be an easier way to do this
+                    int index = Nations.IndexOf(Nations.First(x => x.Name.ToLower() == n.Name.ToLower()));
+                    DbClient.ExecuteNonQuery("UPDATE nations SET " +
+                                             $"name = '{n.Name}', " +
+                                             $"region = '{n.Region}', " +
+                                             $"flagUrl = '{n.FlagUrl}' " +
+                                             $"WHERE name = '{Nations[index].Name}'");
+
+                    Nations[index] = new NationGridViewModel(n, true, Nations[index].Locked, this);
+                }
+
+                selectedNations = Nations.Where(x => x.Checked && !x.Locked && x.Region != Settings.JumpPoint).ToList();
 
                 FooterText = "Checking which nations have taggable RO perms...";
 
-                ButtonsEnabled = false;
-                
-                ShowProgressBar = true;
-                var taggableNations = (await Client.RunMany(selectedNations, Client.IsRoWithTagPerms)).Where(x => x != null)
-                                                   .Select(x => x!).ToList();
+                var taggableNations = (await Client.RunMany(selectedNations, Client.IsRoWithTagPerms))
+                    .Where(x => x != null).Select(x => x!).ToList();
                 ShowProgressBar = false;
 
                 ButtonsEnabled = true;
@@ -761,12 +784,13 @@ namespace Henson.ViewModels
             if(await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
 
+            region = region == "" ? Settings.JumpPoint : region;
             if(region == "")
             {
                 MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                 {
                     ContentTitle = "Target Region Not Set",
-                    ContentMessage = "Please set a target region.",
+                    ContentMessage = "Please set a target region (or a jump point in settings).",
                     Icon = Icon.Error,
                 });
                 await MessageBoxDialog.Handle(dialog);
@@ -1019,6 +1043,44 @@ namespace Henson.ViewModels
             {
                 desktopApp.Shutdown();
             }
+        }
+
+        private async void VerifyUser()
+        {
+            await Task.Delay(100);
+            var verifyDialog = new VerifyUserWindowViewModel();
+            var result = await VerifyUserDialog.Handle(verifyDialog);
+
+            if(result == null)
+            {
+                if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
+                   desktopApp)
+                {
+                    desktopApp.Shutdown();
+                }
+            }
+
+            if(await Client.VerifyNation(Settings.UserAgent, result!)) return;
+            
+            MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+            {
+                ContentTitle = "Verification Failed",
+                ContentMessage = "Henson was unable to verify that your User Agent nation belongs to you. " +
+                                 "Please navigate to settings and re-enter your user agent.",
+                Icon = Icon.Error,
+            });
+            await MessageBoxDialog.Handle(dialog);
+
+            Settings.UserAgent = "";
+            Client.UserAgent = "";
+            
+            var workingPath = Path.GetDirectoryName(AppContext.BaseDirectory)!;
+            var path = Path.Combine(workingPath, "settings.toml");
+            var model = Toml.ToModel(await File.ReadAllTextAsync(path));
+
+            model["user_agent"] = "";
+                
+            await File.WriteAllTextAsync(path, Toml.FromModel(model));
         }
     }
 }
