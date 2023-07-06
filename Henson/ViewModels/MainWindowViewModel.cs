@@ -233,10 +233,6 @@ namespace Henson.ViewModels
             DbClient.CreateDbIfNotExists();
             RxApp.MainThreadScheduler.Schedule(LoadNations);
             RxApp.MainThreadScheduler.Schedule(CheckIfUserAgentEmpty);
-            if(Settings.UserAgent != "")
-            {
-                RxApp.MainThreadScheduler.Schedule(VerifyUser);
-            }
 
             AddNationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -1043,44 +1039,6 @@ namespace Henson.ViewModels
             {
                 desktopApp.Shutdown();
             }
-        }
-
-        private async void VerifyUser()
-        {
-            await Task.Delay(100);
-            var verifyDialog = new VerifyUserWindowViewModel();
-            var result = await VerifyUserDialog.Handle(verifyDialog);
-
-            if(result == null)
-            {
-                if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
-                   desktopApp)
-                {
-                    desktopApp.Shutdown();
-                }
-            }
-
-            if(await Client.VerifyNation(Settings.UserAgent, result!)) return;
-            
-            MessageBoxViewModel dialog = new(new MessageBoxStandardParams
-            {
-                ContentTitle = "Verification Failed",
-                ContentMessage = "Henson was unable to verify that your User Agent nation belongs to you. " +
-                                 "Please navigate to settings and re-enter your user agent.",
-                Icon = Icon.Error,
-            });
-            await MessageBoxDialog.Handle(dialog);
-
-            Settings.UserAgent = "";
-            Client.UserAgent = "";
-            
-            var workingPath = Path.GetDirectoryName(AppContext.BaseDirectory)!;
-            var path = Path.Combine(workingPath, "settings.toml");
-            var model = Toml.ToModel(await File.ReadAllTextAsync(path));
-
-            model["user_agent"] = "";
-                
-            await File.WriteAllTextAsync(path, Toml.FromModel(model));
         }
     }
 }
