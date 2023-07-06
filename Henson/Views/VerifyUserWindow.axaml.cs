@@ -18,7 +18,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 using System;
-using System.ComponentModel;
 using System.Media;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -46,7 +45,7 @@ public partial class VerifyUserWindow : ReactiveWindow<VerifyUserWindowViewModel
 #endif
     }
     
-    protected override void OnClosing(CancelEventArgs e)
+    protected override void OnClosing(WindowClosingEventArgs e)
     {
         base.OnClosing(e);
         SetClosing(false);
@@ -56,8 +55,7 @@ public partial class VerifyUserWindow : ReactiveWindow<VerifyUserWindowViewModel
     {
         var parameters = interaction.Input.Params;
 
-        var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-        parameters.WindowIcon = new WindowIcon(new Bitmap(assets!.Open(new Uri("avares://Henson/Assets/henson-icon.ico"))));
+        parameters.WindowIcon = new WindowIcon(new Bitmap(AssetLoader.Open(new Uri("avares://Henson/Assets/henson-icon.ico"))));
         parameters.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
         var messageBox = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(interaction.Input.Params);

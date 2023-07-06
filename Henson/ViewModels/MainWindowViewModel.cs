@@ -17,7 +17,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-using Avalonia.Themes.Fluent;
 using DynamicData;
 using DynamicData.Binding;
 using Henson.Models;
@@ -43,6 +42,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Styling;
 using Newtonsoft.Json;
 using Tomlyn;
 
@@ -951,16 +951,15 @@ namespace Henson.ViewModels
             Log.Info(Settings.UserAgent == "" ? "User agent set to empty string!" : $"User agent set to {Settings.UserAgent}");
             Client.UserAgent = Settings.UserAgent;
 
-            var theme = (FluentTheme)Avalonia.Application.Current!.Styles[0]; //yes we are fishing blindly for the FluentTheme within Styles
             if(Settings.Theme == 1)
             {
                 Log.Info("Theme set to Dark");
-                theme.Mode = FluentThemeMode.Dark;
+                Avalonia.Application.Current!.RequestedThemeVariant = ThemeVariant.Dark;
             }
             else
             {
                 Log.Info("Theme set to Light");
-                theme.Mode = FluentThemeMode.Light;
+                Avalonia.Application.Current!.RequestedThemeVariant = ThemeVariant.Light;
             }
 
             //force the application to reload DataGrid theming otherwise it follows existing theme

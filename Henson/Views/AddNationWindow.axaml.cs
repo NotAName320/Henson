@@ -17,7 +17,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
@@ -26,9 +25,7 @@ using Henson.ViewModels;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using System;
-using System.ComponentModel;
 using System.Media;
-using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -46,7 +43,7 @@ namespace Henson.Views
             this.WhenActivated(d => d(ViewModel!.ImportManyCommand.Subscribe(Close)));
         }
 
-        protected override void OnClosing(CancelEventArgs e)
+        protected override void OnClosing(WindowClosingEventArgs e)
         {
             base.OnClosing(e);
             //Spent like 4 hours figuring out that I needed the below line lol
@@ -69,8 +66,7 @@ namespace Henson.Views
         {
             var parameters = interaction.Input.Params;
 
-            var assets = AvaloniaLocator.Current.GetService<IAssetLoader>();
-            parameters.WindowIcon = new WindowIcon(new Bitmap(assets!.Open(new Uri("avares://Henson/Assets/henson-icon.ico"))));
+            parameters.WindowIcon = new WindowIcon(new Bitmap(AssetLoader.Open(new Uri("avares://Henson/Assets/henson-icon.ico"))));
             parameters.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
             var messageBox = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(parameters);

@@ -55,7 +55,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             </DockPanel>
           </DockPanel>
           <Grid DockPanel.Dock="Top">
-            <DataGrid Name="NationList" Items="{Binding Nations}" IsReadOnly="False"
+            <DataGrid Name="NationList" ItemsSource="{Binding Nations}" IsReadOnly="False"
                       CanUserResizeColumns="True" AutoGenerateColumns="False">
               <DataGrid.Columns>
                 <DataGridTemplateColumn SortMemberPath=".">
