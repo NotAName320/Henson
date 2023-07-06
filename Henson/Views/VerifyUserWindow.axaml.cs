@@ -40,9 +40,6 @@ public partial class VerifyUserWindow : ReactiveWindow<VerifyUserWindowViewModel
         InitializeComponent();
         this.WhenActivated(d => d(ViewModel!.MessageBoxDialog.RegisterHandler(ShowMessageBoxDialog)));
         this.WhenActivated(d => d(ViewModel!.SubmitCommand.Subscribe(Close)));
-#if DEBUG
-        this.AttachDevTools();
-#endif
     }
     
     protected override void OnClosing(WindowClosingEventArgs e)
@@ -69,10 +66,5 @@ public partial class VerifyUserWindow : ReactiveWindow<VerifyUserWindowViewModel
     private void SetClosing(bool value)
     {
         Closing += (s, e) => { e.Cancel = value; };
-    }
-
-    private void InitializeComponent()
-    {
-        AvaloniaXamlLoader.Load(this);
     }
 }
