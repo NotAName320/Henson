@@ -607,8 +607,8 @@ namespace Henson.ViewModels
         /// </summary>
         public async void OnSaveSettingsClick()
         {
-            var oldUserAgent = Client.UserAgent.Replace(Uri.EscapeDataString(
-                $"Henson v{GetType().Assembly.GetName().Version} developed by nation: Notanam in use by nation: "), "");
+            var oldUserAgent = Uri.UnescapeDataString(Client.UserAgent).Replace(
+                $"Henson v{GetType().Assembly.GetName().Version} developed by nation: Notanam in use by nation: ", "");
             
             //easter egg :)
             Process process = new();
