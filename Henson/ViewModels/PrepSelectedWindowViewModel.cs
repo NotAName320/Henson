@@ -20,7 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using Henson.Models;
 using log4net;
 using MessageBox.Avalonia.DTO;
-using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,6 +27,7 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using MsBox.Avalonia.Enums;
 
 namespace Henson.ViewModels
 {

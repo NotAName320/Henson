@@ -24,9 +24,10 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.ReactiveUI;
 using Henson.ViewModels;
-using MessageBox.Avalonia.Enums;
+using MsBox.Avalonia.Enums;
 using ReactiveUI;
 
 namespace Henson.Views
@@ -47,21 +48,28 @@ namespace Henson.Views
             parameters.WindowIcon = new WindowIcon(new Bitmap(AssetLoader.Open(new Uri("avares://Henson/Assets/henson-icon.ico"))));
             parameters.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
-            var messageBox = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(interaction.Input.Params);
+            var messageBox = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard(interaction.Input.Params);
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
 
-            var result = await messageBox.ShowDialog(this);
+            var result = await messageBox.ShowWindowDialogAsync(this);
             interaction.SetOutput(result);
         }
 
-        private async Task AddFilePicker(InteractionContext<ViewModelBase, string[]?> interaction)
+        private async Task AddFilePicker(InteractionContext<ViewModelBase, string?> interaction)
         {
-            //Need to write an error handler for this sometime
-            var dialog = new OpenFileDialog();
-            dialog.Filters!.Add(new FileDialogFilter() { Name = "All Files", Extensions = { "*" } });
-
-            var result = await dialog.ShowAsync(this);
-            interaction.SetOutput(result);
+            var topLevel = GetTopLevel(this);
+            var result = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Open Image File",
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                    FilePickerFileTypes.ImageAll,
+                    FilePickerFileTypes.All
+                }
+            });
+            
+            interaction.SetOutput(result.Count == 0 ? null : result[0].Path.AbsolutePath);
         }
     }
 }

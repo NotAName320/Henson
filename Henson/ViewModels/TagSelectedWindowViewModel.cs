@@ -30,8 +30,8 @@ using Avalonia.Controls;
 using DynamicData.Binding;
 using Henson.Models;
 using log4net;
-using MessageBox.Avalonia.DTO; 
-using MessageBox.Avalonia.Enums;
+using MessageBox.Avalonia.DTO;
+using MsBox.Avalonia.Enums;
 using ReactiveUI;
 
 namespace Henson.ViewModels
@@ -133,7 +133,7 @@ namespace Henson.ViewModels
         /// This interaction opens the a file window, and returns a string array with the first value being the file chosen,
         /// or null if the window is closed without a pick.
         /// </summary>
-        public Interaction<ViewModelBase, string[]?> FilePickerDialog { get; } = new();
+        public Interaction<ViewModelBase, string?> FilePickerDialog { get; } = new();
 
         /// <summary>
         /// The text on the button.
@@ -368,7 +368,7 @@ namespace Henson.ViewModels
                 var dialog = new ViewModelBase();
                 var result = await FilePickerDialog.Handle(dialog);
 
-                if(result != null) BannerPath = result[0];
+                if(result != null) BannerPath = Uri.UnescapeDataString(result);
             });
 
             FlagPickerCommand = ReactiveCommand.CreateFromTask(async () =>
@@ -376,7 +376,7 @@ namespace Henson.ViewModels
                 var dialog = new ViewModelBase();
                 var result = await FilePickerDialog.Handle(dialog);
 
-                if(result != null) FlagPath = result[0];
+                if(result != null) FlagPath = Uri.UnescapeDataString(result);
             });
 
             AddRemoveTagCommand = ReactiveCommand.CreateFromTask(async () =>

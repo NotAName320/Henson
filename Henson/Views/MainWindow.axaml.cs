@@ -22,7 +22,6 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.ReactiveUI;
 using Henson.ViewModels;
-using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -30,6 +29,8 @@ using System.Media;
 using System.Reactive;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
+using MsBox.Avalonia.Enums;
 
 namespace Henson.Views
 {
@@ -86,27 +87,29 @@ namespace Henson.Views
             parameters.WindowIcon = new WindowIcon(new Bitmap(AssetLoader.Open(new Uri("avares://Henson/Assets/henson-icon.ico"))));
             parameters.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
-            var messageBox = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(interaction.Input.Params);
+            var messageBox = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard(interaction.Input.Params);
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
 
-            var result = await messageBox.ShowDialog(this);
+            var result = await messageBox.ShowWindowDialogAsync(this);
             interaction.SetOutput(result);
         }
         
         
         private async Task ShowFilePickerDialog(InteractionContext<ViewModelBase, string?> interaction)
         {
-            //Need to write an error handler for this sometime
-            var dialog = new SaveFileDialog
+            var topLevel = GetTopLevel(this);
+            var result = await topLevel!.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                InitialFileName = "export.txt"
-            };
-            dialog.Filters!.Add(new FileDialogFilter { Name = "Dossier list", Extensions = { "txt" } });
-            dialog.Filters.Add(new FileDialogFilter { Name = "Swarm/Shine config", Extensions = { "json" } });
-            dialog.Filters.Add(new FileDialogFilter { Name = "All Files", Extensions = { "*" } });
-
-            var result = await dialog.ShowAsync(this);
-            interaction.SetOutput(result);
+                Title = "Export Nations",
+                SuggestedFileName = "export.txt",
+                FileTypeChoices = new[]
+                {
+                    FilePickerFileTypes.TextPlain,
+                    new("Swarm/Shine config") { Patterns = new[] { "*.json" } },
+                    FilePickerFileTypes.All
+                }
+            });
+            interaction.SetOutput(result?.Path.AbsolutePath);
         }
 
         private async Task ShowVerifyUserDialog(InteractionContext<VerifyUserWindowViewModel, string?> interaction)

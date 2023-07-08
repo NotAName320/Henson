@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using System.Reactive;
 using System.Reactive.Linq;
 using MessageBox.Avalonia.DTO;
-using MessageBox.Avalonia.Enums;
+using MsBox.Avalonia.Enums;
 using ReactiveUI;
 
 namespace Henson.ViewModels

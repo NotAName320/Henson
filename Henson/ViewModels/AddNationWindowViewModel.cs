@@ -19,12 +19,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using Henson.Models;
 using MessageBox.Avalonia.DTO;
-using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
+using MsBox.Avalonia.Enums;
 
 namespace Henson.ViewModels
 {
@@ -56,7 +56,7 @@ namespace Henson.ViewModels
         /// This interaction opens the a file window, and returns a string array with the first value being the file chosen,
         /// or null if the window is closed without a pick.
         /// </summary>
-        public Interaction<ViewModelBase, string[]?> FilePickerDialog { get; } = new();
+        public Interaction<ViewModelBase, string?> FilePickerDialog { get; } = new();
 
         /// <summary>
         /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
@@ -80,7 +80,7 @@ namespace Henson.ViewModels
                     ConfigReader jsonReader;
                     try
                     {
-                        jsonReader = new(result[0]);
+                        jsonReader = new(result);
                     }
                     catch (Exception)
                     {

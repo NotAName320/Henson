@@ -26,7 +26,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.ReactiveUI;
 using Henson.ViewModels;
-using MessageBox.Avalonia.Enums;
+using MsBox.Avalonia.Enums;
 using ReactiveUI;
 
 namespace Henson.Views;
@@ -53,16 +53,16 @@ public partial class VerifyUserWindow : ReactiveWindow<VerifyUserWindowViewModel
         parameters.WindowIcon = new WindowIcon(new Bitmap(AssetLoader.Open(new Uri("avares://Henson/Assets/henson-icon.ico"))));
         parameters.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
-        var messageBox = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(interaction.Input.Params);
+        var messageBox = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard(interaction.Input.Params);
         SetClosing(true);
         if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
 
-        var result = await messageBox.ShowDialog(this);
+        var result = await messageBox.ShowWindowDialogAsync(this);
         interaction.SetOutput(result);
     }
 
     private void SetClosing(bool value)
     {
-        Closing += (s, e) => { e.Cancel = value; };
+        Closing += (_, e) => { e.Cancel = value; };
     }
 }

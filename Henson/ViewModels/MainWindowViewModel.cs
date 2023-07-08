@@ -43,6 +43,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Styling;
+using MsBox.Avalonia.Enums;
 using Newtonsoft.Json;
 using Tomlyn;
 

@@ -22,12 +22,13 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.ReactiveUI;
 using Henson.ViewModels;
-using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using System;
 using System.Media;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Avalonia.Platform.Storage;
+using MsBox.Avalonia.Enums;
 
 namespace Henson.Views
 {
@@ -50,16 +51,22 @@ namespace Henson.Views
             SetClosing(false);
         }
 
-        private async Task GetConfigJson(InteractionContext<ViewModelBase, string[]?> interaction)
+        private async Task GetConfigJson(InteractionContext<ViewModelBase, string?> interaction)
         {
-            //Need to write an error handler for this sometime
-            var dialog = new OpenFileDialog();
-            dialog.Filters!.Add(new FileDialogFilter { Name = "Swarm/Shine config", Extensions = { "json", "toml" } });
-            dialog.Filters.Add(new FileDialogFilter { Name = "All Files", Extensions = { "*" } });
-
-            var result = await dialog.ShowAsync(this);
-            SetClosing(result == null); //If no file is selected, cancel window closing action
-            interaction.SetOutput(result);
+            var topLevel = GetTopLevel(this);
+            var result = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Open Config File",
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                    new("Swarm/Shine config") { Patterns = new[] { "*.json", "*.toml" } },
+                    FilePickerFileTypes.All
+                }
+            });
+            
+            SetClosing(result.Count == 0); //If no file is selected, cancel window closing action
+            interaction.SetOutput(result.Count == 0 ? null : result[0].Path.AbsolutePath);
         }
 
         private async Task ShowMessageBoxDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
@@ -69,17 +76,17 @@ namespace Henson.Views
             parameters.WindowIcon = new WindowIcon(new Bitmap(AssetLoader.Open(new Uri("avares://Henson/Assets/henson-icon.ico"))));
             parameters.WindowStartupLocation = WindowStartupLocation.CenterOwner;
 
-            var messageBox = MessageBox.Avalonia.MessageBoxManager.GetMessageBoxStandardWindow(parameters);
+            var messageBox = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard(parameters);
             SetClosing(true);
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
 
-            var result = await messageBox.ShowDialog(this);
+            var result = await messageBox.ShowWindowDialogAsync(this);
             interaction.SetOutput(result);
         }
 
         private void SetClosing(bool value)
         {
-            Closing += (s, e) => { e.Cancel = value; };
+            Closing += (_, e) => { e.Cancel = value; };
         }
     }
 }

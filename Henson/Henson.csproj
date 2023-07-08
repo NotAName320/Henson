@@ -34,7 +34,7 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.11.49" />
     <PackageReference Include="HyperText.Avalonia" Version="11.0.0-rc1" />
     <PackageReference Include="log4net" Version="2.0.15" />
-    <PackageReference Include="MessageBox.Avalonia" Version="2.2.0" />
+    <PackageReference Include="MessageBox.Avalonia" Version="3.0.1-rc2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Octokit.Reactive" Version="7.0.1" />
     <PackageReference Include="RestSharp" Version="110.2.0" />
