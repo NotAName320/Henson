@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Data.SQLite;
 
@@ -28,14 +29,14 @@ namespace Henson.Models
         /// <summary>
         /// The path to the database file.
         /// </summary>
-        private static readonly string Path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(AppContext.BaseDirectory)!, "henson.sqlite");
+        private static readonly string DbPath = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory)!, "henson.sqlite");
 
         /// <summary>
         /// Creates the database file if it does not already exist with the table template.
         /// </summary>
         public static void CreateDbIfNotExists()
         {
-            using var con = new SQLiteConnection($"Data Source={Path}");
+            using var con = new SQLiteConnection($"Data Source={DbPath}");
             con.Open();
 
             string createTable = "CREATE TABLE IF NOT EXISTS nations (name varchar(40), pass text, flagUrl text, region text, locked integer DEFAULT 0, UNIQUE(name))";
@@ -65,7 +66,7 @@ namespace Henson.Models
             List<Nation> retVal = new();
             List<string> lockedNations = new();
 
-            using var con = new SQLiteConnection($"Data Source={Path}");
+            using var con = new SQLiteConnection($"Data Source={DbPath}");
             con.Open();
 
             string getNations = "SELECT * FROM nations";
@@ -90,7 +91,7 @@ namespace Henson.Models
         /// <param name="nation">The nation being inserted.</param>
         public static void InsertNation(Nation nation)
         {
-            using var con = new SQLiteConnection($"Data Source={Path}");
+            using var con = new SQLiteConnection($"Data Source={DbPath}");
             con.Open();
 
             //yeah yeah i know about sanitization and all that but riddle me this: why would you want to inject into a local sqlite file
@@ -110,7 +111,7 @@ namespace Henson.Models
         /// <param name="name">The name of the nation to be deleted.</param>
         public static void DeleteNation(string name)
         {
-            using var con = new SQLiteConnection($"Data Source={Path}");
+            using var con = new SQLiteConnection($"Data Source={DbPath}");
             con.Open();
 
             string deleteNation = $"DELETE FROM nations WHERE name='{name}'";
@@ -124,7 +125,7 @@ namespace Henson.Models
         /// <param name="commandString">The command to be executed.</param>
         public static void ExecuteNonQuery(string commandString)
         {
-            using var con = new SQLiteConnection($"Data Source={Path}");
+            using var con = new SQLiteConnection($"Data Source={DbPath}");
             con.Open();
 
             using SQLiteCommand command = new(commandString, con);
