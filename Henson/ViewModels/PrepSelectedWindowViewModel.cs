@@ -228,8 +228,20 @@ namespace Henson.ViewModels
                     case "Apply WA":
                         if(await _client.ApplyWa(_currentChk, _currentPin))
                         {
-                            ButtonText = "Move to JP";
-                            FooterText = $"Sent WA application on {currentNation.Name}.";
+                            if(_nations.First(x => x.Name == currentNation.Name).Region.ToLower() ==
+                               TargetRegion.ToLower())
+                            {
+                                FooterText = $"Sent WA application on {currentNation.Name}. Already in {TargetRegion}!";
+                                
+                                ButtonText = "Login";
+                                _loginIndex++;
+                                _prepSuccesses++;
+                            }
+                            else
+                            {
+                                ButtonText = "Move to JP";
+                                FooterText = $"Sent WA application on {currentNation.Name}.";
+                            }
                         }
                         else
                         {
@@ -251,12 +263,14 @@ namespace Henson.ViewModels
                                 Icon = Icon.Error,
                             });
                             await MessageBoxDialog.Handle(dialog);
+                            ButtonsEnabled = true;
                             return;
                         }
 
-                        if(_nations.Where(x => x.Name == currentNation.Name).First().Region.ToLower() == TargetRegion.ToLower())
+                        if(_nations.First(x => x.Name == currentNation.Name).Region.ToLower() == TargetRegion.ToLower())
                         {
                             FooterText = $"{currentNation.Name} already in {TargetRegion}!";
+                            _prepSuccesses++;
                         }
                         else if(!await _client.MoveToJp(TargetRegion, _currentLocalId, _currentPin))
                         {
