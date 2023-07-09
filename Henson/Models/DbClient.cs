@@ -29,7 +29,7 @@ namespace Henson.Models
         /// <summary>
         /// The path to the database file.
         /// </summary>
-        private static readonly string DbPath = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory)!, "henson.sqlite");
+        private const string DbPath = "henson.sqlite";
 
         /// <summary>
         /// Creates the database file if it does not already exist with the table template.
