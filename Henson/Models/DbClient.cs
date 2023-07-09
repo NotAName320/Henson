@@ -20,38 +20,38 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 
 namespace Henson.Models
 {
-    public class DbClient
+    public static class DbClient
     {
         /// <summary>
         /// The path to the database file.
         /// </summary>
-        private const string DbPath = "henson.sqlite";
+        private static readonly string DbPath = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory)!, "henson.sqlite");
 
         /// <summary>
         /// Creates the database file if it does not already exist with the table template.
         /// </summary>
         public static void CreateDbIfNotExists()
         {
-            using var con = new SQLiteConnection($"Data Source={DbPath}");
+            using var con = new SqliteConnection($"Data Source={DbPath}");
             con.Open();
 
             string createTable = "CREATE TABLE IF NOT EXISTS nations (name varchar(40), pass text, flagUrl text, region text, locked integer DEFAULT 0, UNIQUE(name))";
-            using SQLiteCommand createTableCommand = new(createTable, con);
+            using SqliteCommand createTableCommand = new(createTable, con);
             createTableCommand.ExecuteNonQuery();
 
             //check if locked exists on upgrading and create it if it doesn't
             string checkLockedExists = "SELECT EXISTS(SELECT 1 FROM (SELECT * FROM pragma_table_info('nations')) WHERE name='locked')";
-            using SQLiteCommand checkLockedExistsCommand = new(checkLockedExists, con);
-            using SQLiteDataReader reader = checkLockedExistsCommand.ExecuteReader();
+            using SqliteCommand checkLockedExistsCommand = new(checkLockedExists, con);
+            using SqliteDataReader reader = checkLockedExistsCommand.ExecuteReader();
 
             if(reader.Read() && !reader.GetBoolean(0))
             {
                 string createLocked = "ALTER TABLE nations ADD COLUMN locked integer DEFAULT 0";
-                using SQLiteCommand createLockedCommand = new(createLocked, con);
+                using SqliteCommand createLockedCommand = new(createLocked, con);
                 createLockedCommand.ExecuteNonQuery();
             }
         }
@@ -66,12 +66,12 @@ namespace Henson.Models
             List<Nation> retVal = new();
             List<string> lockedNations = new();
 
-            using var con = new SQLiteConnection($"Data Source={DbPath}");
+            using var con = new SqliteConnection($"Data Source={DbPath}");
             con.Open();
 
             string getNations = "SELECT * FROM nations";
-            using SQLiteCommand command = new(getNations, con);
-            using SQLiteDataReader reader = command.ExecuteReader();
+            var command = new SqliteCommand(getNations, con);
+            using var reader = command.ExecuteReader();
 
             while(reader.Read())
             {
@@ -91,18 +91,18 @@ namespace Henson.Models
         /// <param name="nation">The nation being inserted.</param>
         public static void InsertNation(Nation nation)
         {
-            using var con = new SQLiteConnection($"Data Source={DbPath}");
+            using var con = new SqliteConnection($"Data Source={DbPath}");
             con.Open();
 
             //yeah yeah i know about sanitization and all that but riddle me this: why would you want to inject into a local sqlite file
             string insertNation = $"INSERT INTO nations (name, pass, flagUrl, region) VALUES ('{nation.Name}', '{nation.Pass}', '{nation.FlagUrl}', '{nation.Region}')";
-            using SQLiteCommand command = new(insertNation, con);
+            using SqliteCommand command = new(insertNation, con);
 
             try
             {
                 command.ExecuteNonQuery();
             }
-            catch (SQLiteException) { } //If something goes wrong who cares
+            catch (SqliteException) { } //If something goes wrong who cares
         }
 
         /// <summary>
@@ -111,11 +111,11 @@ namespace Henson.Models
         /// <param name="name">The name of the nation to be deleted.</param>
         public static void DeleteNation(string name)
         {
-            using var con = new SQLiteConnection($"Data Source={DbPath}");
+            using var con = new SqliteConnection($"Data Source={DbPath}");
             con.Open();
 
             string deleteNation = $"DELETE FROM nations WHERE name='{name}'";
-            using SQLiteCommand command = new(deleteNation, con);
+            using SqliteCommand command = new(deleteNation, con);
             command.ExecuteNonQuery();
         }
 
@@ -125,10 +125,10 @@ namespace Henson.Models
         /// <param name="commandString">The command to be executed.</param>
         public static void ExecuteNonQuery(string commandString)
         {
-            using var con = new SQLiteConnection($"Data Source={DbPath}");
+            using var con = new SqliteConnection($"Data Source={DbPath}");
             con.Open();
 
-            using SQLiteCommand command = new(commandString, con);
+            using SqliteCommand command = new(commandString, con);
             command.ExecuteNonQuery();
         }
     }

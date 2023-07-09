@@ -35,10 +35,10 @@
     <PackageReference Include="HyperText.Avalonia" Version="11.0.0-rc1" />
     <PackageReference Include="log4net" Version="2.0.15" />
     <PackageReference Include="MessageBox.Avalonia" Version="3.0.1-rc2" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.8" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Octokit.Reactive" Version="7.0.1" />
     <PackageReference Include="RestSharp" Version="110.2.0" />
-    <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
     <PackageReference Include="Tomlyn" Version="0.16.2" />
   </ItemGroup>
   <ItemGroup>
