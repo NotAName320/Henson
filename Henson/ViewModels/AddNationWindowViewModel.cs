@@ -22,6 +22,8 @@ using MessageBox.Avalonia.DTO;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using MsBox.Avalonia.Enums;
@@ -145,7 +147,16 @@ namespace Henson.ViewModels
                 {
                     for(int i = start; i <= end; i++)
                     {
-                        var user = ImportManyUser.Contains('*') ? ImportManyUser.Replace("*", i.ToString()) : $"{ImportManyUser} {i}";
+                        string user;
+                        if(ImportManyUser.Contains('*') || ImportManyUser.Contains('^'))
+                        {
+                            user = ImportManyUser.Replace("*", i.ToString()).Replace("^", ToRoman(i));
+                        }
+                        else
+                        {
+                            user = $"{ImportManyUser} {i}";
+                        }
+                        Debug.WriteLine(user);
                         retVal.Add(new NationLoginViewModel(user, ImportManyPass));
                     }
                     return retVal;
@@ -162,5 +173,27 @@ namespace Henson.ViewModels
                 return null;
             });
         }
+        
+        private static string ToRoman(int number)
+        {
+            return number switch
+            {
+                < 1 => string.Empty,
+                >= 1000 => "M" + ToRoman(number - 1000),
+                >= 900 => "CM" + ToRoman(number - 900),
+                >= 500 => "D" + ToRoman(number - 500),
+                >= 400 => "CD" + ToRoman(number - 400),
+                >= 100 => "C" + ToRoman(number - 100),
+                >= 90 => "XC" + ToRoman(number - 90),
+                >= 50 => "L" + ToRoman(number - 50),
+                >= 40 => "XL" + ToRoman(number - 40),
+                >= 10 => "X" + ToRoman(number - 10),
+                >= 9 => "IX" + ToRoman(number - 9),
+                >= 5 => "V" + ToRoman(number - 5),
+                >= 4 => "IV" + ToRoman(number - 4),
+                >= 1 => "I" + ToRoman(number - 1)
+            };
+        }
+
     }
 }
