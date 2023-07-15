@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Henson.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="250"
@@ -31,8 +32,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         MaxWidth="500" MaxHeight="250">
   <!-- CanResize doesn't work on some Linux WMs https://github.com/AvaloniaUI/Avalonia/issues/8329 -->
 
-  <DockPanel HorizontalAlignment="Center"
-             VerticalAlignment="Center">
+  <Design.DataContext>
+      <vm:AddNationWindowViewModel/>
+  </Design.DataContext>
+  
+  <DockPanel HorizontalAlignment="Center" VerticalAlignment="Center">
     <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
       <TextBlock Margin="0,6,26,0">Swarm/Shine config:</TextBlock>
       <Button Command="{Binding FilePickerCommand}">Browse...</Button>

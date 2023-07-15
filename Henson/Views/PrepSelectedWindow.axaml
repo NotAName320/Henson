@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Henson.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="350"
@@ -30,6 +31,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         MinWidth="500" MinHeight="350"
         MaxWidth="500" MaxHeight="350">
   <!-- CanResize doesn't work on some Linux WMs https://github.com/AvaloniaUI/Avalonia/issues/8329 -->
+  
+  <Design.DataContext>
+    <vm:PrepSelectedWindowViewModel/>
+  </Design.DataContext>
+  
   <DockPanel LastChildFill="True">
     <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
       <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Target Region:</TextBlock>

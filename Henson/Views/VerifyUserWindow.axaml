@@ -19,6 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Henson.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:controls="clr-namespace:HyperText.Avalonia.Controls;assembly=HyperText.Avalonia"
@@ -29,6 +30,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         MaxWidth="400" MaxHeight="150"
         Title="Verify Nation" Icon="/Assets/henson-icon.ico"
         WindowStartupLocation="CenterOwner">
+    
+    <Design.DataContext>
+        <vm:VerifyUserWindowViewModel/>
+    </Design.DataContext>
+    
     <StackPanel VerticalAlignment="Center">
         <DockPanel HorizontalAlignment="Left" Margin="10,10,0,0">
             <TextBlock Margin="0,0,5,0">Please open</TextBlock>
