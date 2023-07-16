@@ -179,7 +179,7 @@ namespace Henson.ViewModels
                     for(int i = start; i <= end; i++)
                     {
                         string user;
-                        if(ImportManyUser.Contains('*') || ImportManyUser.Contains('^'))
+                        if(ImportManyUser.Contains('*') || ImportManyUser.Contains('^') || ImportManyUser.Contains('%'))
                         {
                             user = ImportManyUser.Replace("*", i.ToString()).Replace("^", ToRoman(i))
                                 .Replace("%", ToOrdinal(i));
