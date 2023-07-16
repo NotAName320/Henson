@@ -181,7 +181,8 @@ namespace Henson.ViewModels
                         string user;
                         if(ImportManyUser.Contains('*') || ImportManyUser.Contains('^'))
                         {
-                            user = ImportManyUser.Replace("*", i.ToString()).Replace("^", ToRoman(i));
+                            user = ImportManyUser.Replace("*", i.ToString()).Replace("^", ToRoman(i))
+                                .Replace("%", ToOrdinal(i));
                         }
                         else
                         {
@@ -226,5 +227,25 @@ namespace Henson.ViewModels
             };
         }
 
+        private static string ToOrdinal(int number)
+        {
+            if( number <= 0 ) return number.ToString();
+
+            switch(number % 100)
+            {
+                case 11:
+                case 12:
+                case 13:
+                    return number + "th";
+            }
+
+            return (number % 10) switch
+            {
+                1 => number + "st",
+                2 => number + "nd",
+                3 => number + "rd",
+                _ => number + "th"
+            };
+        }
     }
 }
