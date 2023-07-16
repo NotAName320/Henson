@@ -222,7 +222,7 @@ namespace Henson.ViewModels
         /// </summary>
         public MainWindowViewModel()
         {
-            RxApp.MainThreadScheduler.Schedule(CheckIfOnlyUsage);
+            //RxApp.MainThreadScheduler.Schedule(CheckIfOnlyUsage);
             
             Log.Info($"Starting Henson... Version v{GetType().Assembly.GetName().Version} on platform {RuntimeInformation.RuntimeIdentifier}");
             if(File.Exists("henson.log.1")) File.Delete("henson.log.1"); //delete old log
@@ -230,7 +230,7 @@ namespace Henson.ViewModels
             Settings = LoadSettings();
             SetSettings();
 
-            RxApp.MainThreadScheduler.Schedule(CheckIfLatestRelease);
+            //RxApp.MainThreadScheduler.Schedule(CheckIfLatestRelease);
             DbClient.CreateDbIfNotExists();
             RxApp.MainThreadScheduler.Schedule(LoadNations);
             RxApp.MainThreadScheduler.Schedule(CheckIfUserAgentEmpty);
