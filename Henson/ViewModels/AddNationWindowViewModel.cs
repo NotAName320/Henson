@@ -23,6 +23,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -33,6 +34,7 @@ namespace Henson.ViewModels
     public class AddNationWindowViewModel : ViewModelBase
     {
         //strings that are bound to the textboxes
+        public string ImportTextPass { get; set; } = "";
         public string ImportOneUser { get; set; } = "";
         public string ImportOnePass { get; set; } = "";
         public string ImportManyUser { get; set; } = "";
@@ -40,9 +42,14 @@ namespace Henson.ViewModels
         public string ImportManyRange { get; set; } = "";
 
         /// <summary>
-        /// Fired when the Browse... button is clicked.
+        /// Fired when the Browse... button to select a Swarm/Shine config is clicked.
         /// </summary>
-        public ReactiveCommand<Unit, List<NationLoginViewModel>?> FilePickerCommand { get; }
+        public ReactiveCommand<Unit, List<NationLoginViewModel>?> ConfigPickerCommand { get; }
+        
+        /// <summary>
+        /// Fired when the Browse... button to select a text file is clicked.
+        /// </summary>
+        public ReactiveCommand<Unit, List<NationLoginViewModel>?> TextPickerCommand { get; }
 
         /// <summary>
         /// Fired when the Import button is clicked.
@@ -55,10 +62,17 @@ namespace Henson.ViewModels
         public ReactiveCommand<Unit, List<NationLoginViewModel>?> ImportManyCommand { get; }
 
         /// <summary>
-        /// This interaction opens the a file window, and returns a string array with the first value being the file chosen,
-        /// or null if the window is closed without a pick.
+        /// This interaction opens the config file window, and returns a string array with the first value being the
+        /// file chosen, or null if the window is closed without a pick.
         /// </summary>
-        public Interaction<ViewModelBase, string?> FilePickerDialog { get; } = new();
+        public Interaction<ViewModelBase, string?> ConfigPickerDialog { get; } = new();
+        
+        /// <summary>
+        /// This interaction opens the text file window, and returns a string array with the first value being the file
+        /// chosen, or null if the window is closed without a pick.
+        /// </summary>
+        public Interaction<ViewModelBase, string?> TextFilePickerDialog { get; } = new();
+
 
         /// <summary>
         /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
@@ -70,41 +84,58 @@ namespace Henson.ViewModels
         /// </summary>
         public AddNationWindowViewModel()
         {
-            FilePickerCommand = ReactiveCommand.CreateFromTask(async () =>
+            ConfigPickerCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 var dialog = new ViewModelBase();
-                var result = await FilePickerDialog.Handle(dialog);
+                var result = await ConfigPickerDialog.Handle(dialog);
 
-                if(result != null)
+                if(result == null) return null;
+                ConfigReader jsonReader;
+                try
                 {
-                    List<NationLoginViewModel> retVal = new();
-
-                    ConfigReader jsonReader;
-                    try
+                    jsonReader = new ConfigReader(result);
+                }
+                catch (Exception)
+                {
+                    MessageBoxViewModel messageDialog = new(new MessageBoxStandardParams
                     {
-                        jsonReader = new(result);
-                    }
-                    catch (Exception)
-                    {
-                        MessageBoxViewModel messageDialog = new(new MessageBoxStandardParams
-                        {
-                            ContentTitle = "Config Processing Error",
-                            ContentMessage = "The config file was invalid.",
-                            Icon = Icon.Error,
-                        });
-                        await MessageBoxDialog.Handle(messageDialog);
+                        ContentTitle = "Config Processing Error",
+                        ContentMessage = "The config file was invalid.",
+                        Icon = Icon.Error,
+                    });
+                    await MessageBoxDialog.Handle(messageDialog);
 
-                        return null;
-                    }
-
-                    foreach(var keyValue in jsonReader.Items)
-                    {
-                        retVal.Add(new NationLoginViewModel(keyValue.Key, keyValue.Value));
-                    }
-                    return retVal;
+                    return null;
                 }
 
-                return null;
+                return jsonReader.Items.Select(keyValue => new NationLoginViewModel(keyValue.Key, keyValue.Value))
+                    .ToList();
+
+            });
+
+            TextPickerCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                if(ImportTextPass == "")
+                {
+                    MessageBoxViewModel messageDialog = new(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "No Password Set",
+                        ContentMessage = "Please input a password before selecting a file.",
+                        Icon = Icon.Error,
+                    });
+                    await MessageBoxDialog.Handle(messageDialog);
+
+                    return null;
+                }
+                
+                var dialog = new ViewModelBase();
+                var result = await TextFilePickerDialog.Handle(dialog);
+
+                if(result == null) return null;
+                var lines = File.ReadLines(result);
+
+                return lines.Select(line => new NationLoginViewModel(line, ImportTextPass)).ToList();
+
             });
 
             ImportOneCommand = ReactiveCommand.CreateFromTask(async () =>

@@ -37,9 +37,11 @@ namespace Henson.Views
         public AddNationWindow()
         {
             InitializeComponent();
-            this.WhenActivated(d => d(ViewModel!.FilePickerDialog.RegisterHandler(GetConfigJson)));
+            this.WhenActivated(d => d(ViewModel!.ConfigPickerDialog.RegisterHandler(GetConfigJson)));
+            this.WhenActivated(d => d(ViewModel!.TextFilePickerDialog.RegisterHandler(GetTextFile)));
             this.WhenActivated(d => d(ViewModel!.MessageBoxDialog.RegisterHandler(ShowMessageBoxDialog)));
-            this.WhenActivated(d => d(ViewModel!.FilePickerCommand.Subscribe(Close)));
+            this.WhenActivated(d => d(ViewModel!.ConfigPickerCommand.Subscribe(Close)));
+            this.WhenActivated(d => d(ViewModel!.TextPickerCommand.Subscribe(Close)));
             this.WhenActivated(d => d(ViewModel!.ImportOneCommand.Subscribe(Close)));
             this.WhenActivated(d => d(ViewModel!.ImportManyCommand.Subscribe(Close)));
         }
@@ -61,6 +63,24 @@ namespace Henson.Views
                 FileTypeFilter = new[]
                 {
                     new("Swarm/Shine config") { Patterns = new[] { "*.json", "*.toml" } },
+                    FilePickerFileTypes.All
+                }
+            });
+            
+            SetClosing(result.Count == 0); //If no file is selected, cancel window closing action
+            interaction.SetOutput(result.Count == 0 ? null : result[0].Path.AbsolutePath);
+        }
+
+        private async Task GetTextFile(InteractionContext<ViewModelBase, string?> interaction)
+        {
+            var topLevel = GetTopLevel(this);
+            var result = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Open Text File",
+                AllowMultiple = false,
+                FileTypeFilter = new[]
+                {
+                    FilePickerFileTypes.TextPlain,
                     FilePickerFileTypes.All
                 }
             });
