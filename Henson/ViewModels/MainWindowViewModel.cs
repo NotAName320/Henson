@@ -666,7 +666,7 @@ namespace Henson.ViewModels
                 return;
             }
 
-            if(Settings.UserAgent != oldUserAgent)
+            if(Settings.UserAgent != oldUserAgent && false)
             {
                 if(!Regex.IsMatch(Settings.UserAgent, @"^[A-Za-z0-9 _]+$"))
                 {
