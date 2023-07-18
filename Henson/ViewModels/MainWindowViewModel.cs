@@ -1025,6 +1025,8 @@ namespace Henson.ViewModels
             if(new Version(latestRelease.TagName.Replace("v", "")) <= currentVer) return;
 
             Log.Warn($"Newer version now available! Current version: v{currentVer}, latest version on GitHub: {latestRelease.TagName}");
+            
+            await Task.Delay(1000);
 
             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
             {
@@ -1050,7 +1052,7 @@ namespace Henson.ViewModels
         {
             if(Settings.UserAgent != "") return;
             Log.Warn("User agent has no value!");
-            await Task.Delay(100); //Stupidest hack ever, but wait till MessageBoxDialog is initialized before showing because this runs so fast
+            await Task.Delay(2000); //Stupidest hack ever, but wait till MessageBoxDialog is initialized before showing because this runs so fast
 
             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
             {
@@ -1067,7 +1069,7 @@ namespace Henson.ViewModels
         private async void CheckIfOnlyUsage()
         {
             if(Singleton.WaitOne(TimeSpan.Zero, true)) return;
-            await Task.Delay(100);
+            await Task.Delay(2000);
             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
             {
                 ContentTitle = "Another Instance Running",
