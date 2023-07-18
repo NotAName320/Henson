@@ -91,6 +91,11 @@ namespace Henson.ViewModels
         /// Fired when the question mark button is clicked on the settings page beside the embassy whitelist text box.
         /// </summary>
         public ICommand EmbassyHelpCommand { get; }
+        
+        /// <summary>
+        /// Fired when the Filter button in quick view is clicked.
+        /// </summary>
+        public ICommand FilterNationsCommand { get; }
 
         /// <summary>
         /// This interaction opens the Add Nation Dialog and returns a list of NationLoginViewModels
@@ -123,6 +128,9 @@ namespace Henson.ViewModels
         /// This interaction opens a dialog in which a user can verify their username.
         /// </summary>
         public Interaction<VerifyUserWindowViewModel, string?> VerifyUserDialog { get; } = new();
+
+        public Interaction<FilterNationsWindowViewModel, (int numNations, string regionName, bool? notIn, bool
+            withLocked)?> FilterNationsDialog { get; } = new();
 
         private static readonly Mutex Singleton = new(true, "hensonNS");
 
@@ -432,6 +440,39 @@ namespace Henson.ViewModels
                         Icon = Icon.Warning,
                     });
                     await MessageBoxDialog.Handle(dialog);
+                }
+            });
+
+            FilterNationsCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                FilterNationsWindowViewModel dialog = new(Settings.JumpPoint);
+
+                var (numNations, regionName, notIn, withLocked) = await FilterNationsDialog.Handle(dialog) ?? default;
+
+                if(numNations == 0) return;
+
+                foreach(var n in Nations)
+                {
+                    n.Checked = false;
+                }
+
+                var selectedNations = Nations.Where(x => withLocked || !x.Locked).ToList();
+                if(notIn == null)
+                {
+                    selectedNations = selectedNations.Take(numNations).ToList();
+                }
+                else if((bool)notIn)
+                {
+                    selectedNations = selectedNations.Where(x => x.Region != regionName).Take(numNations).ToList();
+                }
+                else
+                {
+                    selectedNations = selectedNations.Where(x => x.Region == regionName).Take(numNations).ToList();
+                }
+
+                foreach(var n in selectedNations)
+                {
+                    n.Checked = true;
                 }
             });
 

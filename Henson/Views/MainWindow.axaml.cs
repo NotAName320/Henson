@@ -45,6 +45,7 @@ namespace Henson.Views
             this.WhenActivated(d => d(ViewModel!.MessageBoxDialog.RegisterHandler(ShowMessageBoxDialog)));
             this.WhenActivated(d => d(ViewModel!.FileSaveDialog.RegisterHandler(ShowFilePickerDialog)));
             this.WhenActivated(d => d(ViewModel!.VerifyUserDialog.RegisterHandler(ShowVerifyUserDialog)));
+            this.WhenActivated(d => d(ViewModel!.FilterNationsDialog.RegisterHandler(ShowFilterNationsDialog)));
         }
 
         private async Task ShowAddNationDialog(InteractionContext<AddNationWindowViewModel, List<NationLoginViewModel>?> interaction)
@@ -119,9 +120,22 @@ namespace Henson.Views
                 DataContext = interaction.Input
             };
 
-            var result = await dialog.ShowDialog<string>(this);
+            var result = await dialog.ShowDialog<string?>(this);
             interaction.SetOutput(result);
 
+        }
+
+        private async Task ShowFilterNationsDialog(
+            InteractionContext<FilterNationsWindowViewModel, (int, string, bool?, bool)?>
+                interaction)
+        {
+            var dialog = new FilterNationsWindow
+            {
+                DataContext = interaction.Input
+            };
+
+            var result = await dialog.ShowDialog<(int, string, bool?, bool)?>(this);
+            interaction.SetOutput(result);
         }
     }
 }

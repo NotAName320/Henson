@@ -5,8 +5,10 @@
       <map>
         <entry key="Henson/App.axaml" value="Henson/Henson.csproj" />
         <entry key="Henson/Views/AddNationWindow.axaml" value="Henson/Henson.csproj" />
+        <entry key="Henson/Views/FilterNationsWindow.axaml" value="Henson/Henson.csproj" />
         <entry key="Henson/Views/MainWindow.axaml" value="Henson/Henson.csproj" />
         <entry key="Henson/Views/PrepSelectedWindow.axaml" value="Henson/Henson.csproj" />
+        <entry key="Henson/Views/SelectNationsWindow.axaml" value="Henson/Henson.csproj" />
         <entry key="Henson/Views/TagSelectedWindow.axaml" value="Henson/Henson.csproj" />
         <entry key="Henson/Views/VerifyUserWindow.axaml" value="Henson/Henson.csproj" />
       </map>

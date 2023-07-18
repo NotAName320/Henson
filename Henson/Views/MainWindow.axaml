@@ -24,8 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="675"
         x:Class="Henson.Views.MainWindow"
-        Icon="/Assets/henson-icon.ico"
-        Title="Henson 1.5.0 BETA"
+        Title="Henson 1.5.0 BETA" Icon="/Assets/henson-icon.ico"
         WindowStartupLocation="CenterScreen">
 
   <Design.DataContext>
@@ -39,7 +38,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           <DockPanel DockPanel.Dock="Top">
             <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)" IsEnabled="{Binding ButtonsEnabled}"/>
             <Button Command="{Binding FindWaCommand}" Content="Find WA" IsEnabled="{Binding ButtonsEnabled}"/>
-            <Button Command="{Binding OnSelectNationsClick}" Content="Select/Unselect All"/>
+            <Button Command="{Binding OnSelectNationsClick}" Content="Select All"/>
+            <Button Command="{Binding FilterNationsCommand}" Content="Filter"/>
             <Button Command="{Binding RemoveSelectedCommand}" Content="Remove" IsEnabled="{Binding AnyNationSelected}"/>
             <Button Command="{Binding ExportSelectedCommand}" Content="Export" IsEnabled="{Binding AnyNationSelected}"/>
             <Button Command="{Binding OnLockSelectedClick}" Content="Lock/Unlock" IsEnabled="{Binding AnyNationSelected}"/>

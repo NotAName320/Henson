@@ -1,0 +1,65 @@
+﻿<!--
+Layout of Filter Nations Window
+Copyright (C) 2023 NotAName320
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Henson.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="150"
+        x:Class="Henson.Views.FilterNationsWindow"
+        Title="Filter Nations" Icon="/Assets/henson-icon.ico"
+        WindowStartupLocation="CenterOwner"
+        Width="300" Height="150" CanResize="False"
+        MinWidth="300" MinHeight="150"
+        MaxWidth="300" MaxHeight="150">
+    
+    <Design.DataContext>
+        <vm:FilterNationsWindowViewModel>
+            <x:Arguments>
+                <x:String> </x:String>
+            </x:Arguments>
+        </vm:FilterNationsWindowViewModel>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="*,Auto,Auto,Auto,*">
+        <DockPanel Dock="Left" Grid.Row="1">
+            <TextBlock VerticalAlignment="Center" Margin="10">Select</TextBlock>
+            <TextBox MinWidth="40" MaxWidth="40" MinHeight="32" MaxHeight="32"
+                     HorizontalAlignment="Left" Text="{Binding NumNations}"
+                     Watermark="∞"/>
+            <TextBlock VerticalAlignment="Center" Margin="10">puppets</TextBlock>
+            <ComboBox Margin="0,0,10,0" VerticalAlignment="Center" Width="80"
+                      SelectedIndex="{Binding DropdownIndex}">
+                <ComboBoxItem Height="30"/>
+                <ComboBoxItem>not in</ComboBoxItem>
+                <ComboBoxItem>in</ComboBoxItem>
+            </ComboBox>
+        </DockPanel>
+        <DockPanel Dock="Left" Grid.Row="2">
+            <TextBox HorizontalAlignment="Left" Margin="20,10,10,10"
+                     MinWidth="125" MaxWidth="125" Text="{Binding RegionName}"
+                     IsEnabled="{Binding RegionBoxEnabled}"/>
+            <CheckBox IsChecked="{Binding WithLocked}"/>
+            <TextBlock VerticalAlignment="Center">Including locked</TextBlock>
+        </DockPanel>
+        <Button Grid.Row="3" HorizontalAlignment="Center"
+                Command="{Binding FilterCommand}">Filter</Button>
+    </Grid>
+</Window>
