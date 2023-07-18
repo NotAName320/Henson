@@ -45,13 +45,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Current region:</TextBlock>
       <TextBlock Text="{Binding CurrentRegion}"/>
     </DockPanel>
-    <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
-      <CheckBox IsChecked="{Binding EmbassiesEnabled}"/>
-      <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Embassies:</TextBlock>
-      <TextBox MinWidth="200" MaxWidth="200" Text="{Binding Embassies}"
-               IsEnabled="{Binding EmbassiesEnabled}"/>
-      <Button Margin="10,0,0,0" Command="{Binding EmbassyHelpCommand}">?</Button>
-    </DockPanel>
+    <Grid ColumnDefinitions="Auto,*,Auto" DockPanel.Dock="Top" Margin="10">
+      <DockPanel HorizontalAlignment="Left" Grid.Column="0">
+        <CheckBox IsChecked="{Binding EmbassiesEnabled}"/>
+        <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Embassies:</TextBlock>
+        <TextBox MinWidth="200" MaxWidth="200" Text="{Binding Embassies}"
+                 IsEnabled="{Binding EmbassiesEnabled}"/>
+        <Button Margin="10,0,0,0" Command="{Binding EmbassyHelpCommand}">?</Button>
+      </DockPanel>
+      <DockPanel Grid.Column="2">
+        <CheckBox IsChecked="{Binding SuppressionEnabled}"/>
+        <TextBlock VerticalAlignment="Center" >Suppress posts</TextBlock>
+      </DockPanel>
+    </Grid>
     <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
       <CheckBox IsChecked="{Binding FlagBannerEnabled}"/>
       <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Banner:</TextBlock>

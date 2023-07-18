@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -177,6 +178,8 @@ namespace Henson.ViewModels
             _selectedTags.Except(_optionalTagsDetected ?? Array.Empty<string>().ToList()).ToList();
         private List<string>? TagsToRemove => _optionalTagsDetected?.Except(_selectedTags).ToList();
 
+        private List<string>? _rmbPostsToRemove = new();
+
         public bool EmbassiesEnabled
         {
             get => _embassiesEnabled;
@@ -186,6 +189,16 @@ namespace Henson.ViewModels
             }
         }
         private bool _embassiesEnabled = false;
+
+        public bool SuppressionEnabled
+        {
+            get => _suppressionEnabled;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _suppressionEnabled, value);
+            }
+        }
+        private bool _suppressionEnabled = false;
 
         public bool FlagBannerEnabled
         {
@@ -346,6 +359,11 @@ namespace Henson.ViewModels
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
 
+        /// <summary>
+        /// This is not supposed to be used and only so that my damn previewer works again
+        /// </summary>
+        public TagSelectedWindowViewModel() : this(new List<NationGridViewModel>(), new NsClient(), "") { }
+        
         public TagSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string whitelist)
         {
             _nationsToTag = nations;
@@ -406,7 +424,7 @@ namespace Henson.ViewModels
             ActionButtonCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 //if none of the tag features are enabled
-                if(new[] { EmbassiesEnabled, FlagBannerEnabled, WfeEnabled, TagsEnabled }.All(x => !x))
+                if(new[] { EmbassiesEnabled, FlagBannerEnabled, WfeEnabled, TagsEnabled, SuppressionEnabled }.All(x => !x))
                 {
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
@@ -614,6 +632,10 @@ namespace Henson.ViewModels
                             {
                                 ButtonText = "Get Tags";
                             }
+                            else if(SuppressionEnabled)
+                            {
+                                ButtonText = "Get RMB";
+                            }
                             else
                             {
                                 AddToSuccessfulTags(currentNation.Region);
@@ -677,11 +699,19 @@ namespace Henson.ViewModels
                             }
                             else
                             {
-                                AddToSuccessfulTags(currentNation.Region);
-                                LoginIndex++;
-                                _successIndex++;
-                                ButtonText = "Login";
                                 FooterText = "Done removing tags! No tags to add...";
+                                
+                                if(SuppressionEnabled)
+                                {
+                                    ButtonText = "Get RMB";
+                                }
+                                else
+                                {
+                                    AddToSuccessfulTags(currentNation.Region);
+                                    LoginIndex++;
+                                    _successIndex++;
+                                    ButtonText = "Login";
+                                }
                             }
                         }
                         else
@@ -701,11 +731,19 @@ namespace Henson.ViewModels
                     {
                         if(_subIndex == TagsToAdd.Count)
                         {
-                            AddToSuccessfulTags(currentNation.Region);
-                            LoginIndex++;
-                            _successIndex++;
-                            ButtonText = "Login";
                             FooterText = "Done adding tags!";
+                            
+                            if(SuppressionEnabled)
+                            {
+                                ButtonText = "Get RMB";
+                            }
+                            else
+                            {
+                                AddToSuccessfulTags(currentNation.Region);
+                                LoginIndex++;
+                                _successIndex++;
+                                ButtonText = "Login";
+                            }
                         }
                         else
                         {
@@ -717,6 +755,51 @@ namespace Henson.ViewModels
                             else
                             {
                                 FooterText = $"Failed to add tag {tag}";
+                            }
+                        }
+                        break;
+                    }
+                    case "Get RMB":
+                    {
+                        _rmbPostsToRemove = await _client.GetRmbPostIds(currentNation.Region);
+                        _subIndex = 0;
+
+                        if(_rmbPostsToRemove == null || _rmbPostsToRemove.Count == 0)
+                        {
+                            AddToSuccessfulTags(currentNation.Region);
+                            LoginIndex++;
+                            _successIndex++;
+                            ButtonText = "Login";
+                            FooterText = "No RMB posts to suppress...";
+                        }
+                        else
+                        {
+                            ButtonText = "Suppress Post";
+                            FooterText = $"Found posts to suppress in {currentNation.Region}!";
+                        }
+                        break;
+                    }
+                    case "Suppress Post":
+                    {
+                        if(_subIndex == _rmbPostsToRemove!.Count)
+                        {
+                            AddToSuccessfulTags(currentNation.Region);
+                            LoginIndex++;
+                            _successIndex++;
+                            ButtonText = "Login";
+                            FooterText = "Done suppressing posts!";
+                        }
+                        else
+                        {
+                            if(await _client.SuppressRmbPost(currentNation.Region, _currentPin,
+                                   _rmbPostsToRemove[_subIndex]))
+                            {
+                                FooterText =
+                                    $"Suppressed post {_rmbPostsToRemove[_subIndex++]} in {currentNation.Region}!";
+                            }
+                            else
+                            {
+                                FooterText = $"Suppressing post {_rmbPostsToRemove[_subIndex++]} in {currentNation.Region} failed.";
                             }
                         }
                         break;
@@ -797,6 +880,12 @@ namespace Henson.ViewModels
                     if(TagsEnabled)
                     {
                         ButtonText = "Get Tags";
+                        break;
+                    }
+
+                    if(SuppressionEnabled)
+                    {
+                        ButtonText = "Get RMB";
                         break;
                     }
                     ButtonText = "Login";

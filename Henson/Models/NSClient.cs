@@ -41,12 +41,12 @@ namespace Henson.Models
         /// <summary>
         /// A NSDotNet client that interacts with the NationStates API.
         /// </summary>
-        public NSAPI ApiClient { get; } = NSAPI.Instance;
+        private NSAPI ApiClient { get; } = NSAPI.Instance;
 
         /// <summary>
         /// An HTTP Client that interacts with the NationStates site.
         /// </summary>
-        public RestClient HttpClient = new("https://www.nationstates.net");
+        private readonly RestClient _httpClient = new("https://www.nationstates.net");
 
         /// <summary>
         /// A formatted User Agent that can be used to identify Henson to the site.
@@ -207,6 +207,58 @@ namespace Henson.Models
             var response = await ApiClient.MakeRequest(ApiLink + $"?a=verify&nation={nationName}&checksum={checksum}");
             return response != null && (await response.Content.ReadAsStringAsync()).Contains('1');
         }
+        
+        /// <summary>
+        /// Gets a list of embassies from the region.
+        /// </summary>
+        /// <param name="targetRegion">The region to get embassies from.</param>
+        /// <returns>A list of lists of strings representing the embassy relations has, or null if something went wrong.</returns>
+        public async Task<List<(string name, int type)>?> GetEmbassies(string targetRegion)
+        {
+            var response = await ApiClient.MakeRequest(ApiLink + $"?region={targetRegion}&q=embassies");
+            
+            if(response == null || !response.IsSuccessStatusCode) return null;
+            
+            XmlDocument doc = new();
+            doc.LoadXml(await response.Content.ReadAsStringAsync());
+            XmlNode root = doc.DocumentElement!;
+
+            List<(string name, int type)> retVal = new();
+            foreach(var node in root.SelectNodes(".//EMBASSY")!.Cast<XmlNode>())
+            {
+                var embCode = new[] { null, "invited", "pending", "requested", "closing" }.IndexOf(node.Attributes?["type"]?.Value);
+                retVal.Add(new(node.InnerText, embCode));
+            }
+            
+            return retVal;
+        }
+        
+        public async Task<List<string>?> GetTags(string targetRegion)
+        {
+            var response = await ApiClient.MakeRequest(ApiLink + $"?region={targetRegion}&q=tags");
+            
+            if(response == null || !response.IsSuccessStatusCode) return null;
+
+            XmlDocument doc = new();
+            doc.LoadXml(await response.Content.ReadAsStringAsync());
+            XmlNode root = doc.DocumentElement!;
+
+            return root.SelectNodes(".//TAG")!.Cast<XmlNode>().Select(x => x.InnerText).ToList();
+        }
+
+        public async Task<List<string>?> GetRmbPostIds(string targetRegion)
+        {
+            var response = await ApiClient.MakeRequest(ApiLink + $"?region={targetRegion}&q=messages");
+            
+            if(response == null || !response.IsSuccessStatusCode) return null;
+            
+            XmlDocument doc = new();
+            doc.LoadXml(await response.Content.ReadAsStringAsync());
+            XmlNode root = doc.DocumentElement!;
+
+            return root.SelectNodes(".//POST[STATUS='0']")!.Cast<XmlNode>().Select(x => x.Attributes!["id"]!.Value)
+                .ToList();
+        }
 
         /// <summary>
         /// Registers a login via the site.
@@ -225,7 +277,7 @@ namespace Henson.Models
             request.AddParameter("logging_in", "1");
             request.AddParameter("userclick", UserClick);
 
-            var response = await HttpClient.ExecuteAsync(request);
+            var response = await _httpClient.ExecuteAsync(request);
 
             if(response.Content == null) return null;
 
@@ -270,7 +322,7 @@ namespace Henson.Models
             request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
-            var response = await HttpClient.ExecuteAsync(request);
+            var response = await _httpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains("has been received!");
             if(!successful) Log.Error($"Applying to WA failed!");
@@ -295,7 +347,7 @@ namespace Henson.Models
             request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
-            var response = await HttpClient.ExecuteAsync(request);
+            var response = await _httpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains("Success!");
             if(!successful) Log.Error($"Moving to JP {targetRegion} failed!");
@@ -339,7 +391,7 @@ namespace Henson.Models
             Encoding iso = Encoding.GetEncoding("ISO-8859-1");
             request.AddParameter("message", iso.GetString(Encoding.Convert(Encoding.UTF8, iso, Encoding.UTF8.GetBytes(escaped))));
 
-            var response = await HttpClient.ExecuteAsync(request);
+            var response = await _httpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains("World Factbook Entry updated!");
             if(!successful) Log.Error($"Changing WFE of {targetRegion} failed!");
@@ -369,7 +421,7 @@ namespace Henson.Models
 
             request.AddFile("file_upload_rbanner", file);
 
-            var response = await HttpClient.ExecuteAsync(request);
+            var response = await _httpClient.ExecuteAsync(request);
 
             if(!response.IsSuccessStatusCode)
             {
@@ -402,7 +454,7 @@ namespace Henson.Models
 
             request.AddFile("file_upload_rflag", file);
 
-            var response = await HttpClient.ExecuteAsync(request);
+            var response = await _httpClient.ExecuteAsync(request);
 
             if(!response.IsSuccessStatusCode)
             {
@@ -437,37 +489,12 @@ namespace Henson.Models
             request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
-            var response = await HttpClient.ExecuteAsync(request);
+            var response = await _httpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains("banner/flag updated!");
             if(!successful) Log.Error($"Setting banner and flag of {targetRegion} failed!");
 
             return successful;
-        }
-
-        /// <summary>
-        /// Gets a list of embassies from the region.
-        /// </summary>
-        /// <param name="targetRegion">The region to get embassies from.</param>
-        /// <returns>A list of lists of strings representing the embassy relations has, or null if something went wrong.</returns>
-        public async Task<List<(string name, int type)>?> GetEmbassies(string targetRegion)
-        {
-            var response = await ApiClient.MakeRequest(ApiLink + $"?region={targetRegion}&q=embassies");
-            
-            if(response == null || !response.IsSuccessStatusCode) return null;
-            
-            XmlDocument doc = new();
-            doc.LoadXml(await response.Content.ReadAsStringAsync());
-            XmlNode root = doc.DocumentElement!;
-
-            List<(string name, int type)>? retVal = new();
-            foreach(var node in root.SelectNodes(".//EMBASSY")!.Cast<XmlNode>())
-            {
-                var embCode = new[] { null, "invited", "pending", "requested", "closing" }.IndexOf(node.Attributes?["type"]?.Value);
-                retVal.Add(new(node.InnerText, embCode));
-            }
-            
-            return retVal;
         }
 
         /// <summary>
@@ -495,7 +522,7 @@ namespace Henson.Models
             
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
-            var response = await HttpClient.ExecuteAsync(request);
+            var response = await _httpClient.ExecuteAsync(request);
             
             bool successful = response.Content != null &&
                               (response.Content.Contains(" rejected.") ||
@@ -519,27 +546,14 @@ namespace Henson.Models
             request.AddParameter("requestembassy", "1");
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
-            var response = await HttpClient.ExecuteAsync(request);
+            var response = await _httpClient.ExecuteAsync(request);
 
             bool successful = response.Content != null && response.Content.Contains(" has been sent.");
             if(!successful) Log.Error($"Requesting embassy of {regionToRequest} from {targetRegion} failed!");
 
             return successful;
         }
-
-        public async Task<List<string>?> GetTags(string targetRegion)
-        {
-            var response = await ApiClient.MakeRequest(ApiLink + $"?region={targetRegion}&q=tags");
-            
-            if(response == null || !response.IsSuccessStatusCode) return null;
-
-            XmlDocument doc = new();
-            doc.LoadXml(await response.Content.ReadAsStringAsync());
-            XmlNode root = doc.DocumentElement!;
-
-            return root.SelectNodes(".//TAG")!.Cast<XmlNode>().Select(x => x.InnerText).ToList();
-        }
-
+        
         public async Task<bool> AddTag(string targetRegion, string chk, string pin, string tag)
         {
             RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
@@ -551,7 +565,7 @@ namespace Henson.Models
             request.AddParameter("updatetagsbutton", "1");
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
-            var response = await HttpClient.ExecuteAsync(request);
+            var response = await _httpClient.ExecuteAsync(request);
             
             bool successful = response.Content != null && response.Content.Contains(" updated!");
             if(!successful) Log.Error($"Adding tag {tag} to {targetRegion} failed!");
@@ -570,10 +584,24 @@ namespace Henson.Models
             request.AddParameter("updatetagsbutton", "1");
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
-            var response = await HttpClient.ExecuteAsync(request);
+            var response = await _httpClient.ExecuteAsync(request);
             
             bool successful = response.Content != null && response.Content.Contains(" updated!");
             if(!successful) Log.Error($"Adding tag {tag} to {targetRegion} failed!");
+
+            return successful;
+        }
+
+        public async Task<bool> SuppressRmbPost(string targetRegion, string pin, string postId)
+        {
+            RestRequest request = new($"/page=ajax/a=rmbsuppress/region={targetRegion}/postid={postId}", Method.Get);
+            request.AddHeader("User-Agent", UserAgent);
+            request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            var response = await _httpClient.ExecuteAsync(request);
+            
+            bool successful = response.Content != null && response.Content.Contains(" suppressed by ");
+            if(!successful) Log.Error($"Suppressing post {postId} in {targetRegion} failed!");
 
             return successful;
         }
