@@ -45,7 +45,7 @@ namespace Henson.ViewModels
         public string Embassies
         {
             get => string.Join(',', _embassyList);
-            set => _embassyList = value.Split(',').Select(x => x.Trim()).ToList();
+            set => _embassyList = value.Split(',').ToList();
         }
         private List<string> _embassyList = new();
 
@@ -347,7 +347,7 @@ namespace Henson.ViewModels
 
         private HashSet<string>? AlreadyEstablishedEmbassies => _embassiesToClose
             ?.Select(x => x.name.ToLower().Replace('_', ' '))
-            .Intersect(_embassyList.Select(x => x.ToLower().Replace('_', ' '))).ToHashSet();
+            .Intersect(_embassyList.Select(x => x.Trim().ToLower().Replace('_', ' '))).ToHashSet();
 
         private HashSet<string> _whitelist;
 
@@ -589,8 +589,8 @@ namespace Henson.ViewModels
                             FooterText = $"Found embassies in {currentNation.Region}!";
                             _embassiesToClose.RemoveAll(x =>
                                 (_whitelist.Contains(x.name.ToLower().Replace('_', ' ')) ||
-                                 _embassyList.Contains(x.name.ToLower().Replace('_', ' '))) ^ x.type == 4 ||
-                                x.type == -1);
+                                 _embassyList.Select(y => y.Trim()).Contains(x.name.ToLower().Replace('_', ' '))) ^
+                                x.type == 4 || x.type == -1);
                             ButtonText = "Close Embassy";
                         }
                         else
@@ -646,7 +646,7 @@ namespace Henson.ViewModels
                         }
                         else
                         {
-                            var embassy = _embassyList[_subIndex++];
+                            var embassy = _embassyList[_subIndex++].Trim();
                             if(AlreadyEstablishedEmbassies!.Contains(embassy))
                             {
                                 FooterText =

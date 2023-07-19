@@ -39,6 +39,7 @@ namespace Henson
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .LogToTrace()
-                .UseReactiveUI();
+                .UseReactiveUI()
+                .WithInterFont();
     }
 }
