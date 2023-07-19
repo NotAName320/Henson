@@ -22,6 +22,7 @@ using System.Media;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Platform.Storage;
@@ -70,6 +71,12 @@ namespace Henson.Views
             });
             
             interaction.SetOutput(result.Count == 0 ? null : result[0].Path.AbsolutePath);
+        }
+
+        private void InputElement_OnKeyUp(object? sender, KeyEventArgs e)
+        {
+            if((e.Key != Key.Space && e.Key != Key.Enter) || !ViewModel!.ButtonsEnabled) return;
+            ViewModel!.ActionButtonCommand.Execute(null);
         }
     }
 }

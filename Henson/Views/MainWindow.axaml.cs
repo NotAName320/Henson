@@ -137,5 +137,10 @@ namespace Henson.Views
             var result = await dialog.ShowDialog<(int, string, bool?, bool)?>(this);
             interaction.SetOutput(result);
         }
+        
+        private void NationList_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            NationList.SelectedItem = null;
+        }
     }
 }

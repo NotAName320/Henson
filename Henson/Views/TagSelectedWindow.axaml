@@ -28,7 +28,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         WindowStartupLocation="CenterOwner"
         Width="900" Height="800" CanResize="False"
         MinWidth="900" MinHeight="800"
-        MaxWidth="900" MaxHeight="800">
+        MaxWidth="900" MaxHeight="800" KeyUp="InputElement_OnKeyUp">
   <!-- CanResize doesn't work on some Linux WMs https://github.com/AvaloniaUI/Avalonia/issues/8329 -->
   
   <Design.DataContext>
@@ -99,12 +99,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
     <TextBlock DockPanel.Dock="Bottom" Margin="10,10,0,10"
                Text="{Binding FooterText}"/>
-    <Button Height="250" Width="880" Margin="10"
-            DockPanel.Dock="Bottom"
-            HorizontalContentAlignment="Center"
-            VerticalContentAlignment="Center" FontSize="40"
-            Content="{Binding ButtonText}"
-            Command="{Binding ActionButtonCommand}"
-            IsEnabled="{Binding ButtonsEnabled}"/>
+    <Button Height="250" Width="880" Margin="10" DockPanel.Dock="Bottom"
+            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+            FontSize="40" Content="{Binding ButtonText}"
+            Command="{Binding ActionButtonCommand}" IsEnabled="{Binding ButtonsEnabled}"/>
   </DockPanel>
 </Window>

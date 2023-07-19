@@ -26,6 +26,7 @@ using System.Media;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System;
+using Avalonia.Input;
 using Avalonia.Media.Imaging;
 using MsBox.Avalonia.Enums;
 
@@ -51,6 +52,12 @@ namespace Henson.Views
 
             var result = await messageBox.ShowWindowDialogAsync(this);
             interaction.SetOutput(result);
+        }
+        
+        private void InputElement_OnKeyUp(object? sender, KeyEventArgs e)
+        {
+            if((e.Key != Key.Space && e.Key != Key.Enter) || !ViewModel!.ButtonsEnabled) return;
+            ViewModel!.ActionButtonCommand.Execute(null);
         }
     }
 }

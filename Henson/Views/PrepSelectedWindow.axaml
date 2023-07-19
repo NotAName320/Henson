@@ -28,7 +28,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         WindowStartupLocation="CenterOwner"
         Width="500" Height="350" CanResize="False"
         MinWidth="500" MinHeight="350"
-        MaxWidth="500" MaxHeight="350">
+        MaxWidth="500" MaxHeight="350" KeyUp="InputElement_OnKeyUp">
   <!-- CanResize doesn't work on some Linux WMs https://github.com/AvaloniaUI/Avalonia/issues/8329 -->
   
   <Design.DataContext>
