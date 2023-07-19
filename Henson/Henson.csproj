@@ -8,9 +8,9 @@
     <!--Avalonia doesen't support TrimMode=link currently,but we are working on that https://github.com/AvaloniaUI/Avalonia/issues/6892 -->
     <TrimMode>copyused</TrimMode>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
-    <PackageVersion>1.5.0-beta3</PackageVersion>
-    <FileVersion>1.5.0.2</FileVersion>
-    <AssemblyVersion>1.5.0.2</AssemblyVersion>
+    <PackageVersion>1.5.0-beta4</PackageVersion>
+    <FileVersion>1.5.0.3</FileVersion>
+    <AssemblyVersion>1.5.0.3</AssemblyVersion>
     <Authors>Nota</Authors>
   </PropertyGroup>
   <ItemGroup>
