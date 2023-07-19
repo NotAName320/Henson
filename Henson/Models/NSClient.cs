@@ -513,6 +513,7 @@ namespace Henson.Models
             request.AddParameter("page", "region_control");
             request.AddParameter("chk", chk);
             request.AddParameter("region", targetRegion);
+            request.AddParameter("userclick", UserClick);
 
             if(closeType == 0) request.AddParameter("cancelembassyregion", regionToClose);
             else if(closeType == 1) request.AddParameter("rejectembassyregion", regionToClose);
@@ -544,6 +545,7 @@ namespace Henson.Models
             request.AddParameter("region", targetRegion);
             request.AddParameter("requestembassyregion", regionToRequest);
             request.AddParameter("requestembassy", "1");
+            request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
             var response = await _httpClient.ExecuteAsync(request);
@@ -563,6 +565,7 @@ namespace Henson.Models
             request.AddParameter("region", targetRegion);
             request.AddParameter("add_tag", tag);
             request.AddParameter("updatetagsbutton", "1");
+            request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
             var response = await _httpClient.ExecuteAsync(request);
@@ -582,6 +585,7 @@ namespace Henson.Models
             request.AddParameter("region", targetRegion);
             request.AddParameter("remove_tag", tag);
             request.AddParameter("updatetagsbutton", "1");
+            request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
             var response = await _httpClient.ExecuteAsync(request);
@@ -596,6 +600,7 @@ namespace Henson.Models
         {
             RestRequest request = new($"/page=ajax/a=rmbsuppress/region={targetRegion}/postid={postId}", Method.Get);
             request.AddHeader("User-Agent", UserAgent);
+            request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
             var response = await _httpClient.ExecuteAsync(request);
