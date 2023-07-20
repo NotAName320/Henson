@@ -101,7 +101,7 @@ namespace Henson.ViewModels
                 {
                     jsonReader = new ConfigReader(result);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     MessageBoxViewModel messageDialog = new(new MessageBoxStandardParams
                     {
