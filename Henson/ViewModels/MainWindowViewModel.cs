@@ -689,7 +689,7 @@ namespace Henson.ViewModels
                     MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                     {
                         ContentTitle = "Verification Failed",
-                        ContentMessage = "Your verification code didn't work, so the User Agent was not changed.",
+                        ContentMessage = "Your verification code didn't work, so the Main Nation was not changed.",
                         Icon = Icon.Error,
                     });
                     await MessageBoxDialog.Handle(dialog);
@@ -914,8 +914,8 @@ namespace Henson.ViewModels
             {
                 MessageBoxViewModel dialog = new(new MessageBoxStandardParams
                 {
-                    ContentTitle = "User Agent Not Set",
-                    ContentMessage = "Please go to the Settings tab to set the User Agent.",
+                    ContentTitle = "Main Nation Not Set",
+                    ContentMessage = "Please go to the Settings tab to set the Main Nation.",
                     Icon = Icon.Error,
                 });
                 await MessageBoxDialog.Handle(dialog);
@@ -1056,8 +1056,8 @@ namespace Henson.ViewModels
 
             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
             {
-                ContentTitle = "User Agent Empty",
-                ContentMessage = "You must set a user agent in Settings before being able to use the features of Henson.",
+                ContentTitle = "Main Nation Empty",
+                ContentMessage = "You must set a main nation in Settings before being able to use the features of Henson.",
                 Icon = Icon.Warning,
             });
             await MessageBoxDialog.Handle(dialog);
