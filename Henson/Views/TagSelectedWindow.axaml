@@ -48,8 +48,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <DockPanel HorizontalAlignment="Left" Grid.Column="0">
         <CheckBox IsChecked="{Binding EmbassiesEnabled}"/>
         <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Embassies:</TextBlock>
-        <TextBox MinWidth="200" MaxWidth="200" Text="{Binding Embassies}"
-                 IsEnabled="{Binding EmbassiesEnabled}"/>
+        <TextBox Name="EmbassyBox" MinWidth="200" MaxWidth="200"
+                 Text="{Binding Embassies}" IsEnabled="{Binding EmbassiesEnabled}"/>
         <Button Margin="10,0,0,0" Command="{Binding EmbassyHelpCommand}">?</Button>
       </DockPanel>
       <DockPanel Grid.Column="2">
@@ -94,7 +94,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <TextBlock DockPanel.Dock="Top" VerticalAlignment="Center">WFE:</TextBlock>
     </DockPanel>
     <TextBox DockPanel.Dock="Top" Margin="10" MinWidth="880" MaxWidth="880"
-             MinHeight="230" MaxHeight="230" AcceptsReturn="True"
+             MinHeight="230" MaxHeight="230" AcceptsReturn="True" Name="WfeBox"
              IsEnabled="{Binding WfeEnabled}" Text="{Binding Wfe}"/>
 
     <TextBlock DockPanel.Dock="Bottom" Margin="10,10,0,10"

@@ -56,7 +56,8 @@ namespace Henson.Views
         
         private void InputElement_OnKeyUp(object? sender, KeyEventArgs e)
         {
-            if((e.Key != Key.Space && e.Key != Key.Enter) || !ViewModel!.ButtonsEnabled) return;
+            if((e.Key != Key.Space && e.Key != Key.Enter) || TargetRegionBox.IsFocused ||
+               !ViewModel!.ButtonsEnabled) return;
             ViewModel!.ActionButtonCommand.Execute(null);
         }
     }

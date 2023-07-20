@@ -27,6 +27,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using log4net;
 using MsBox.Avalonia.Enums;
 
 namespace Henson.ViewModels
@@ -78,6 +79,11 @@ namespace Henson.ViewModels
         /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
         /// </summary>
         public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
+        
+        /// <summary>
+        /// The log4net logger. It will emit messages as from AddNationWindowViewModel.
+        /// </summary>
+        private static readonly ILog Log = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
 
         /// <summary>
         /// Constructs a new <c>AddWindowViewModel</c>.
@@ -95,7 +101,7 @@ namespace Henson.ViewModels
                 {
                     jsonReader = new ConfigReader(result);
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     MessageBoxViewModel messageDialog = new(new MessageBoxStandardParams
                     {
@@ -104,7 +110,7 @@ namespace Henson.ViewModels
                         Icon = Icon.Error,
                     });
                     await MessageBoxDialog.Handle(messageDialog);
-
+                    
                     return null;
                 }
 

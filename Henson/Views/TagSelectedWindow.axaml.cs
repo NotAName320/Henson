@@ -70,12 +70,13 @@ namespace Henson.Views
                 }
             });
             
-            interaction.SetOutput(result.Count == 0 ? null : result[0].Path.AbsolutePath);
+            interaction.SetOutput(result.Count == 0 ? null : Uri.UnescapeDataString(result[0].Path.AbsolutePath));
         }
 
         private void InputElement_OnKeyUp(object? sender, KeyEventArgs e)
         {
-            if((e.Key != Key.Space && e.Key != Key.Enter) || !ViewModel!.ButtonsEnabled) return;
+            if((e.Key != Key.Space && e.Key != Key.Enter) || EmbassyBox.IsFocused || WfeBox.IsFocused ||
+               !ViewModel!.ButtonsEnabled) return;
             ViewModel!.ActionButtonCommand.Execute(null);
         }
     }

@@ -68,7 +68,7 @@ namespace Henson.Views
             });
             
             SetClosing(result.Count == 0); //If no file is selected, cancel window closing action
-            interaction.SetOutput(result.Count == 0 ? null : result[0].Path.AbsolutePath);
+            interaction.SetOutput(result.Count == 0 ? null : Uri.UnescapeDataString(result[0].Path.AbsolutePath));
         }
 
         private async Task GetTextFile(InteractionContext<ViewModelBase, string?> interaction)
@@ -86,7 +86,7 @@ namespace Henson.Views
             });
             
             SetClosing(result.Count == 0); //If no file is selected, cancel window closing action
-            interaction.SetOutput(result.Count == 0 ? null : result[0].Path.AbsolutePath);
+            interaction.SetOutput(result.Count == 0 ? null : Uri.UnescapeDataString(result[0].Path.AbsolutePath));
         }
 
         private async Task ShowMessageBoxDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)

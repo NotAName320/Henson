@@ -110,7 +110,7 @@ namespace Henson.Views
                     FilePickerFileTypes.All
                 }
             });
-            interaction.SetOutput(result?.Path.AbsolutePath);
+            interaction.SetOutput(result == null ? null : Uri.UnescapeDataString(result.Path.AbsolutePath));
         }
 
         private async Task ShowVerifyUserDialog(InteractionContext<VerifyUserWindowViewModel, string?> interaction)
