@@ -463,11 +463,13 @@ namespace Henson.ViewModels
                 }
                 else if((bool)notIn)
                 {
-                    selectedNations = selectedNations.Where(x => x.Region != regionName).Take(numNations).ToList();
+                    selectedNations = selectedNations.Where(x => x.Region.ToLower() != regionName!.ToLower())
+                        .Take(numNations).ToList();
                 }
                 else
                 {
-                    selectedNations = selectedNations.Where(x => x.Region == regionName).Take(numNations).ToList();
+                    selectedNations = selectedNations.Where(x => x.Region.ToLower() == regionName!.ToLower())
+                        .Take(numNations).ToList();
                 }
 
                 foreach(var n in selectedNations)

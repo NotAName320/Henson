@@ -97,9 +97,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <TabItem Header="Individual View">
         <TextBlock Text="WIP. Soon, you'll be able to edit individual nation settings here!"/>
       </TabItem>
-      <TabItem Header="Puppet Creator">
-        <TextBlock Text="WIP. Soon, you'll be able to create multiple puppets here, with default settings of your liking!"/>
-      </TabItem>
       <TabItem Header="Settings">
           <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,Auto,Auto">
             <TextBlock VerticalAlignment="Center" Grid.Row="0" Grid.Column="0">Main Nation:</TextBlock>
