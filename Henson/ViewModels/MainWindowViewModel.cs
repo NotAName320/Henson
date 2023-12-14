@@ -21,8 +21,8 @@ using DynamicData;
 using DynamicData.Binding;
 using Henson.Models;
 using log4net;
-using MessageBox.Avalonia.DTO;
-using MessageBox.Avalonia.Enums;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
 using Octokit;
 using ReactiveUI;
 using System;
@@ -43,7 +43,6 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Styling;
-using MsBox.Avalonia.Enums;
 using Newtonsoft.Json;
 using Tomlyn;
 

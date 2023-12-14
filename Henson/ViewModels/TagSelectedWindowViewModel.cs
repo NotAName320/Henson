@@ -30,7 +30,7 @@ using Avalonia.Controls;
 using DynamicData.Binding;
 using Henson.Models;
 using log4net;
-using MessageBox.Avalonia.DTO;
+using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
 using ReactiveUI;
 

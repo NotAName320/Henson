@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using Henson.Models;
 using log4net;
-using MessageBox.Avalonia.DTO;
+using MsBox.Avalonia.Dto;
 using ReactiveUI;
 using System.Collections.Generic;
 using System.Linq;

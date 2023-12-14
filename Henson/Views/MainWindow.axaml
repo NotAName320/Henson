@@ -122,7 +122,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <TextBlock Text="{Binding FooterText}" Margin="0,0,10,0" VerticalAlignment="Center"/>
       <ProgressBar MinWidth="100" Height="18" IsVisible="{Binding ShowProgressBar}" ShowProgressText="False"
                    Minimum="0" Value="{Binding Client.ManyCount}" Maximum="{Binding Client.ManyTotal}"/>
-                   <!-- ProgressTextFormat="{Binding StringFormat='{0}/{3}'}" -->
+      <!-- ProgressTextFormat="{Binding StringFormat='{0}/{3}'}" -->
       <!--Progress text bar is fucked rn-->
     </StackPanel>
   </Grid>
