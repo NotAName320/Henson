@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <RuntimeIdentifiers>win-x64;linux-x64</RuntimeIdentifiers>
     <PublishSingleFile>true</PublishSingleFile>
     <Nullable>enable</Nullable>
@@ -37,12 +37,12 @@
     <PackageReference Include="HyperText.Avalonia" Version="11.0.0-rc1" />
     <PackageReference Include="log4net" Version="2.0.15" />
     <PackageReference Include="MessageBox.Avalonia" Version="3.1.5.1" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Octokit.Reactive" Version="9.0.0" />
     <PackageReference Include="RestSharp" Version="110.2.0" />
-    <PackageReference Include="System.Windows.Extensions" Version="8.0.0" />
     <PackageReference Include="Tomlyn" Version="0.17.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Windows.Extensions" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Views\AddNationWindow.axaml.cs">
