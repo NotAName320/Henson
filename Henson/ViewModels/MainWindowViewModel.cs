@@ -1070,7 +1070,7 @@ namespace Henson.ViewModels
         private async void CheckIfOnlyUsage()
         {
             if(Singleton.WaitOne(TimeSpan.Zero, true)) return;
-            await Task.Delay(2000);
+            await Task.Delay(3000);
             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
             {
                 ContentTitle = "Another Instance Running",
