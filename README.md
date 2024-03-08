@@ -1,5 +1,5 @@
 # Henson
-![Henson Logo](https://cdn.discordapp.com/attachments/700554123086528614/1080372541815791657/hensonlogo.png)
+![Henson Logo](https://i.imgur.com/l3V5CPL.png)
 
 Henson (**H**euristic and **E**xtensible **N**ation**S**tates **O**rganizer for 
 **N**ations) is a puppet manager for NationStates. The core principles for 
