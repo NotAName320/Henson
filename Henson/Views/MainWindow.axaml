@@ -24,7 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="675"
         x:Class="Henson.Views.MainWindow"
-        Title="Henson 1.5.0" Icon="/Assets/henson-icon.ico"
+        Title="Henson 1.5.1" Icon="/Assets/henson-icon.ico"
         WindowStartupLocation="CenterScreen">
 
   <Design.DataContext>

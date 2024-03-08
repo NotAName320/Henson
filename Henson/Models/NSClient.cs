@@ -57,6 +57,8 @@ namespace Henson.Models
             set
             {
                 ApiClient.UserAgent = Uri.EscapeDataString($"Henson v{GetType().Assembly.GetName().Version} developed by nation: Notanam in use by nation: {value}");
+                _httpClient.DefaultParameters.RemoveParameter("User-Agent", ParameterType.HttpHeader);
+                _httpClient.AddDefaultHeader("User-Agent", ApiClient.UserAgent);
             }
         }
 
@@ -270,13 +272,16 @@ namespace Henson.Models
             Log.Info($"Logging in to {login.Name}");
             //non template=none region page allows us to get chk and localid in one request
             //shoutout to sweeze
-            RestRequest request = new("/region=notas_region", Method.Get);
-            request.AddHeader("User-Agent", UserAgent);
-            request.AddParameter("nation", login.Name);
-            request.AddParameter("password", login.Pass);
-            request.AddParameter("logging_in", "1");
-            request.AddParameter("userclick", UserClick);
-
+            RestRequest request = new("/region=notas_region", Method.Post);
+            var parameters = new
+            {
+                nation = login.Name,
+                password = login.Pass,
+                logging_in = "1",
+                userclick = UserClick
+            };
+            request.AddObject(parameters);
+            
             var response = await _httpClient.ExecuteAsync(request);
 
             if(response.Content == null) return null;
@@ -309,22 +314,26 @@ namespace Henson.Models
         /// <summary>
         /// Send a WA email to a logged in nation with the chk, or resend the email if already sent.
         /// </summary>
-        /// <param name="chk">The chk recorded from a login.</param>
+        /// <param name="check">The chk recorded from a login.</param>
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <returns>A boolean indicating whether or not the application was successfully sent.</returns>
-        public async Task<bool> ApplyWa(string chk, string pin)
+        public async Task<bool> ApplyWa(string check, string pin)
         {
             RestRequest request = new("/template-overall=none/page=UN_status", Method.Post);
-            request.AddHeader("User-Agent", UserAgent);
-            request.AddParameter("action", "join_UN");
-            request.AddParameter("chk", chk);
-            request.AddParameter("resend", "1");
-            request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            var parameters = new
+            {
+                action = "join_UN",
+                chk = check,
+                resend = "1",
+                userclick = UserClick
+            };
+            request.AddObject(parameters);
 
             var response = await _httpClient.ExecuteAsync(request);
 
-            bool successful = response.Content != null && response.Content.Contains("has been received!");
+            var successful = response.Content != null && response.Content.Contains("has been received!");
             if(!successful) Log.Error($"Applying to WA failed!");
 
             return successful;
@@ -340,16 +349,20 @@ namespace Henson.Models
         public async Task<bool> MoveToJp(string targetRegion, string localId, string pin)
         {
             RestRequest request = new("/template-overall=none/page=change_region", Method.Post);
-            request.AddHeader("User-Agent", UserAgent);
-            request.AddParameter("localid", localId);
-            request.AddParameter("region_name", targetRegion);
-            request.AddParameter("move_region", "1");
-            request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            var parameters = new
+            {
+                localid = localId,
+                region_name = targetRegion,
+                move_region = "1",
+                userclick = UserClick
+            };
+            request.AddObject(parameters);
 
             var response = await _httpClient.ExecuteAsync(request);
 
-            bool successful = response.Content != null && response.Content.Contains("Success!");
+            var successful = response.Content != null && response.Content.Contains("Success!");
             if(!successful) Log.Error($"Moving to JP {targetRegion} failed!");
 
             return successful;
@@ -359,19 +372,13 @@ namespace Henson.Models
         /// Change the WFE of a region that a nation has permissions for.
         /// </summary>
         /// <param name="targetRegion">The name of the region to change the WFE of.</param>
-        /// <param name="chk">The chk recorded from a login.</param>
+        /// <param name="check">The chk recorded from a login.</param>
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <param name="wfe">The WFE.</param>
         /// <returns></returns>
-        public async Task<bool> SetWfe(string targetRegion, string chk, string pin, string wfe)
+        public async Task<bool> SetWfe(string targetRegion, string check, string pin, string wfe)
         {
             RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
-            request.AddHeader("User-Agent", UserAgent);
-            request.AddParameter("page", "region_control");
-            request.AddParameter("chk", chk);
-            request.AddParameter("region", targetRegion);
-            request.AddParameter("setwfebutton", "1");
-            request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
             // HTML Escape the wfe to preserve unicode
@@ -389,11 +396,22 @@ namespace Henson.Models
             }
             //Convert to encoding
             Encoding iso = Encoding.GetEncoding("ISO-8859-1");
-            request.AddParameter("message", iso.GetString(Encoding.Convert(Encoding.UTF8, iso, Encoding.UTF8.GetBytes(escaped))));
+            var byteform = iso.GetString(Encoding.Convert(Encoding.UTF8, iso, Encoding.UTF8.GetBytes(escaped)));
+
+            var parameters = new
+            {
+                page = "region_control",
+                chk = check,
+                region = targetRegion,
+                setwfebutton = "1",
+                userclick = UserClick,
+                message = byteform
+            };
+            request.AddObject(parameters);
 
             var response = await _httpClient.ExecuteAsync(request);
 
-            bool successful = response.Content != null && response.Content.Contains("World Factbook Entry updated!");
+            var successful = response.Content != null && response.Content.Contains("World Factbook Entry updated!");
             if(!successful) Log.Error($"Changing WFE of {targetRegion} failed!");
 
             return successful;
@@ -403,23 +421,26 @@ namespace Henson.Models
         /// Uploads a banner to the NationStates site.
         /// </summary>
         /// <param name="targetRegion">The region whose banner is being changed.</param>
-        /// <param name="chk">The chk recorded from a login.</param>
+        /// <param name="check">The chk recorded from a login.</param>
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <param name="file">The path to the file being uploaded.</param>
         /// <returns>The ID of the banner uploaded.</returns>
-        public async Task<string?> UploadBanner(string targetRegion, string chk, string pin, string file)
+        public async Task<string?> UploadBanner(string targetRegion, string check, string pin, string file)
         {
             RestRequest request = new("/cgi-bin/upload.cgi", Method.Post);
-            request.AddHeader("User-Agent", UserAgent);
-            request.AddParameter("page", "region_control");
-            request.AddParameter("uploadtype", "rbanner");
-            request.AddParameter("expect", "json");
-            request.AddParameter("chk", chk);
-            request.AddParameter("region", targetRegion);
-            request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
-
             request.AddFile("file_upload_rbanner", file);
+
+            var parameters = new
+            {
+                page = "region_control",
+                uploadtype = "rbanner",
+                expect = "json",
+                chk = check,
+                region = targetRegion,
+                userclick = UserClick
+            };
+            request.AddObject(parameters);
 
             var response = await _httpClient.ExecuteAsync(request);
 
@@ -440,19 +461,22 @@ namespace Henson.Models
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <param name="file">The path to the file being uploaded.</param>
         /// <returns>The ID of the banner uploaded.</returns>
-        public async Task<string?> UploadFlag(string targetRegion, string chk, string pin, string file)
+        public async Task<string?> UploadFlag(string targetRegion, string check, string pin, string file)
         {
             RestRequest request = new("/cgi-bin/upload.cgi", Method.Post);
-            request.AddHeader("User-Agent", UserAgent);
-            request.AddParameter("page", "region_control");
-            request.AddParameter("uploadtype", "rflag");
-            request.AddParameter("expect", "json");
-            request.AddParameter("chk", chk);
-            request.AddParameter("region", targetRegion);
-            request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
-
             request.AddFile("file_upload_rflag", file);
+
+            var parameters = new
+            {
+                page = "region_control",
+                uploadtype = "rflag",
+                expect = "json",
+                chk = check,
+                region = targetRegion,
+                userclick = UserClick
+            };
+            request.AddObject(parameters);
 
             var response = await _httpClient.ExecuteAsync(request);
 
@@ -469,29 +493,33 @@ namespace Henson.Models
         /// Sets the banner and flag on the region.
         /// </summary>
         /// <param name="targetRegion">The region whose banner and flag is being changed.</param>
-        /// <param name="chk">The chk recorded from a login.</param>
+        /// <param name="check">The chk recorded from a login.</param>
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <param name="bannerId">The banner ID from an earlier upload.</param>
         /// <param name="flagId">The flag ID from an earlier upload.</param>
         /// <returns></returns>
-        public async Task<bool> SetBannerFlag(string targetRegion, string chk, string pin, string bannerId, string flagId)
+        public async Task<bool> SetBannerFlag(string targetRegion, string check, string pin, string bannerId, string flagId)
         {
             RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
-            request.AddHeader("User-Agent", UserAgent);
-            request.AddParameter("page", "region_control");
-            request.AddParameter("chk", chk);
-            request.AddParameter("region", targetRegion);
-            request.AddParameter("newbanner", bannerId);
-            request.AddParameter("newflag", flagId);
-            request.AddParameter("saveflagandbannerchanges", "1");
-            request.AddParameter("flagmode", "flag");
-            request.AddParameter("newflagmode", "flag");
-            request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            var parameters = new
+            {
+                page = "region_control",
+                chk = check,
+                region = targetRegion,
+                newbanner = bannerId,
+                newflag = flagId,
+                saveflagandbannerchanges = "1",
+                flagmode = "flag",
+                newflagmode = "flag",
+                userclick = UserClick
+            };
+            request.AddObject(parameters);
 
             var response = await _httpClient.ExecuteAsync(request);
 
-            bool successful = response.Content != null && response.Content.Contains("banner/flag updated!");
+            var successful = response.Content != null && response.Content.Contains("banner/flag updated!");
             if(!successful) Log.Error($"Setting banner and flag of {targetRegion} failed!");
 
             return successful;
@@ -501,31 +529,48 @@ namespace Henson.Models
         /// Closes/Rejects an offer/withdraws an offer for an embassy from a region.
         /// </summary>
         /// <param name="targetRegion">The region that the nation is currently in.</param>
-        /// <param name="chk">The chk recorded from a login.</param>
+        /// <param name="check">The chk recorded from a login.</param>
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <param name="regionToClose">The region to close embassies with.</param>
         /// <param name="closeType">The type of embassy relationship that exists.</param>
         /// <returns>Whether the closures were successful.</returns>
-        public async Task<bool> CloseEmbassy(string targetRegion, string chk, string pin, string regionToClose, int closeType)
+        public async Task<bool> CloseEmbassy(string targetRegion, string check, string pin, string regionToClose, int closeType)
         {
             RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
-            request.AddHeader("User-Agent", UserAgent);
-            request.AddParameter("page", "region_control");
-            request.AddParameter("chk", chk);
-            request.AddParameter("region", targetRegion);
-            request.AddParameter("userclick", UserClick);
-
-            if(closeType == 0) request.AddParameter("cancelembassyregion", regionToClose);
-            else if(closeType == 1) request.AddParameter("rejectembassyregion", regionToClose);
-            else if(closeType == 2) request.AddParameter("abortembassyregion", regionToClose);
-            else if(closeType == 3) request.AddParameter("withdrawembassyregion", regionToClose);
-            else request.AddParameter("cancelembassyclosureregion", regionToClose);
-            
             request.AddCookie("pin", pin, "/", ".nationstates.net");
+            
+            var parameters = new
+            {
+                page = "region_control",
+                chk = check,
+                region = targetRegion,
+                userclick = UserClick
+            };
+            request.AddObject(parameters);
+
+            switch(closeType)
+            {
+                case 0:
+                    request.AddParameter("cancelembassyregion", regionToClose);
+                    break;
+                case 1:
+                    request.AddParameter("rejectembassyregion", regionToClose);
+                    break;
+                case 2:
+                    request.AddParameter("abortembassyregion", regionToClose);
+                    break;
+                case 3:
+                    request.AddParameter("withdrawembassyregion", regionToClose);
+                    break;
+                default:
+                    request.AddParameter("cancelembassyclosureregion", regionToClose);
+                    break;
+            }
+            
 
             var response = await _httpClient.ExecuteAsync(request);
             
-            bool successful = response.Content != null &&
+            var successful = response.Content != null &&
                               (response.Content.Contains(" rejected.") ||
                                response.Content.Contains(" demolition.") ||
                                response.Content.Contains(" withdrawn.") ||
@@ -536,61 +581,73 @@ namespace Henson.Models
             return successful;
         }
 
-        public async Task<bool> RequestEmbassy(string targetRegion, string chk, string pin, string regionToRequest)
+        public async Task<bool> RequestEmbassy(string targetRegion, string check, string pin, string regionToRequest)
         {
             RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
-            request.AddHeader("User-Agent", UserAgent);
-            request.AddParameter("page", "region_control");
-            request.AddParameter("chk", chk);
-            request.AddParameter("region", targetRegion);
-            request.AddParameter("requestembassyregion", regionToRequest);
-            request.AddParameter("requestembassy", "1");
-            request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            var parameters = new
+            {
+                page = "region_control",
+                chk = check,
+                region = targetRegion,
+                requestembassyregion = regionToRequest,
+                requestembassy = "1",
+                userclick = UserClick
+            };
+            request.AddObject(parameters);
 
             var response = await _httpClient.ExecuteAsync(request);
 
-            bool successful = response.Content != null && response.Content.Contains(" has been sent.");
+            var successful = response.Content != null && response.Content.Contains(" has been sent.");
             if(!successful) Log.Error($"Requesting embassy of {regionToRequest} from {targetRegion} failed!");
 
             return successful;
         }
         
-        public async Task<bool> AddTag(string targetRegion, string chk, string pin, string tag)
+        public async Task<bool> AddTag(string targetRegion, string check, string pin, string tag)
         {
             RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
-            request.AddHeader("User-Agent", UserAgent);
-            request.AddParameter("page", "region_control");
-            request.AddParameter("chk", chk);
-            request.AddParameter("region", targetRegion);
-            request.AddParameter("add_tag", tag);
-            request.AddParameter("updatetagsbutton", "1");
-            request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            var parameters = new
+            {
+                page = "region_control",
+                chk = check,
+                region = targetRegion,
+                add_tag = tag,
+                updatetagsbutton = "1",
+                userclick = UserClick
+            };
+            request.AddObject(parameters);
 
             var response = await _httpClient.ExecuteAsync(request);
             
-            bool successful = response.Content != null && response.Content.Contains(" updated!");
+            var successful = response.Content != null && response.Content.Contains(" updated!");
             if(!successful) Log.Error($"Adding tag {tag} to {targetRegion} failed!");
 
             return successful;
         }
         
-        public async Task<bool> RemoveTag(string targetRegion, string chk, string pin, string tag)
+        public async Task<bool> RemoveTag(string targetRegion, string check, string pin, string tag)
         {
             RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
-            request.AddHeader("User-Agent", UserAgent);
-            request.AddParameter("page", "region_control");
-            request.AddParameter("chk", chk);
-            request.AddParameter("region", targetRegion);
-            request.AddParameter("remove_tag", tag);
-            request.AddParameter("updatetagsbutton", "1");
-            request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            var parameters = new
+            {
+                page = "region_control",
+                chk = check,
+                region = targetRegion,
+                remove_tag = tag,
+                updatetagsbutton = "1",
+                userclick = UserClick
+            };
+            request.AddObject(parameters);
 
             var response = await _httpClient.ExecuteAsync(request);
             
-            bool successful = response.Content != null && response.Content.Contains(" updated!");
+            var successful = response.Content != null && response.Content.Contains(" updated!");
             if(!successful) Log.Error($"Adding tag {tag} to {targetRegion} failed!");
 
             return successful;
@@ -599,13 +656,12 @@ namespace Henson.Models
         public async Task<bool> SuppressRmbPost(string targetRegion, string pin, string postId)
         {
             RestRequest request = new($"/page=ajax/a=rmbsuppress/region={targetRegion}/postid={postId}", Method.Get);
-            request.AddHeader("User-Agent", UserAgent);
             request.AddParameter("userclick", UserClick);
             request.AddCookie("pin", pin, "/", ".nationstates.net");
 
             var response = await _httpClient.ExecuteAsync(request);
             
-            bool successful = response.Content != null && response.Content.Contains(" suppressed by ");
+            var successful = response.Content != null && response.Content.Contains(" suppressed by ");
             if(!successful) Log.Error($"Suppressing post {postId} in {targetRegion} failed!");
 
             return successful;
