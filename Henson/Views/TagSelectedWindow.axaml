@@ -73,6 +73,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Add tags:</TextBlock>
       <ComboBox DockPanel.Dock="Left" IsEnabled="{Binding TagsEnabled}"
                 SelectedItem="{Binding CurrentSelectedItem}" Margin="0,0,10,0" Width="150">
+        <ComboBoxItem>Anarchist</ComboBoxItem>
         <ComboBoxItem>Anime</ComboBoxItem>
         <ComboBoxItem>Anti-Capitalist</ComboBoxItem>
         <ComboBoxItem>Anti-Fascist</ComboBoxItem>
@@ -80,6 +81,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <ComboBoxItem>Colony</ComboBoxItem>
         <ComboBoxItem>Communist</ComboBoxItem>
         <ComboBoxItem>Fantasy Tech</ComboBoxItem>
+        <ComboBoxItem>Feminist</ComboBoxItem>
         <ComboBoxItem>Future Tech</ComboBoxItem>
         <ComboBoxItem>Imperialist</ComboBoxItem>
         <ComboBoxItem>Invader</ComboBoxItem>

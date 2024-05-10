@@ -118,7 +118,7 @@ namespace Henson.ViewModels
         public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
         
         /// <summary>
-        /// This interaction opens the a file window, and returns a string with the path to save to,
+        /// This interaction opens a file window, and returns a string with the path to save to,
         /// or null if the window is closed without a pick.
         /// </summary>
         public Interaction<ViewModelBase, string?> FileSaveDialog { get; } = new();
@@ -127,6 +127,12 @@ namespace Henson.ViewModels
         /// This interaction opens a dialog in which a user can verify their username.
         /// </summary>
         public Interaction<VerifyUserWindowViewModel, string?> VerifyUserDialog { get; } = new();
+        
+        /// <summary>
+        /// Stupid dumb stupid stupid hack to get some startup checks scheduled on the UI thread (for some dumb reason)
+        /// AFTER the other interactions are registered. This is the worst fucking thing ever.
+        /// </summary>
+        public Interaction<Unit, Unit> PerformChecks { get; } = new();
 
         public Interaction<FilterNationsWindowViewModel, (int numNations, string regionName, bool? notIn, bool
             withLocked)?> FilterNationsDialog { get; } = new();
@@ -229,18 +235,14 @@ namespace Henson.ViewModels
         /// </summary>
         public MainWindowViewModel()
         {
-            RxApp.MainThreadScheduler.Schedule(CheckIfOnlyUsage);
-            
             Log.Info($"Starting Henson... Version v{GetType().Assembly.GetName().Version} on platform {RuntimeInformation.RuntimeIdentifier}");
             if(File.Exists("henson.log.1")) File.Delete("henson.log.1"); //delete old log
 
             Settings = LoadSettings();
             SetSettings();
 
-            RxApp.MainThreadScheduler.Schedule(CheckIfLatestRelease);
             DbClient.CreateDbIfNotExists();
             RxApp.MainThreadScheduler.Schedule(LoadNations);
-            RxApp.MainThreadScheduler.Schedule(CheckIfUserAgentEmpty);
 
             AddNationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -1013,11 +1015,21 @@ namespace Henson.ViewModels
                 Source = uri
             };
         }
+        
+        /// <summary>
+        /// top-level async function representing the startup checks that the client does
+        /// </summary>
+        public async void DoStartupChecks()
+        {
+            await CheckIfUserAgentEmpty();
+            await CheckIfLatestRelease();
+            await CheckIfOnlyUsage();
+        }
 
         /// <summary>
         /// Checks if the version is the latest release on GitHub and shows a notification window (and opens web browser to releases page) if it isn't.
         /// </summary>
-        private async void CheckIfLatestRelease()
+        private async Task CheckIfLatestRelease()
         {
             var currentVer = GetType().Assembly.GetName().Version!;
             var client = new GitHubClient(new ProductHeaderValue(Uri.EscapeDataString($"NotAName320/Henson v{currentVer}")));
@@ -1027,8 +1039,6 @@ namespace Henson.ViewModels
 
             Log.Warn($"Newer version now available! Current version: v{currentVer}, latest version on GitHub: {latestRelease.TagName}");
             
-            await Task.Delay(1000);
-
             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
             {
                 ContentTitle = "New Version Available",
@@ -1045,15 +1055,14 @@ namespace Henson.ViewModels
             process.StartInfo.FileName = "https://github.com/NotAName320/Henson/releases";
             process.Start();
         }
-
+        
         /// <summary>
         /// Checks if the user agent is empty and shows a notification window if it is.
         /// </summary>
-        private async void CheckIfUserAgentEmpty()
+        private async Task CheckIfUserAgentEmpty()
         {
             if(Settings.UserAgent != "") return;
             Log.Warn("User agent has no value!");
-            await Task.Delay(2000); //Stupidest hack ever, but wait till MessageBoxDialog is initialized before showing because this runs so fast
 
             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
             {
@@ -1067,10 +1076,9 @@ namespace Henson.ViewModels
         /// <summary>
         /// Checks if this instance is the only instance of Henson running, and closes this instance if it is not.
         /// </summary>
-        private async void CheckIfOnlyUsage()
+        private async Task CheckIfOnlyUsage()
         {
             if(Singleton.WaitOne(TimeSpan.Zero, true)) return;
-            await Task.Delay(3000);
             MessageBoxViewModel dialog = new(new MessageBoxStandardParams
             {
                 ContentTitle = "Another Instance Running",

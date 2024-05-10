@@ -27,6 +27,7 @@ using System;
 using System.Collections.Generic;
 using System.Media;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
@@ -46,6 +47,12 @@ namespace Henson.Views
             this.WhenActivated(d => d(ViewModel!.FileSaveDialog.RegisterHandler(ShowFilePickerDialog)));
             this.WhenActivated(d => d(ViewModel!.VerifyUserDialog.RegisterHandler(ShowVerifyUserDialog)));
             this.WhenActivated(d => d(ViewModel!.FilterNationsDialog.RegisterHandler(ShowFilterNationsDialog)));
+            this.WhenActivated(d =>
+            {
+                d(ViewModel!.PerformChecks.RegisterHandler(ctx => ctx.SetOutput(Unit.Default)));
+                // why are we still here? just to suffer?
+                RxApp.MainThreadScheduler.Schedule(ViewModel!.DoStartupChecks);
+            });
         }
 
         private async Task ShowAddNationDialog(InteractionContext<AddNationWindowViewModel, List<NationLoginViewModel>?> interaction)
