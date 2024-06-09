@@ -22,91 +22,107 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         xmlns:vm="using:Henson.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="800"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="800" d:DataContext="{x:Static vm:DesignData.TagDesignVm}"
         x:Class="Henson.Views.TagSelectedWindow"
         Title="Tag Selected" Icon="/Assets/henson-icon.ico"
         WindowStartupLocation="CenterOwner"
         Width="900" Height="800" CanResize="False"
         MinWidth="900" MinHeight="800"
-        MaxWidth="900" MaxHeight="800" KeyUp="InputElement_OnKeyUp">
+        MaxWidth="900" MaxHeight="800" KeyUp="InputElement_OnKeyUp"
+        ExtendClientAreaToDecorationsHint="True"
+        Background="{Binding BackgroundColor}"
+        TransparencyLevelHint="{Binding AcrylicTransparency}">
   <!-- CanResize doesn't work on some Linux WMs https://github.com/AvaloniaUI/Avalonia/issues/8329 -->
-  
-  <Design.DataContext>
-    <vm:TagSelectedWindowViewModel/>
-  </Design.DataContext>
-  
-  <DockPanel LastChildFill="True">
-    <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
-      <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Current nation:</TextBlock>
-      <TextBlock Text="{Binding CurrentNation}"/>
-    </DockPanel>
-    <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
-      <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Current region:</TextBlock>
-      <TextBlock Text="{Binding CurrentRegion}"/>
-    </DockPanel>
-    <Grid ColumnDefinitions="Auto,*,Auto" DockPanel.Dock="Top" Margin="10">
-      <DockPanel HorizontalAlignment="Left" Grid.Column="0">
-        <CheckBox IsChecked="{Binding EmbassiesEnabled}"/>
-        <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Embassies:</TextBlock>
-        <TextBox Name="EmbassyBox" MinWidth="200" MaxWidth="200"
-                 Text="{Binding Embassies}" IsEnabled="{Binding EmbassiesEnabled}"/>
-        <Button Margin="10,0,0,0" Command="{Binding EmbassyHelpCommand}">?</Button>
+  <DockPanel>
+    <ExperimentalAcrylicBorder IsHitTestVisible="False" IsVisible="{Binding EnableAcrylic}">
+      <ExperimentalAcrylicBorder.Material>
+        <ExperimentalAcrylicMaterial
+          BackgroundSource="Digger"
+          TintColor="{Binding AcrylicTint}"
+          TintOpacity="1"
+          MaterialOpacity="{Binding AcrylicOpacity}"/>
+      </ExperimentalAcrylicBorder.Material>
+    </ExperimentalAcrylicBorder>
+    <StackPanel HorizontalAlignment="Left" Margin="10,10,0,0" Orientation="Horizontal"
+                VerticalAlignment="Top" IsHitTestVisible="False" DockPanel.Dock="Top"
+                IsVisible="{x:Static vm:ViewModelBase.IsNotLinux}">
+      <Image Source="/Assets/henson-icon.ico" Width="16" Margin="0,0,10,1"/>
+      <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=Title}"
+                 VerticalAlignment="Center"/>
+    </StackPanel>
+    <DockPanel LastChildFill="True">
+      <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
+        <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Current nation:</TextBlock>
+        <TextBlock Text="{Binding CurrentNation}"/>
       </DockPanel>
-      <DockPanel Grid.Column="2">
-        <CheckBox IsChecked="{Binding SuppressionEnabled}"/>
-        <TextBlock VerticalAlignment="Center" >Suppress posts</TextBlock>
+      <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
+        <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Current region:</TextBlock>
+        <TextBlock Text="{Binding CurrentRegion}"/>
       </DockPanel>
-    </Grid>
-    <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
-      <CheckBox IsChecked="{Binding FlagBannerEnabled}"/>
-      <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Banner:</TextBlock>
-      <Button Margin="0,0,10,0" Command="{Binding BannerPickerCommand}"
-              IsEnabled="{Binding FlagBannerEnabled}">Browse...</Button>
-      <TextBlock VerticalAlignment="Center" Margin="0,0,10,0" Text="{Binding BannerFileName}"/>
-      <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Flag:</TextBlock>
-      <Button Margin="0,0,10,0" Command="{Binding FlagPickerCommand}"
-              IsEnabled="{Binding FlagBannerEnabled}">Browse...</Button>
-      <TextBlock VerticalAlignment="Center" Text="{Binding FlagFileName}"/>
-    </DockPanel>
-    <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
-      <CheckBox IsChecked="{Binding TagsEnabled}"/>
-      <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Add tags:</TextBlock>
-      <ComboBox DockPanel.Dock="Left" IsEnabled="{Binding TagsEnabled}"
-                SelectedItem="{Binding CurrentSelectedItem}" Margin="0,0,10,0" Width="150">
-        <ComboBoxItem>Anarchist</ComboBoxItem>
-        <ComboBoxItem>Anime</ComboBoxItem>
-        <ComboBoxItem>Anti-Capitalist</ComboBoxItem>
-        <ComboBoxItem>Anti-Fascist</ComboBoxItem>
-        <ComboBoxItem>Capitalist</ComboBoxItem>
-        <ComboBoxItem>Colony</ComboBoxItem>
-        <ComboBoxItem>Communist</ComboBoxItem>
-        <ComboBoxItem>Fantasy Tech</ComboBoxItem>
-        <ComboBoxItem>Feminist</ComboBoxItem>
-        <ComboBoxItem>Future Tech</ComboBoxItem>
-        <ComboBoxItem>Imperialist</ComboBoxItem>
-        <ComboBoxItem>Invader</ComboBoxItem>
-        <ComboBoxItem>LGBT</ComboBoxItem>
-        <ComboBoxItem>Magical</ComboBoxItem>
-        <ComboBoxItem>Multi-Species</ComboBoxItem>
-        <ComboBoxItem>Socialist</ComboBoxItem>
-      </ComboBox>
-      <Button Margin="0,0,10,0" Command="{Binding AddRemoveTagCommand}"
-              IsEnabled="{Binding TagsEnabled}">Add/Remove</Button>
-      <TextBlock VerticalAlignment="Center" Text="{Binding RegionalTagsSelected}"/>
-    </DockPanel>
-    <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10,10,10,0">
-      <CheckBox IsChecked="{Binding WfeEnabled}"/>
-      <TextBlock DockPanel.Dock="Top" VerticalAlignment="Center">WFE:</TextBlock>
-    </DockPanel>
-    <TextBox DockPanel.Dock="Top" Margin="10" MinWidth="880" MaxWidth="880"
-             MinHeight="230" MaxHeight="230" AcceptsReturn="True" Name="WfeBox"
-             IsEnabled="{Binding WfeEnabled}" Text="{Binding Wfe}"/>
+      <Grid ColumnDefinitions="Auto,*,Auto" DockPanel.Dock="Top" Margin="10">
+        <DockPanel HorizontalAlignment="Left" Grid.Column="0">
+          <CheckBox IsChecked="{Binding EmbassiesEnabled}"/>
+          <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Embassies:</TextBlock>
+          <TextBox Name="EmbassyBox" MinWidth="200" MaxWidth="200"
+                   Text="{Binding Embassies}" IsEnabled="{Binding EmbassiesEnabled}"/>
+          <Button Margin="10,0,0,0" Command="{Binding EmbassyHelpCommand}">?</Button>
+        </DockPanel>
+        <DockPanel Grid.Column="2">
+          <CheckBox IsChecked="{Binding SuppressionEnabled}"/>
+          <TextBlock VerticalAlignment="Center" >Suppress posts</TextBlock>
+        </DockPanel>
+      </Grid>
+      <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
+        <CheckBox IsChecked="{Binding FlagBannerEnabled}"/>
+        <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Banner:</TextBlock>
+        <Button Margin="0,0,10,0" Command="{Binding BannerPickerCommand}"
+                IsEnabled="{Binding FlagBannerEnabled}">Browse...</Button>
+        <TextBlock VerticalAlignment="Center" Margin="0,0,10,0" Text="{Binding BannerFileName}"/>
+        <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Flag:</TextBlock>
+        <Button Margin="0,0,10,0" Command="{Binding FlagPickerCommand}"
+                IsEnabled="{Binding FlagBannerEnabled}">Browse...</Button>
+        <TextBlock VerticalAlignment="Center" Text="{Binding FlagFileName}"/>
+      </DockPanel>
+      <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
+        <CheckBox IsChecked="{Binding TagsEnabled}"/>
+        <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Add tags:</TextBlock>
+        <ComboBox DockPanel.Dock="Left" IsEnabled="{Binding TagsEnabled}"
+                  SelectedItem="{Binding CurrentSelectedItem}" Margin="0,0,10,0" Width="150">
+          <ComboBoxItem>Anarchist</ComboBoxItem>
+          <ComboBoxItem>Anime</ComboBoxItem>
+          <ComboBoxItem>Anti-Capitalist</ComboBoxItem>
+          <ComboBoxItem>Anti-Fascist</ComboBoxItem>
+          <ComboBoxItem>Capitalist</ComboBoxItem>
+          <ComboBoxItem>Colony</ComboBoxItem>
+          <ComboBoxItem>Communist</ComboBoxItem>
+          <ComboBoxItem>Fantasy Tech</ComboBoxItem>
+          <ComboBoxItem>Feminist</ComboBoxItem>
+          <ComboBoxItem>Future Tech</ComboBoxItem>
+          <ComboBoxItem>Imperialist</ComboBoxItem>
+          <ComboBoxItem>Invader</ComboBoxItem>
+          <ComboBoxItem>LGBT</ComboBoxItem>
+          <ComboBoxItem>Magical</ComboBoxItem>
+          <ComboBoxItem>Multi-Species</ComboBoxItem>
+          <ComboBoxItem>Socialist</ComboBoxItem>
+        </ComboBox>
+        <Button Margin="0,0,10,0" Command="{Binding AddRemoveTagCommand}"
+                IsEnabled="{Binding TagsEnabled}">Add/Remove</Button>
+        <TextBlock VerticalAlignment="Center" Text="{Binding RegionalTagsSelected}"/>
+      </DockPanel>
+      <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10,10,10,0">
+        <CheckBox IsChecked="{Binding WfeEnabled}"/>
+        <TextBlock DockPanel.Dock="Top" VerticalAlignment="Center">WFE:</TextBlock>
+      </DockPanel>
+      <TextBox DockPanel.Dock="Top" Margin="10" MinWidth="880" MaxWidth="880"
+               MinHeight="230" MaxHeight="230" AcceptsReturn="True" Name="WfeBox"
+               IsEnabled="{Binding WfeEnabled}" Text="{Binding Wfe}"/>
 
-    <TextBlock DockPanel.Dock="Bottom" Margin="10,10,0,10"
-               Text="{Binding FooterText}"/>
-    <Button Height="250" Width="880" Margin="10" DockPanel.Dock="Bottom"
-            HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-            FontSize="40" Content="{Binding ButtonText}"
-            Command="{Binding ActionButtonCommand}" IsEnabled="{Binding ButtonsEnabled}"/>
+      <TextBlock DockPanel.Dock="Bottom" Margin="10,10,0,10"
+                 Text="{Binding FooterText}"/>
+      <Button Height="250" Width="880" Margin="10" DockPanel.Dock="Bottom"
+              HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+              FontSize="40" Content="{Binding ButtonText}"
+              Command="{Binding ActionButtonCommand}" IsEnabled="{Binding ButtonsEnabled}"/>
+    </DockPanel>
   </DockPanel>
 </Window>

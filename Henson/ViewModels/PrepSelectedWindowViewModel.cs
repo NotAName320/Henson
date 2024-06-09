@@ -27,6 +27,8 @@ using System.Reactive.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia.Controls;
+using Avalonia.Media;
 using MsBox.Avalonia.Enums;
 
 namespace Henson.ViewModels
@@ -42,13 +44,7 @@ namespace Henson.ViewModels
         /// The command fired when pressing the button.
         /// </summary>
         public ICommand ActionButtonCommand { get; }
-
-        /// <summary>
-        /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
-        /// I should really create a common class for these lmao
-        /// </summary>
-        public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
-
+        
         /// <summary>
         /// An object storing the UserAgent and using it to make requests to NationStates via both API and site.
         /// </summary>
@@ -171,8 +167,16 @@ namespace Henson.ViewModels
         /// <param name="nations">The list of nations from the parent <c>MainWindowViewModel</c>.</param>
         /// <param name="client">The client from the parent <c>MainWindowViewModel</c>.</param>
         /// <param name="target">The prefilled region from the target box.</param>
-        public PrepSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string target)
+        /// <param name="background"/>
+        /// <param name="enable"/>
+        /// <param name="tint"/>
+        /// <param name="opacity"/>
+        public PrepSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string target,
+            IBrush background, bool enable, IBrush tint,
+            double opacity)
         {
+            (BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity) = (background, enable, tint, opacity);
+            AcrylicTransparency = EnableAcrylic ? [WindowTransparencyLevel.AcrylicBlur] : [];
             _nations = nations;
             _selectedNations = _nations.Where(x => x.Checked && !x.Locked).Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
             _client = client;

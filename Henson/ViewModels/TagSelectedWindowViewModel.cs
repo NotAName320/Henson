@@ -27,6 +27,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
+using Avalonia.Media;
 using DynamicData.Binding;
 using Henson.Models;
 using log4net;
@@ -122,13 +123,7 @@ namespace Henson.ViewModels
         /// Fired when the Add/Remove button in the tag row is clicked.
         /// </summary>
         public ICommand AddRemoveTagCommand { get; }
-
-        /// <summary>
-        /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
-        /// I should really create a common class for these lmao
-        /// </summary>
-        public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
-
+        
         /// <summary>
         /// This interaction opens the a file window, and returns a string array with the first value being the file chosen,
         /// or null if the window is closed without a pick.
@@ -165,19 +160,20 @@ namespace Henson.ViewModels
 
         private static string TagToRequest(string x) => x.Replace(":", "").Replace(' ', '_').ToLower();
 
-        private static readonly HashSet<string> UnremovableTags = new()
-        {
+        private static readonly HashSet<string> UnremovableTags =
+        [
             "Commended", "Condemned", "Liberated", "Injuncted", "Minuscule", "Small", "Medium", "Large", "Enormous",
             "Gargantuan", "Featured", "Founderless", "Governorless", "New", "Frontier"
-        };
+        ];
 
-        private List<string>? _optionalTagsDetected = new();
+        private List<string> _optionalTagsDetected = [];
 
-        private List<string> TagsToAdd =>
-            _selectedTags.Except(_optionalTagsDetected ?? Array.Empty<string>().ToList()).ToList();
-        private List<string>? TagsToRemove => _optionalTagsDetected?.Except(_selectedTags).ToList();
+        private List<string> TagsToAdd => _selectedTags.Except(_optionalTagsDetected).ToList();
+        private List<string> TagsToRemove => _optionalTagsDetected.Except(_selectedTags).ToList();
 
-        private List<string>? _rmbPostsToRemove = new();
+        private List<string> _rmbPostsToRemove = [];
+
+        private List<string> _dispatchesToRemove = [];
 
         public bool EmbassiesEnabled
         {
@@ -342,7 +338,7 @@ namespace Henson.ViewModels
         /// <summary>
         /// A list of embassies to close.
         /// </summary>
-        private List<(string name, int type)>? _embassiesToClose = new();
+        private List<(string name, int type)> _embassiesToClose = new();
 
         private HashSet<string>? AlreadyEstablishedEmbassies => _embassiesToClose
             ?.Select(x => x.name.ToLower().Replace('_', ' '))
@@ -350,21 +346,19 @@ namespace Henson.ViewModels
 
         private HashSet<string> _whitelist;
 
-        private ObservableCollection<string> _selectedTags = new();
+        private ObservableCollection<string> _selectedTags = [];
 
         /// <summary>
         /// The log4net logger. It will emit messages as from TagSelectedWindowViewModel.
         /// </summary>
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
-
-        /// <summary>
-        /// This is not supposed to be used and only so that my damn previewer works again
-        /// </summary>
-        public TagSelectedWindowViewModel() : this(new List<NationGridViewModel>(), new NsClient(), "") { }
         
-        public TagSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string whitelist)
+        public TagSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string whitelist,
+            IBrush background, bool enable, IBrush tint, double opacity)
         {
+            (BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity) = (background, enable, tint, opacity);
+            AcrylicTransparency = EnableAcrylic ? [WindowTransparencyLevel.AcrylicBlur] : [];
             _nationsToTag = nations;
             _client = client;
             _whitelist = whitelist.Split(',').Select(x => x.Trim()).ToHashSet();
@@ -510,13 +504,36 @@ namespace Henson.ViewModels
                             _currentPin = pin;
 
                             FooterText = $"Logged in to {currentNation.Name}.";
-                            GetNextButtonText();
+                            ButtonText = "Get Region Info";
                         }
                         else
                         {
                             FooterText = $"Login to {currentNation.Name} failed.";
                             AddToFailedLogins(currentNation.Name);
                             LoginIndex++;
+                        }
+                        break;
+                    case "Get Region Info":
+                        var regionInfo = await _client.GetRegionInfo(currentNation.Region);
+                        if(regionInfo != null)
+                        {
+                            _embassiesToClose = regionInfo.Embassies;
+                            _embassiesToClose.RemoveAll(x =>
+                                (_whitelist.Contains(x.name.ToLower().Replace('_', ' ')) ||
+                                 _embassyList.Select(y => y.Trim()).Contains(x.name.ToLower().Replace('_', ' '))) ^
+                                x.type == 4 || x.type == -1);
+                            _optionalTagsDetected = regionInfo.Tags.Except(UnremovableTags).ToList();
+                            _rmbPostsToRemove = regionInfo.RmbIds;
+                            _dispatchesToRemove = regionInfo.DispatchIds;
+                            FooterText = "Region info obtained!";
+                            GetNextButtonText();
+                        }
+                        else
+                        {
+                            FooterText = $"Getting region info of {currentNation.Region} failed.";
+                            AddToFailedLogins(currentNation.Name);
+                            LoginIndex++;
+                            ButtonText = "Login";
                         }
                         break;
                     case "Set WFE":
@@ -581,25 +598,6 @@ namespace Henson.ViewModels
                             ButtonText = "Login";
                         }
                         break;
-                    case "Get Embassies":
-                        _embassiesToClose = await _client.GetEmbassies(currentNation.Region);
-                        if(_embassiesToClose != null && _embassiesToClose.Count != 0)
-                        {
-                            FooterText = $"Found embassies in {currentNation.Region}!";
-                            _embassiesToClose.RemoveAll(x =>
-                                (_whitelist.Contains(x.name.ToLower().Replace('_', ' ')) ||
-                                 _embassyList.Select(y => y.Trim()).Contains(x.name.ToLower().Replace('_', ' '))) ^
-                                x.type == 4 || x.type == -1);
-                            ButtonText = "Close Embassy";
-                        }
-                        else
-                        {
-                            FooterText = $"Found no embassies to close in {currentNation.Region}.";
-                            ButtonText = "Request Embassy";
-                            _subIndex = 0;
-                        }
-                        _subIndex = 0;
-                        break;
                     case "Close Embassy":
                         if(_subIndex == _embassiesToClose!.Count)
                         {
@@ -626,14 +624,29 @@ namespace Henson.ViewModels
                         if(_subIndex >= _embassyList.Count)
                         {
                             FooterText = "Done requesting embassies!";
+                            _subIndex = 0;
 
                             if(TagsEnabled)
                             {
-                                ButtonText = "Get Tags";
+                                if(TagsToAdd.Count != 0)
+                                {
+                                    ButtonText = "Add Tag";
+                                }
+                                else if(TagsToRemove.Count != 0)
+                                {
+                                    ButtonText = "Remove Tag";
+                                }
                             }
                             else if(SuppressionEnabled)
                             {
-                                ButtonText = "Get RMB";
+                                if(_rmbPostsToRemove.Count != 0)
+                                {
+                                    ButtonText = "Suppress Post";
+                                }
+                            }
+                            else if(_dispatchesToRemove.Count != 0)
+                            {
+                                ButtonText = "Remove Dispatch";
                             }
                             else
                             {
@@ -661,34 +674,8 @@ namespace Henson.ViewModels
                             }
                         }
                         break;
-                    case "Get Tags":
-                        _optionalTagsDetected = (await _client.GetTags(currentNation.Region))?.Except(UnremovableTags)
-                            .ToList();
-                        _subIndex = 0;
-                        if(_optionalTagsDetected != null && TagsToRemove!.Count != 0)
-                        {
-                            ButtonText = "Remove Tag";
-                            FooterText = $"Found tags to remove in {currentNation.Region}!";
-                        }
-                        else
-                        {
-                            if(TagsToAdd.Count != 0)
-                            {
-                                ButtonText = "Add Tag";
-                                FooterText = "No tags to remove... adding tags now.";
-                            }
-                            else
-                            {
-                                AddToSuccessfulTags(currentNation.Region);
-                                LoginIndex++;
-                                _successIndex++;
-                                ButtonText = "Login";
-                                FooterText = "No tags to remove/add...";
-                            }
-                        }
-                        break;
                     case "Remove Tag":
-                        if(_subIndex == TagsToRemove!.Count)
+                        if(_subIndex == TagsToRemove.Count)
                         {
                             if(TagsToAdd.Count != 0)
                             {
@@ -699,10 +686,18 @@ namespace Henson.ViewModels
                             else
                             {
                                 FooterText = "Done removing tags! No tags to add...";
+                                _subIndex = 0;
                                 
                                 if(SuppressionEnabled)
                                 {
-                                    ButtonText = "Get RMB";
+                                    if(_rmbPostsToRemove.Count != 0)
+                                    {
+                                        ButtonText = "Suppress Post";
+                                    }
+                                }
+                                else if(_dispatchesToRemove.Count != 0)
+                                {
+                                    ButtonText = "Remove Dispatch";
                                 }
                                 else
                                 {
@@ -731,10 +726,15 @@ namespace Henson.ViewModels
                         if(_subIndex == TagsToAdd.Count)
                         {
                             FooterText = "Done adding tags!";
+                            _subIndex = 0;
                             
-                            if(SuppressionEnabled)
+                            if(SuppressionEnabled && _rmbPostsToRemove.Count != 0)
                             {
-                                ButtonText = "Get RMB";
+                                ButtonText = "Suppress Post";
+                            }
+                            else if(_dispatchesToRemove.Count != 0)
+                            {
+                                ButtonText = "Remove Dispatch";
                             }
                             else
                             {
@@ -758,35 +758,24 @@ namespace Henson.ViewModels
                         }
                         break;
                     }
-                    case "Get RMB":
-                    {
-                        _rmbPostsToRemove = await _client.GetRmbPostIds(currentNation.Region);
-                        _subIndex = 0;
-
-                        if(_rmbPostsToRemove == null || _rmbPostsToRemove.Count == 0)
-                        {
-                            AddToSuccessfulTags(currentNation.Region);
-                            LoginIndex++;
-                            _successIndex++;
-                            ButtonText = "Login";
-                            FooterText = "No RMB posts to suppress...";
-                        }
-                        else
-                        {
-                            ButtonText = "Suppress Post";
-                            FooterText = $"Found posts to suppress in {currentNation.Region}!";
-                        }
-                        break;
-                    }
                     case "Suppress Post":
                     {
-                        if(_subIndex == _rmbPostsToRemove!.Count)
+                        if(_subIndex == _rmbPostsToRemove.Count)
                         {
-                            AddToSuccessfulTags(currentNation.Region);
-                            LoginIndex++;
-                            _successIndex++;
-                            ButtonText = "Login";
                             FooterText = "Done suppressing posts!";
+                            _subIndex = 0;
+
+                            if(_dispatchesToRemove.Count != 0)
+                            {
+                                ButtonText = "Remove Dispatch";
+                            }
+                            else
+                            {
+                                AddToSuccessfulTags(currentNation.Region);
+                                LoginIndex++;
+                                _successIndex++;
+                                ButtonText = "Login";
+                            }
                         }
                         else
                         {
@@ -799,6 +788,30 @@ namespace Henson.ViewModels
                             else
                             {
                                 FooterText = $"Suppressing post {_rmbPostsToRemove[_subIndex++]} in {currentNation.Region} failed.";
+                            }
+                        }
+                        break;
+                    }
+                    case "Remove Dispatch":
+                    {
+                        if(_subIndex == _dispatchesToRemove.Count)
+                        {
+                            AddToSuccessfulTags(currentNation.Region);
+                            LoginIndex++;
+                            _successIndex++;
+                            ButtonText = "Login";
+                            FooterText = "Done removing dispatches!";
+                        }
+                        else
+                        {
+                            if(await _client.RemoveDispatch(currentNation.Region, _currentChk, _currentPin,
+                                   _dispatchesToRemove[_subIndex]))
+                            {
+                                FooterText = $"Removed dispatch {_dispatchesToRemove[_subIndex++]} in {currentNation.Region}!";
+                            }
+                            else
+                            {
+                                FooterText = $"Removing dispatch {_dispatchesToRemove[_subIndex++]} in {currentNation.Region} failed.";
                             }
                         }
                         break;
@@ -848,7 +861,7 @@ namespace Henson.ViewModels
         {
             switch(ButtonText)
             {
-                case "Login":
+                case "Get Region Info":
                     if(WfeEnabled)
                     {
                         ButtonText = "Set WFE";
@@ -871,21 +884,49 @@ namespace Henson.ViewModels
                 case "Set Banner + Flag":
                     if(EmbassiesEnabled)
                     {
-                        ButtonText = "Get Embassies";
-                        break;
+                        _subIndex = 0;
+                        if(_embassiesToClose.Count != 0)
+                        {
+                            ButtonText = "Close Embassy";
+                            break;
+                        }
+                        if(_embassyList.Count != 0)
+                        {
+                            ButtonText = "Request Embassy";
+                            break;
+                        }
                     }
                     goto default;
                 default:
                     if(TagsEnabled)
                     {
-                        ButtonText = "Get Tags";
-                        break;
+                        _subIndex = 0;
+                        if(TagsToRemove.Count != 0)
+                        {
+                            ButtonText = "Remove Tag";
+                            break;
+                        }
+                        if(TagsToAdd.Count != 0)
+                        {
+                            ButtonText = "Add Tag";
+                            break;
+                        }
                     }
 
                     if(SuppressionEnabled)
                     {
-                        ButtonText = "Get RMB";
-                        break;
+                        _subIndex = 0;
+                        if(_rmbPostsToRemove.Count != 0)
+                        {
+                            ButtonText = "Suppress Post";
+                            break;
+                        }
+                    }
+
+                    if(_dispatchesToRemove.Count != 0)
+                    {
+                        _subIndex = 0;
+                        ButtonText = "Remove Dispatch";
                     }
                     ButtonText = "Login";
                     AddToSuccessfulTags(CurrentRegion);

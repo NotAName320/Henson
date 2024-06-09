@@ -37,11 +37,12 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Newtonsoft.Json;
 using Tomlyn;
@@ -111,11 +112,6 @@ namespace Henson.ViewModels
         /// This interaction opens the Tag Selected window.
         /// </summary>
         public Interaction<TagSelectedWindowViewModel, Unit> TagSelectedDialog { get; } = new();
-
-        /// <summary>
-        /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
-        /// </summary>
-        public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
         
         /// <summary>
         /// This interaction opens a file window, and returns a string with the path to save to,
@@ -136,6 +132,34 @@ namespace Henson.ViewModels
 
         public Interaction<FilterNationsWindowViewModel, (int numNations, string regionName, bool? notIn, bool
             withLocked)?> FilterNationsDialog { get; } = new();
+
+        private static readonly Dictionary<int, string> NumToTheme = new()
+        {
+            { 0, "light" },
+            { 1, "dark" },
+            { 2, "acrylic light" },
+            { 3, "acrylic dark" },
+            { 4, "kermit" },
+            { 5, "elmo" },
+            { 6, "the count" },
+            { 7, "cookie monster" },
+            { 8, "big bird" },
+            { 9, "miss piggy" }
+        };
+
+        private static readonly Dictionary<string, int> ThemeToNum = new()
+        {
+            { "light", 0 },
+            { "dark", 1 },
+            { "acrylic light", 2 },
+            { "acrylic dark", 3 },
+            { "kermit", 4 },
+            { "elmo", 5 },
+            { "the count", 6 },
+            { "cookie monster", 7 },
+            { "big bird", 8 },
+            { "miss piggy", 9 }
+        };
 
         private static readonly Mutex Singleton = new(true, "hensonNS");
 
@@ -192,7 +216,6 @@ namespace Henson.ViewModels
         }
         private bool _showProgressBar = false;
 
-
         /// <summary>
         /// A boolean representation of whether any nation is selected in Nations at any time.
         /// </summary>
@@ -204,7 +227,7 @@ namespace Henson.ViewModels
         /// </summary>
         public bool NationSelectedAndNoSiteRequests => _nationSelectedAndNoSiteRequests.Value;
         private readonly ObservableAsPropertyHelper<bool> _nationSelectedAndNoSiteRequests;
-
+        
         private string _currentLocalId = ""; //should probably store that in the object or the chk here for constitency
 
         private string _currentPin = "";
@@ -239,7 +262,6 @@ namespace Henson.ViewModels
             if(File.Exists("henson.log.1")) File.Delete("henson.log.1"); //delete old log
 
             Settings = LoadSettings();
-            SetSettings();
 
             DbClient.CreateDbIfNotExists();
             RxApp.MainThreadScheduler.Schedule(LoadNations);
@@ -247,7 +269,7 @@ namespace Henson.ViewModels
             AddNationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if(await UserAgentNotSet()) return;
-                var dialog = new AddNationWindowViewModel();
+                var dialog = new AddNationWindowViewModel(BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity);
                 var result = await AddNationDialog.Handle(dialog);
 
                 if(result != null)
@@ -446,7 +468,8 @@ namespace Henson.ViewModels
 
             FilterNationsCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                FilterNationsWindowViewModel dialog = new(Settings.JumpPoint);
+                FilterNationsWindowViewModel dialog = new(Settings.JumpPoint, BackgroundColor, EnableAcrylic,
+                    AcrylicTint, AcrylicOpacity);
 
                 var (numNations, regionName, notIn, withLocked) = await FilterNationsDialog.Handle(dialog) ?? default;
 
@@ -499,7 +522,8 @@ namespace Henson.ViewModels
                 await Task.Delay(100);
 
                 var dialog = new PrepSelectedWindowViewModel(Nations.ToList(), Client,
-                    TargetRegion == "" ? Settings.JumpPoint : TargetRegion);
+                    TargetRegion == "" ? Settings.JumpPoint : TargetRegion, BackgroundColor, EnableAcrylic,
+                    AcrylicTint, AcrylicOpacity);
                 await PrepSelectedDialog.Handle(dialog);
 
                 foreach(var n in Nations)
@@ -575,7 +599,8 @@ namespace Henson.ViewModels
 
                 FooterText = "Opening tag window...";
 
-                var dialog = new TagSelectedWindowViewModel(taggableNations, Client, Settings.EmbWhitelist);
+                var dialog = new TagSelectedWindowViewModel(taggableNations, Client, Settings.EmbWhitelist,
+                    BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity);
                 await TagSelectedDialog.Handle(dialog);
 
                 FooterText = "Regions tagged!";
@@ -669,50 +694,50 @@ namespace Henson.ViewModels
                 return;
             }
 
-            if(Settings.UserAgent != oldUserAgent && false)
-            {
-                if(!Regex.IsMatch(Settings.UserAgent, @"^[A-Za-z0-9 _]+$"))
-                {
-                    MessageBoxViewModel dialog = new(new MessageBoxStandardParams
-                    {
-                        ContentTitle = "Invalid Nation Name",
-                        ContentMessage = "Please type a valid nation name.",
-                        Icon = Icon.Error,
-                    });
-                    await MessageBoxDialog.Handle(dialog);
-                    Settings.UserAgent = oldUserAgent;
-                    return;
-                }
-                var verifyDialog = new VerifyUserWindowViewModel();
-                var result = await VerifyUserDialog.Handle(verifyDialog);
-
-                if(result == null || !await Client.VerifyNation(Settings.UserAgent, result))
-                {
-                    Settings.UserAgent = oldUserAgent;
-                    MessageBoxViewModel dialog = new(new MessageBoxStandardParams
-                    {
-                        ContentTitle = "Verification Failed",
-                        ContentMessage = "Your verification code didn't work, so the Main Nation was not changed.",
-                        Icon = Icon.Error,
-                    });
-                    await MessageBoxDialog.Handle(dialog);
-                }
-                else
-                {
-                    MessageBoxViewModel dialog = new(new MessageBoxStandardParams
-                    {
-                        ContentTitle = "Verification Succeeded",
-                        ContentMessage = "Your nation was successfully verified.",
-                        Icon = Icon.Info,
-                    });
-                    await MessageBoxDialog.Handle(dialog);
-                }
-            }
+            // if(Settings.UserAgent != oldUserAgent)
+            // {
+            //     if(!Regex.IsMatch(Settings.UserAgent, @"^[A-Za-z0-9 _]+$"))
+            //     {
+            //         MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+            //         {
+            //             ContentTitle = "Invalid Nation Name",
+            //             ContentMessage = "Please type a valid nation name.",
+            //             Icon = Icon.Error,
+            //         });
+            //         await MessageBoxDialog.Handle(dialog);
+            //         Settings.UserAgent = oldUserAgent;
+            //         return;
+            //     }
+            //     var verifyDialog = new VerifyUserWindowViewModel();
+            //     var result = await VerifyUserDialog.Handle(verifyDialog);
+            //
+            //     if(result == null || !await Client.VerifyNation(Settings.UserAgent, result))
+            //     {
+            //         Settings.UserAgent = oldUserAgent;
+            //         MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+            //         {
+            //             ContentTitle = "Verification Failed",
+            //             ContentMessage = "Your verification code didn't work, so the Main Nation was not changed.",
+            //             Icon = Icon.Error,
+            //         });
+            //         await MessageBoxDialog.Handle(dialog);
+            //     }
+            //     else
+            //     {
+            //         MessageBoxViewModel dialog = new(new MessageBoxStandardParams
+            //         {
+            //             ContentTitle = "Verification Succeeded",
+            //             ContentMessage = "Your nation was successfully verified.",
+            //             Icon = Icon.Info,
+            //         });
+            //         await MessageBoxDialog.Handle(dialog);
+            //     }
+            // }
             
             var model = Toml.ToModel("");
 
             model["user_agent"] = Settings.UserAgent;
-            model["theme"] = Settings.Theme == 1 ? "dark" : "light";
+            model["theme"] = NumToTheme[Settings.Theme];
             model["emb_whitelist"] = Settings.EmbWhitelist;
             model["jump_point"] = Settings.JumpPoint;
 
@@ -966,7 +991,8 @@ namespace Henson.ViewModels
 
             try
             {
-                retVal.Theme = ((string)model["theme"]).ToLower() == "dark" ? 1 : 0;
+                var themeValue = ((string)model["theme"]).ToLower();
+                retVal.Theme = ThemeToNum[themeValue];
             }
             catch(KeyNotFoundException) { model["theme"] = "light"; }
 
@@ -991,29 +1017,99 @@ namespace Henson.ViewModels
         /// <summary>
         /// Changes program variables to match those specified by the current ProgramSettingsViewModel.
         /// </summary>
-        private void SetSettings()
+        public void SetSettings()
         {
             Log.Info(Settings.UserAgent == "" ? "User agent set to empty string!" : $"User agent set to {Settings.UserAgent}");
             Client.UserAgent = Settings.UserAgent;
 
-            if(Settings.Theme == 1)
+            if(Settings.Theme <= 1)
             {
-                Log.Info("Theme set to Dark");
-                Avalonia.Application.Current!.RequestedThemeVariant = ThemeVariant.Dark;
+                //disable acrylic
+                AcrylicTransparency = [];
+                EnableAcrylic = false;
             }
             else
             {
-                Log.Info("Theme set to Light");
-                Avalonia.Application.Current!.RequestedThemeVariant = ThemeVariant.Light;
+                //enable acrylic
+                AcrylicTransparency = [WindowTransparencyLevel.AcrylicBlur];
+                EnableAcrylic = true;
+                BackgroundColor = Brushes.Transparent;
             }
 
-            //force the application to reload DataGrid theming otherwise it follows existing theme
-            //yes this is stupid
-            var uri = new Uri("avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml");
-            Avalonia.Application.Current.Styles[1] = new Avalonia.Markup.Xaml.Styling.StyleInclude(uri)
+            //set other colour things
+            var app = Avalonia.Application.Current!;
+            //Some WMs dont like acrylic and won't show it leaving the transparent solid layer by itself which is ugly
+            //so we just disable the transparency alltogether on linux and have the solid colour :( it is what it is
+            var transpLevel = IsNotLinux ? 0.5 : 1;
+            switch(Settings.Theme)
             {
-                Source = uri
-            };
+                case 0:
+                    Log.Info("Theme set to Light");
+                    app.RequestedThemeVariant = ThemeVariant.Light;
+                    BackgroundColor = Brushes.White;
+                    break;
+                case 1:
+                    Log.Info("Theme set to Dark");
+                    app.RequestedThemeVariant = ThemeVariant.Dark;
+                    BackgroundColor = Brushes.Black;
+                    break;
+                case 2:
+                    Log.Info("Theme set to Acrylic Light");
+                    app.RequestedThemeVariant = ThemeVariant.Light;
+                    BackgroundColor = new SolidColorBrush(Colors.White, transpLevel);
+                    AcrylicTint = Brushes.White;
+                    AcrylicOpacity = .65;
+                    break;
+                case 3:
+                    Log.Info("Theme set to Acrylic Dark");
+                    app.RequestedThemeVariant = ThemeVariant.Dark;
+                    BackgroundColor = new SolidColorBrush(Colors.Black, transpLevel);
+                    AcrylicTint = Brushes.Black;
+                    AcrylicOpacity = .65;
+                    break;
+                case 4:
+                    Log.Info("Theme set to Acrylic Light Green");
+                    app.RequestedThemeVariant = ThemeVariant.Light;
+                    BackgroundColor = new SolidColorBrush(new Color(255, 215, 255, 189), transpLevel);
+                    AcrylicTint = new SolidColorBrush(new Color(255, 215, 255, 189));
+                    AcrylicOpacity = .85;
+                    break;
+                case 5:
+                    Log.Info("Theme set to Acrylic Dark Red");
+                    app.RequestedThemeVariant = ThemeVariant.Dark;
+                    BackgroundColor = new SolidColorBrush(Colors.DarkRed, transpLevel);
+                    AcrylicTint = Brushes.DarkRed;
+                    AcrylicOpacity = .85;
+                    break;
+                case 6:
+                    Log.Info("Theme set to Acrylic Purple");
+                    app.RequestedThemeVariant = ThemeVariant.Dark;
+                    BackgroundColor = new SolidColorBrush(Colors.Purple, transpLevel);
+                    AcrylicTint = Brushes.Purple;
+                    AcrylicOpacity = .85;
+                    break;
+                case 7:
+                    Log.Info("Theme set to Acrylic Midnight Blue");
+                    app.RequestedThemeVariant = ThemeVariant.Dark;
+                    BackgroundColor = new SolidColorBrush(Colors.MidnightBlue, transpLevel);
+                    AcrylicTint = Brushes.MidnightBlue;
+                    AcrylicOpacity = .85;
+                    break;
+                case 8:
+                    Log.Info("Theme set to Acrylic Light Yellow");
+                    app.RequestedThemeVariant = ThemeVariant.Light;
+                    BackgroundColor = new SolidColorBrush(new Color(255, 255, 255, 186), transpLevel);
+                    AcrylicTint = new SolidColorBrush(new Color(255, 255, 255, 186));
+                    AcrylicOpacity = .85;
+                    break;
+                case 9:
+                    Log.Info("Theme set to Acrylic Pink");
+                    app.RequestedThemeVariant = ThemeVariant.Light;
+                    BackgroundColor = new SolidColorBrush(Colors.Pink, transpLevel);
+                    AcrylicTint = Brushes.Pink;
+                    AcrylicOpacity = .85;
+                    break;
+            }
         }
         
         /// <summary>
@@ -1022,7 +1118,10 @@ namespace Henson.ViewModels
         public async void DoStartupChecks()
         {
             await CheckIfUserAgentEmpty();
+            //avoid spamming github api when testing
+            #if !DEBUG
             await CheckIfLatestRelease();
+            #endif
             await CheckIfOnlyUsage();
         }
 

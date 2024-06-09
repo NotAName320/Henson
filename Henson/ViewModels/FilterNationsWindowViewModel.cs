@@ -19,6 +19,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 using System.Reactive;
 using System.Reactive.Linq;
+using Avalonia.Controls;
+using Avalonia.Media;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
 using ReactiveUI;
@@ -48,16 +50,14 @@ namespace Henson.ViewModels
 
         public ReactiveCommand<Unit, (int, string, bool?, bool)?> FilterCommand { get; }
         
-        /// <summary>
-        /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
-        /// </summary>
-        public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
-
         private int? IntNumNations =>
             NumNations == "" ? int.MaxValue : int.TryParse(NumNations, out var i) && i > 0 ? i : null;
 
-        public FilterNationsWindowViewModel(string regionName)
+        public FilterNationsWindowViewModel(string regionName, IBrush background, bool enable, IBrush tint,
+            double opacity)
         {
+            (BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity) = (background, enable, tint, opacity);
+            AcrylicTransparency = EnableAcrylic ? [WindowTransparencyLevel.AcrylicBlur] : [];
             RegionName = regionName;
 
             FilterCommand = ReactiveCommand.CreateFromTask<(int, string, bool?, bool)?>(async () =>

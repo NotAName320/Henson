@@ -27,6 +27,8 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using Avalonia.Controls;
+using Avalonia.Media;
 using log4net;
 using MsBox.Avalonia.Enums;
 
@@ -61,6 +63,11 @@ namespace Henson.ViewModels
         /// Fired when the Mass Import button is clicked.
         /// </summary>
         public ReactiveCommand<Unit, List<NationLoginViewModel>?> ImportManyCommand { get; }
+        
+        /// <summary>
+        /// Fired when the help button besides the mass import boxes are pressed.
+        /// </summary>
+        public ReactiveCommand<Unit, Unit> MassHelpCommand { get; }
 
         /// <summary>
         /// This interaction opens the config file window, and returns a string array with the first value being the
@@ -73,12 +80,6 @@ namespace Henson.ViewModels
         /// chosen, or null if the window is closed without a pick.
         /// </summary>
         public Interaction<ViewModelBase, string?> TextFilePickerDialog { get; } = new();
-
-
-        /// <summary>
-        /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
-        /// </summary>
-        public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
         
         /// <summary>
         /// The log4net logger. It will emit messages as from AddNationWindowViewModel.
@@ -88,8 +89,10 @@ namespace Henson.ViewModels
         /// <summary>
         /// Constructs a new <c>AddWindowViewModel</c>.
         /// </summary>
-        public AddNationWindowViewModel()
+        public AddNationWindowViewModel(IBrush background, bool enable, IBrush tint, double opacity)
         {
+            (BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity) = (background, enable, tint, opacity);
+            AcrylicTransparency = EnableAcrylic ? [WindowTransparencyLevel.AcrylicBlur] : [];
             ConfigPickerCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 var dialog = new ViewModelBase();
@@ -209,6 +212,22 @@ namespace Henson.ViewModels
                 await MessageBoxDialog.Handle(rangeDialog);
 
                 return null;
+            });
+
+            MassHelpCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                MessageBoxViewModel helpDialog = new(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Mass Import",
+                    ContentMessage = "In the username box, * is automatically replaced with the number itself\n" +
+                                     "(e.g. 3), ^ is replaced with roman numerals (e.g. III), and % is replaced\n" +
+                                     "with ordinals (e.g. 3rd).\n\n" +
+                                     "So Puppetname * becomes Puppetname 1, Puppetname 2, Puppetname 3, etc. while\n" +
+                                     "Pupeptname ^ and Puppetname % become Puppetname I and Puppetname 1st\n" +
+                                     "respectively.",
+                    Icon = Icon.Info,
+                });
+                await MessageBoxDialog.Handle(helpDialog);
             });
         }
         

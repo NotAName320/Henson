@@ -37,11 +37,6 @@ namespace Henson.ViewModels
         /// </summary>
         public ReactiveCommand<Unit, string?> SubmitCommand { get; }
         
-        /// <summary>
-        /// This interaction opens a MessageBox.Avalonia window with params given by the constructed ViewModel.
-        /// </summary>
-        public Interaction<MessageBoxViewModel, ButtonResult> MessageBoxDialog { get; } = new();
-
 
         public VerifyUserWindowViewModel()
         {

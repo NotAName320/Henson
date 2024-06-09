@@ -33,4 +33,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
       <htavalonia:HyperLinkStyle/>
     </Application.Styles>
+    
+    <Application.Resources>
+        <ControlTheme x:Key="ColumnHeaderTransparent" BasedOn="{StaticResource {x:Type DataGridColumnHeader}}"
+                      TargetType="{x:Type DataGridColumnHeader}">
+            <Setter Property="Background" Value="Transparent" />
+        </ControlTheme>
+    </Application.Resources>
 </Application>

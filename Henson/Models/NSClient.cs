@@ -27,6 +27,7 @@ using ReactiveUI;
 using RestSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -210,56 +211,35 @@ namespace Henson.Models
             return response != null && (await response.Content.ReadAsStringAsync()).Contains('1');
         }
         
-        /// <summary>
-        /// Gets a list of embassies from the region.
-        /// </summary>
-        /// <param name="targetRegion">The region to get embassies from.</param>
-        /// <returns>A list of lists of strings representing the embassy relations has, or null if something went wrong.</returns>
-        public async Task<List<(string name, int type)>?> GetEmbassies(string targetRegion)
+        public async Task<RegionTagInfo?> GetRegionInfo(string targetRegion)
         {
-            var response = await ApiClient.MakeRequest(ApiLink + $"?region={targetRegion}&q=embassies");
+            var response =
+                await ApiClient.MakeRequest(ApiLink + $"?region={targetRegion}&q=embassies+tags+messages+dispatches");
             
             if(response == null || !response.IsSuccessStatusCode) return null;
-            
+
             XmlDocument doc = new();
             doc.LoadXml(await response.Content.ReadAsStringAsync());
             XmlNode root = doc.DocumentElement!;
-
-            List<(string name, int type)> retVal = new();
+            
+            List<(string name, int type)> embs = [];
             foreach(var node in root.SelectNodes(".//EMBASSY")!.Cast<XmlNode>())
             {
-                var embCode = new[] { null, "invited", "pending", "requested", "closing" }.IndexOf(node.Attributes?["type"]?.Value);
-                retVal.Add(new(node.InnerText, embCode));
+                var embCode =
+                    new[] { null, "invited", "pending", "requested", "closing" }.IndexOf(
+                        node.Attributes?["type"]?.Value);
+                embs.Add(new(node.InnerText, embCode));
             }
-            
-            return retVal;
-        }
-        
-        public async Task<List<string>?> GetTags(string targetRegion)
-        {
-            var response = await ApiClient.MakeRequest(ApiLink + $"?region={targetRegion}&q=tags");
-            
-            if(response == null || !response.IsSuccessStatusCode) return null;
-
-            XmlDocument doc = new();
-            doc.LoadXml(await response.Content.ReadAsStringAsync());
-            XmlNode root = doc.DocumentElement!;
-
-            return root.SelectNodes(".//TAG")!.Cast<XmlNode>().Select(x => x.InnerText).ToList();
-        }
-
-        public async Task<List<string>?> GetRmbPostIds(string targetRegion)
-        {
-            var response = await ApiClient.MakeRequest(ApiLink + $"?region={targetRegion}&q=messages");
-            
-            if(response == null || !response.IsSuccessStatusCode) return null;
-            
-            XmlDocument doc = new();
-            doc.LoadXml(await response.Content.ReadAsStringAsync());
-            XmlNode root = doc.DocumentElement!;
-
-            return root.SelectNodes(".//POST[STATUS='0']")!.Cast<XmlNode>().Select(x => x.Attributes!["id"]!.Value)
+            var tags = root.SelectNodes(".//TAG")!.Cast<XmlNode>().Select(x => x.InnerText).ToList();
+            var rmb = root.SelectNodes(".//POST[STATUS='0']")!.Cast<XmlNode>().Select(x => x.Attributes!["id"]!.Value)
                 .ToList();
+            var dispatches = root.SelectSingleNode(".//DISPATCHES")!.InnerText.Split(",").ToList();
+            if(dispatches[0] == "")
+            {
+                dispatches = [];
+            }
+
+            return new RegionTagInfo(embs, tags, rmb, dispatches);
         }
 
         /// <summary>
@@ -385,7 +365,7 @@ namespace Henson.Models
             // Because HttpUtility.HtmlEncode does not cover the whole of
             // the ASCII space, where some emoji lie, some extra work has to go in
             // to ensure that all characters are properly escaped
-            string escaped = String
+            string escaped = string
                 .Join("",HttpUtility.HtmlEncode(wfe).ToArray()
                 .Select(c => (int)c > 127 ? $"&#{(int)c};" : ""+c));
             // Because we're converting to ISO, some things need to be un-escaped
@@ -457,7 +437,7 @@ namespace Henson.Models
         /// Uploads a flag to the NationStates site.
         /// </summary>
         /// <param name="targetRegion">The region whose banner is being changed.</param>
-        /// <param name="chk">The chk recorded from a login.</param>
+        /// <param name="check">The chk recorded from a login.</param>
         /// <param name="pin">The PIN recorded from a login.</param>
         /// <param name="file">The path to the file being uploaded.</param>
         /// <returns>The ID of the banner uploaded.</returns>
@@ -663,6 +643,30 @@ namespace Henson.Models
             
             var successful = response.Content != null && response.Content.Contains(" suppressed by ");
             if(!successful) Log.Error($"Suppressing post {postId} in {targetRegion} failed!");
+
+            return successful;
+        }
+
+        public async Task<bool> RemoveDispatch(string targetRegion, string check, string pin, string dispatchId)
+        {
+            RestRequest request = new("/template-overall=none/page=region_control", Method.Post);
+            request.AddCookie("pin", pin, "/", ".nationstates.net");
+
+            var parameters = new
+            {
+                page = "region_control",
+                chk = check,
+                region = targetRegion,
+                remove_dispatch = dispatchId,
+                confirm_dispatch = dispatchId,
+                userclick = UserClick
+            };
+            request.AddObject(parameters);
+
+            var response = await _httpClient.ExecuteAsync(request);
+            
+            var successful = response.Content != null && response.Content.Contains(" removed.");
+            if(!successful) Log.Error($"Removing dispatch {dispatchId} to {targetRegion} failed!");
 
             return successful;
         }

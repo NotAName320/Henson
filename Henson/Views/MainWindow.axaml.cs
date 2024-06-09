@@ -97,7 +97,7 @@ namespace Henson.Views
 
             var messageBox = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard(interaction.Input.Params);
             if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-
+            
             var result = await messageBox.ShowWindowDialogAsync(this);
             interaction.SetOutput(result);
         }
@@ -148,6 +148,12 @@ namespace Henson.Views
         private void NationList_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             NationList.SelectedItem = null;
+        }
+
+        private void WindowBase_OnOpened(object? sender, EventArgs e)
+        {
+            //cant change theme without window opening
+            ViewModel!.SetSettings();
         }
     }
 }

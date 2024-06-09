@@ -22,40 +22,57 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         xmlns:vm="using:Henson.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="350"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="350" d:DataContext="{x:Static vm:DesignData.PrepDesignVm}"
         x:Class="Henson.Views.PrepSelectedWindow"
         Title="Prep Selected" Icon="/Assets/henson-icon.ico"
         WindowStartupLocation="CenterOwner"
         Width="500" Height="350" CanResize="False"
         MinWidth="500" MinHeight="350"
-        MaxWidth="500" MaxHeight="350" KeyUp="InputElement_OnKeyUp">
+        MaxWidth="500" MaxHeight="350" KeyUp="InputElement_OnKeyUp"
+        ExtendClientAreaToDecorationsHint="True"
+        Background="{Binding BackgroundColor}"
+        TransparencyLevelHint="{Binding AcrylicTransparency}">
   <!-- CanResize doesn't work on some Linux WMs https://github.com/AvaloniaUI/Avalonia/issues/8329 -->
   
-  <Design.DataContext>
-    <vm:PrepSelectedWindowViewModel/>
-  </Design.DataContext>
-  
-  <DockPanel LastChildFill="True">
-    <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
-      <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Target Region:</TextBlock>
-      <TextBox Name="TargetRegionBox" MinWidth="200" MaxWidth="200" Text="{Binding TargetRegion}"/>
-    </DockPanel>
-    <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
-      <TextBlock VerticalAlignment="Center" Margin="0,0,18,0">Apply to WA?</TextBlock>
-      <CheckBox IsChecked="{Binding AlsoApplyWa}"/>
-    </DockPanel>
-    <DockPanel DockPanel.Dock="Top" Margin="10">
-      <TextBlock Text="Current Login: "/>
-      <TextBlock Text="{Binding CurrentLogin}"/>
-    </DockPanel>
-    <TextBlock DockPanel.Dock="Bottom" Margin="10,10,0,10"
-               Text="{Binding FooterText}"/>
-    <Button Height="180" Width="480" Margin="10"
-            DockPanel.Dock="Bottom"
-            HorizontalContentAlignment="Center"
-            VerticalContentAlignment="Center" FontSize="40"
-            Content="{Binding ButtonText}"
-            Command="{Binding ActionButtonCommand}"
-            IsEnabled="{Binding ButtonsEnabled}"/>
+  <DockPanel>
+      <ExperimentalAcrylicBorder IsHitTestVisible="False" IsVisible="{Binding EnableAcrylic}">
+          <ExperimentalAcrylicBorder.Material>
+              <ExperimentalAcrylicMaterial
+                  BackgroundSource="Digger"
+                  TintColor="{Binding AcrylicTint}"
+                  TintOpacity="1"
+                  MaterialOpacity="{Binding AcrylicOpacity}"/>
+          </ExperimentalAcrylicBorder.Material>
+      </ExperimentalAcrylicBorder>
+      <StackPanel HorizontalAlignment="Left" Margin="10,10,0,0" Orientation="Horizontal"
+                  VerticalAlignment="Top" IsHitTestVisible="False" DockPanel.Dock="Top"
+                  IsVisible="{x:Static vm:ViewModelBase.IsNotLinux}">
+          <Image Source="/Assets/henson-icon.ico" Width="16" Margin="0,0,10,1"/>
+          <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=Title}"
+                     VerticalAlignment="Center"/>
+      </StackPanel>
+      <DockPanel LastChildFill="True" DockPanel.Dock="Right">
+          <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
+              <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Target Region:</TextBlock>
+              <TextBox Name="TargetRegionBox" MinWidth="200" MaxWidth="200" Text="{Binding TargetRegion}"/>
+          </DockPanel>
+          <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
+              <TextBlock VerticalAlignment="Center" Margin="0,0,18,0">Apply to WA?</TextBlock>
+              <CheckBox IsChecked="{Binding AlsoApplyWa}"/>
+          </DockPanel>
+          <DockPanel DockPanel.Dock="Top" Margin="10">
+              <TextBlock Text="Current Login: "/>
+              <TextBlock Text="{Binding CurrentLogin}"/>
+          </DockPanel>
+          <TextBlock DockPanel.Dock="Bottom" Margin="10,10,0,10"
+                     Text="{Binding FooterText}"/>
+          <Button Height="180" Width="494" Margin="10"
+                  DockPanel.Dock="Bottom"
+                  HorizontalContentAlignment="Center"
+                  VerticalContentAlignment="Center" FontSize="40"
+                  Content="{Binding ButtonText}"
+                  Command="{Binding ActionButtonCommand}"
+                  IsEnabled="{Binding ButtonsEnabled}"/>
+      </DockPanel>
   </DockPanel>
 </Window>

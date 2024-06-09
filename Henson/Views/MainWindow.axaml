@@ -25,14 +25,38 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="675"
         x:Class="Henson.Views.MainWindow"
         Title="Henson 1.5.2" Icon="/Assets/henson-icon.ico"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Height="675" Width="1200"
+        MinHeight="475" MinWidth="1000"
+        MaxHeight="3000" MaxWidth="3000"
+        Opened="WindowBase_OnOpened"
+        ExtendClientAreaToDecorationsHint="True"
+        Background="{Binding BackgroundColor}"
+        TransparencyLevelHint="{Binding AcrylicTransparency}">
 
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
-  <Grid RowDefinitions=".97*,.03*">
-    <TabControl Grid.Row="0">
+  <DockPanel>
+    <ExperimentalAcrylicBorder IsHitTestVisible="False" IsVisible="{Binding EnableAcrylic}">
+      <ExperimentalAcrylicBorder.Material>
+        <ExperimentalAcrylicMaterial
+          BackgroundSource="Digger"
+          TintColor="{Binding AcrylicTint}"
+          TintOpacity="1"
+          MaterialOpacity="{Binding AcrylicOpacity}"/>
+      </ExperimentalAcrylicBorder.Material>
+    </ExperimentalAcrylicBorder>
+    <StackPanel HorizontalAlignment="Left" Margin="10,10,0,0" Orientation="Horizontal"
+                VerticalAlignment="Top" IsHitTestVisible="False" DockPanel.Dock="Top"
+                IsVisible="{x:Static vm:ViewModelBase.IsNotLinux}">
+      <Image Source="/Assets/henson-icon.ico" Width="16" Margin="0,0,10,1"/>
+      <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=Title}"
+                 VerticalAlignment="Center"/>
+    </StackPanel>
+      <Grid RowDefinitions=".97*,.03*" DockPanel.Dock="Bottom">
+        <TabControl Grid.Row="0">
       <TabItem Header="Quick View">
         <DockPanel>
           <DockPanel DockPanel.Dock="Top">
@@ -56,7 +80,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
           </DockPanel>
             <DataGrid Name="NationList" ItemsSource="{Binding Nations}" IsReadOnly="False"
                       CanUserResizeColumns="True" AutoGenerateColumns="False"
-                      SelectionChanged="NationList_OnSelectionChanged">
+                      SelectionChanged="NationList_OnSelectionChanged"
+                      ColumnHeaderTheme="{StaticResource ColumnHeaderTransparent}">
               <DataGrid.Columns>
                 <DataGridTemplateColumn SortMemberPath=".">
                   <DataTemplate DataType="vm:NationGridViewModel">
@@ -103,9 +128,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <TextBox Margin="10,0,0,10" Grid.Row="0" Grid.Column="1" MinWidth="150" MaxWidth="150"
                      Text="{Binding Settings.UserAgent}" Watermark="Nation Name..."/>
             <TextBlock VerticalAlignment="Center" Grid.Row="1" Grid.Column="0">Theme:</TextBlock>
-            <ComboBox Margin="10,0,0,10" Grid.Row="1" Grid.Column="1" SelectedIndex="{Binding Settings.Theme}">
+            <ComboBox Margin="10,0,0,10" Grid.Row="1" Grid.Column="1" SelectedIndex="{Binding Settings.Theme}"
+                      MinWidth="150" MaxWidth="150">
               <ComboBoxItem>Light</ComboBoxItem>
               <ComboBoxItem>Dark</ComboBoxItem>
+              <ComboBoxItem>Acrylic Light</ComboBoxItem>
+              <ComboBoxItem>Acrylic Dark</ComboBoxItem>
+              <ComboBoxItem>Kermit</ComboBoxItem>
+              <ComboBoxItem>Elmo</ComboBoxItem>
+              <ComboBoxItem>The Count</ComboBoxItem>
+              <ComboBoxItem>Cookie Monster</ComboBoxItem>
+              <ComboBoxItem>Big Bird</ComboBoxItem>
+              <ComboBoxItem>Miss Piggy</ComboBoxItem>
             </ComboBox>
             <TextBlock VerticalAlignment="Center" Grid.Row="2" Grid.Column="0">Embassy Whitelist:</TextBlock>
             <TextBox Margin="10,0,0,10" Grid.Row="2" Grid.Column="1" MinWidth="150" MaxWidth="150"
@@ -126,5 +160,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
       <!--Progress text bar is fucked rn-->
     </StackPanel>
   </Grid>
+  </DockPanel>
 
 </Window>

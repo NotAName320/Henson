@@ -28,47 +28,76 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         WindowStartupLocation="CenterOwner"
         Width="500" Height="250" CanResize="False"
         MinWidth="500" MinHeight="250"
-        MaxWidth="500" MaxHeight="250">
+        MaxWidth="500" MaxHeight="250"
+        ExtendClientAreaToDecorationsHint="True"
+        Background="{Binding BackgroundColor}"
+        TransparencyLevelHint="{Binding AcrylicTransparency}">
   <!-- CanResize doesn't work on some Linux WMs https://github.com/AvaloniaUI/Avalonia/issues/8329 -->
 
   <Design.DataContext>
-      <vm:AddNationWindowViewModel/>
+      <vm:AddNationWindowViewModel>
+          <x:Arguments>
+              <SolidColorBrush Color="White"/>
+              <x:Boolean>False</x:Boolean>
+              <SolidColorBrush Color="White"/>
+              <x:Double>0.65</x:Double>
+          </x:Arguments>
+      </vm:AddNationWindowViewModel>
   </Design.DataContext>
   
-  <DockPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-      <TextBlock Margin="0,6,26,10">Swarm/Shine config:</TextBlock>
-      <Button Command="{Binding ConfigPickerCommand}">Browse...</Button>
-    </StackPanel>
-    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-        <TextBlock Margin="0,20,11,20">Newline separated .txt:</TextBlock>
-        <Button Command="{Binding TextPickerCommand}">Browse...</Button>
-        <TextBox Margin="10,9,0,10" MinWidth="140" MaxWidth="140"
-                 MaxHeight="10" Text="{Binding ImportTextPass}"
-                 PasswordChar="•" Watermark="Password..."/>
-    </StackPanel>
-    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-      <TextBlock Margin="0,18,16,0">Import with login info:</TextBlock>
-      <TextBox Margin="0,10,0,10" MinWidth="140" MaxWidth="140"
-               Text="{Binding ImportOneUser}" Watermark="Username..."/>
-      <TextBox Margin="10,10,0,10" MinWidth="140" MaxWidth="140"
-               Text="{Binding ImportOnePass}"
-               PasswordChar="•" Watermark="Password..."/>
-    </StackPanel>
-    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
-      <TextBlock Margin="0,18,20,0">Mass import puppets:</TextBlock>
-      <TextBox Margin="0,10,0,10" MinWidth="110" MaxWidth="110"
-               Text="{Binding ImportManyUser}" Watermark="Username..."/>
-      <TextBox Margin="10,10,0,10" MinWidth="110" MaxWidth="110"
-               Text="{Binding ImportManyPass}"
-               PasswordChar="•" Watermark="Password..."/>
-      <TextBox Margin="10,10,0,10" MinWidth="50" MaxWidth="50"
-               Text="{Binding ImportManyRange}" Watermark="1-50"/>
-    </StackPanel>
-    <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-      <Button Margin="0,0,5,0" Command="{Binding ImportOneCommand}">Import</Button>
-      <Button Margin="5,0,0,0" Command="{Binding ImportManyCommand}">Mass Import</Button>
-    </StackPanel>
+  <DockPanel>
+      <ExperimentalAcrylicBorder IsHitTestVisible="False" IsVisible="{Binding EnableAcrylic}">
+          <ExperimentalAcrylicBorder.Material>
+              <ExperimentalAcrylicMaterial
+                  BackgroundSource="Digger"
+                  TintColor="{Binding AcrylicTint}"
+                  TintOpacity="1"
+                  MaterialOpacity="{Binding AcrylicOpacity}"/>
+          </ExperimentalAcrylicBorder.Material>
+      </ExperimentalAcrylicBorder>
+      <StackPanel HorizontalAlignment="Left" Margin="10,10,0,0" Orientation="Horizontal"
+                  VerticalAlignment="Top" IsHitTestVisible="False" DockPanel.Dock="Top"
+                  IsVisible="{x:Static vm:ViewModelBase.IsNotLinux}">
+          <Image Source="/Assets/henson-icon.ico" Width="16" Margin="0,0,10,1"/>
+          <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=Title}"
+                     VerticalAlignment="Center"/>
+      </StackPanel>
+      <DockPanel HorizontalAlignment="Center" VerticalAlignment="Center" DockPanel.Dock="Bottom">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+          <TextBlock Margin="0,6,26,10">Swarm/Shine config:</TextBlock>
+          <Button Command="{Binding ConfigPickerCommand}">Browse...</Button>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+            <TextBlock Margin="0,20,11,20">Newline separated .txt:</TextBlock>
+            <Button Command="{Binding TextPickerCommand}">Browse...</Button>
+            <TextBox Margin="10,9,0,10" MinWidth="140" MaxWidth="140"
+                     MaxHeight="10" Text="{Binding ImportTextPass}"
+                     PasswordChar="•" Watermark="Password..."/>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+          <TextBlock Margin="0,18,16,0">Import with login info:</TextBlock>
+          <TextBox Margin="0,10,0,10" MinWidth="140" MaxWidth="140"
+                   Text="{Binding ImportOneUser}" Watermark="Username..."/>
+          <TextBox Margin="10,10,0,10" MinWidth="140" MaxWidth="140"
+                   Text="{Binding ImportOnePass}"
+                   PasswordChar="•" Watermark="Password..."/>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal">
+          <TextBlock Margin="0,18,17,0">Mass import puppets:</TextBlock>
+          <TextBox Margin="0,10,0,10" MinWidth="100" MaxWidth="100"
+                   Text="{Binding ImportManyUser}" Watermark="Username..."/>
+          <TextBox Margin="10,10,0,10" MinWidth="100" MaxWidth="100"
+                   Text="{Binding ImportManyPass}"
+                   PasswordChar="•" Watermark="Password..."/>
+          <TextBox Margin="10,10,10,10" MinWidth="50" MaxWidth="50"
+                   Text="{Binding ImportManyRange}" Watermark="1-50"/>
+          <Button Command="{Binding MassHelpCommand}">?</Button>
+        </StackPanel>
+        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
+          <Button Margin="0,0,5,0" Command="{Binding ImportOneCommand}">Import</Button>
+          <Button Margin="5,0,0,0" Command="{Binding ImportManyCommand}">Mass Import</Button>
+        </StackPanel>
+      </DockPanel>
   </DockPanel>
 
 </Window>
