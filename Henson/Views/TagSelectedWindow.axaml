@@ -119,7 +119,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
       <TextBlock DockPanel.Dock="Bottom" Margin="10,10,0,10"
                  Text="{Binding FooterText}"/>
-      <Button Height="250" Width="880" Margin="10" DockPanel.Dock="Bottom"
+      <Button Height="250" Width="882" Margin="15,10,10,10" DockPanel.Dock="Bottom"
               HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
               FontSize="40" Content="{Binding ButtonText}"
               Command="{Binding ActionButtonCommand}" IsEnabled="{Binding ButtonsEnabled}"/>

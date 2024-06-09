@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
+using System;
 using Henson.Models;
 using log4net;
 using MsBox.Avalonia.Dto;
@@ -58,7 +59,7 @@ namespace Henson.ViewModels
         /// <summary>
         /// A list of nations selected by the user.
         /// </summary>
-        private readonly List<NationLoginViewModel> _selectedNations;
+        private List<NationLoginViewModel> _selectedNations;
 
         /// <summary>
         /// The current index that the user is on.
@@ -89,6 +90,8 @@ namespace Henson.ViewModels
         /// The names of all the logins that failed.
         /// </summary>
         private readonly StringBuilder _failedLogins = new();
+
+        private static readonly Random Rng = new();
 
         /// <summary>
         /// The text on the button.
@@ -155,6 +158,32 @@ namespace Henson.ViewModels
             }
         }
         private bool _buttonsEnabled = true;
+        
+        /// <summary>
+        /// Whether or not the Apply WA? checkox is checked.
+        /// </summary>
+        public bool ShufflePuppets
+        {
+            get => _shufflePuppets;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _shufflePuppets, value);
+            }
+        }
+        private bool _shufflePuppets = false;
+        
+        /// <summary>
+        /// Whether or not the shuffle prep checkbox is enabled.
+        /// </summary>
+        public bool ShuffleBoxEnabled
+        {
+            get => _shuffleBoxEnabled;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _shuffleBoxEnabled, value);
+            }
+        }
+        private bool _shuffleBoxEnabled = true;
 
         /// <summary>
         /// The log4net logger. It will emit messages as from PrepSelectedWindowViewModel.
@@ -194,6 +223,15 @@ namespace Henson.ViewModels
                     });
                     await MessageBoxDialog.Handle(dialog);
                     return;
+                }
+
+                if(ShuffleBoxEnabled)
+                {
+                    ShuffleBoxEnabled = false;
+                    if(ShufflePuppets)
+                    {
+                        _selectedNations = _selectedNations.OrderBy(_ => Rng.Next()).ToList();
+                    }
                 }
 
                 NationLoginViewModel currentNation = _selectedNations[_loginIndex];

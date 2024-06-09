@@ -60,13 +60,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
               <TextBlock VerticalAlignment="Center" Margin="0,0,18,0">Apply to WA?</TextBlock>
               <CheckBox IsChecked="{Binding AlsoApplyWa}"/>
           </DockPanel>
+          <DockPanel DockPanel.Dock="Top" HorizontalAlignment="Left" Margin="10">
+              <TextBlock VerticalAlignment="Center" Margin="0,0,18,0">Shuffle Prep Order?</TextBlock>
+              <CheckBox IsEnabled="{Binding ShuffleBoxEnabled}" IsChecked="{Binding ShufflePuppets}"/>
+          </DockPanel>
           <DockPanel DockPanel.Dock="Top" Margin="10">
               <TextBlock Text="Current Login: "/>
               <TextBlock Text="{Binding CurrentLogin}"/>
           </DockPanel>
           <TextBlock DockPanel.Dock="Bottom" Margin="10,10,0,10"
                      Text="{Binding FooterText}"/>
-          <Button Height="180" Width="494" Margin="10"
+          <Button Height="140" Width="494" Margin="10"
                   DockPanel.Dock="Bottom"
                   HorizontalContentAlignment="Center"
                   VerticalContentAlignment="Center" FontSize="40"
