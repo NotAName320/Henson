@@ -42,6 +42,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Newtonsoft.Json;
@@ -242,6 +243,9 @@ namespace Henson.ViewModels
         /// </summary>
         private ObservableCollection<NationGridViewModel> Nations { get; } = new();
 
+        private ObservableCollection<NationGridEntryViewModel> NationGroups { get; } = [];
+        public HierarchicalTreeDataGridSource<NationGridEntryViewModel> NationGroupDisplay { get; }
+
         /// <summary>
         /// Represents the state of the input in the settings tab and not what current settings are loaded/saved.
         /// </summary>
@@ -266,6 +270,23 @@ namespace Henson.ViewModels
             DbClient.CreateDbIfNotExists();
             RxApp.MainThreadScheduler.Schedule(LoadNations);
 
+            NationGroupDisplay = new HierarchicalTreeDataGridSource<NationGridEntryViewModel>(NationGroups)
+            {
+                Columns =
+                {
+                    new TemplateColumn<NationGridEntryViewModel>("", "CheckBoxCell"),
+                    // See https://github.com/AvaloniaUI/Avalonia.Controls.TreeDataGrid/issues/128#issuecomment-2220595762
+                    // When resolved, remove template and replace with below code
+                    // new CheckBoxColumn<NationGridEntryViewModel>("", x => x.IsSelected, (o, v) => o.IsSelected = v),
+                    new HierarchicalExpanderColumn<NationGridEntryViewModel>(
+                        new TextColumn<NationGridEntryViewModel, string>("Name", x => x.DisplayName,
+                            width:GridLength.Parse("*")), x => x.Items),
+                    new TextColumn<NationGridEntryViewModel, string>("Region",
+                        x => x.IsNation ? x.RepresentedNation!.Region : "", width:GridLength.Parse(".35*"))
+                },
+                Selection = null
+            };
+            
             AddNationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if(await UserAgentNotSet()) return;
@@ -626,7 +647,7 @@ namespace Henson.ViewModels
             this.WhenAnyValue(x => x.ButtonsEnabled, x => x.AnyNationSelected).Select(_ => ButtonsEnabled && AnyNationSelected)
                 .ToProperty(this, x => x.NationSelectedAndNoSiteRequests, out _nationSelectedAndNoSiteRequests);
         }
-
+        
         /// <summary>
         /// Locks selected nations, or unlocks if all selected nations are locked.
         /// </summary>
@@ -661,10 +682,10 @@ namespace Henson.ViewModels
         /// </summary>
         public void OnSelectNationsClick()
         {
-            bool oppositeAllTrueOrFalse = !Nations.All(x => x.Checked);
-            foreach(var nation in Nations)
+            bool oppositeAllTrueOrFalse = !NationGroups.All(x => x.IsSelected);
+            foreach(var nation in NationGroups)
             {
-                nation.Checked = oppositeAllTrueOrFalse;
+                nation.IsSelected = oppositeAllTrueOrFalse;
             }
         }
 
@@ -959,10 +980,18 @@ namespace Henson.ViewModels
         {
             var (nations, locked) = DbClient.GetNations();
 
+            var ungrouped = new NationGridEntryViewModel("Ungrouped", []);
+            var ungrouped2 = new NationGridEntryViewModel("Test Folder", []);
+
             foreach(var n in nations)
             {
                 Nations.Add(new NationGridViewModel(n, false, locked.Contains(n.Name), this));
+                
+                ungrouped.AddIntoFolder(new NationGridEntryViewModel(representedNation:new NationGridViewModel(n, false, locked.Contains(n.Name), this)));
             }
+
+            NationGroups.Add(ungrouped2);
+            NationGroups.Add(ungrouped);
         }
 
         /// <summary>

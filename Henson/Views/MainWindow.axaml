@@ -70,53 +70,55 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <Button Command="{Binding PingSelectedCommand}" Content="Ping" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
             <Button Command="{Binding PrepSelectedCommand}" Content="Prep" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
             <Button Command="{Binding TagSelectedCommand}" Content="Tag" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
-            <TextBlock VerticalAlignment="Center" Margin="10,0,0,0" Text="Current login: "/>
-            <TextBlock VerticalAlignment="Center" Text="{Binding CurrentLoginUser}"/>
-            <DockPanel HorizontalAlignment="Right">
-              <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Target Region:</TextBlock>
-              <TextBox Name="regionTextBox" MinWidth="200" MaxWidth="400"
-                       Text="{Binding TargetRegion}"/>
-            </DockPanel>
           </DockPanel>
-            <DataGrid Name="NationList" ItemsSource="{Binding Nations}" IsReadOnly="False"
-                      CanUserResizeColumns="True" AutoGenerateColumns="False"
-                      SelectionChanged="NationList_OnSelectionChanged"
-                      ColumnHeaderTheme="{StaticResource ColumnHeaderTransparent}">
-              <DataGrid.Columns>
-                <DataGridTemplateColumn SortMemberPath=".">
-                  <DataTemplate DataType="vm:NationGridViewModel">
-                    <CheckBox Name="CB" HorizontalAlignment="Center" IsChecked="{Binding Checked}"/>
-                  </DataTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTextColumn IsReadOnly="True" Header="Nation" Width="*" Binding="{Binding GridName}"/>
-                <DataGridTextColumn IsReadOnly="True" Header="Current region" Width=".35*" Binding="{Binding Region}"/>
-                <DataGridTemplateColumn Header="Login">
-                  <DataGridTemplateColumn.CellTemplate>
-                    <DataTemplate>
-                      <Button HorizontalAlignment="Center" Content="Login" Command="{Binding Login}"
-                      Background="Transparent" IsEnabled="{Binding Parent.ButtonsEnabled}"/>
-                    </DataTemplate>
-                  </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Apply to WA">
-                  <DataGridTemplateColumn.CellTemplate>
-                    <DataTemplate DataType="vm:NationGridViewModel">
-                      <Button HorizontalAlignment="Center" Content="Apply" Command="{Binding ApplyWa}"
-                      Background="Transparent" IsEnabled="{Binding Parent.ButtonsEnabled}"/>
-                    </DataTemplate>
-                  </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-                <DataGridTemplateColumn Header="Move to region">
-                  <DataGridTemplateColumn.CellTemplate>
-                    <DataTemplate DataType="vm:NationGridViewModel">
-                      <Button HorizontalAlignment="Center" Content="Move" Command="{Binding MoveTo}"
-                      CommandParameter="{Binding ElementName=regionTextBox, Path=Text}"
-                      Background="Transparent" IsEnabled="{Binding Parent.ButtonsEnabled}"/>
-                    </DataTemplate>
-                  </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-              </DataGrid.Columns>
-            </DataGrid>
+          <TreeDataGrid Name="NationTree" Source="{Binding NationGroupDisplay}" CanUserResizeColumns="False"
+                        CanUserSortColumns="False" AutoDragDropRows="True" RowDrop="NationTree_OnRowDrop"
+                        RowDragStarted="NationTree_OnRowDragStarted">
+            <TreeDataGrid.Resources>
+              <DataTemplate x:Key="CheckBoxCell" DataType="vm:NationGridEntryViewModel">
+                <CheckBox IsChecked="{Binding IsSelected}" Command="{Binding OnCheckmarkClick}"/>
+              </DataTemplate>
+            </TreeDataGrid.Resources>
+          </TreeDataGrid>
+            <!-- <DataGrid Name="NationList" ItemsSource="{Binding Nations}" IsReadOnly="False" -->
+            <!--           CanUserResizeColumns="True" AutoGenerateColumns="False" -->
+            <!--           SelectionChanged="NationList_OnSelectionChanged" -->
+            <!--           ColumnHeaderTheme="{StaticResource ColumnHeaderTransparent}"> -->
+            <!--   <DataGrid.Columns> -->
+            <!--     <DataGridTemplateColumn SortMemberPath="."> -->
+            <!--       <DataTemplate DataType="vm:NationGridViewModel"> -->
+            <!--         <CheckBox Name="CB" HorizontalAlignment="Center" IsChecked="{Binding Checked}"/> -->
+            <!--       </DataTemplate> -->
+            <!--     </DataGridTemplateColumn> -->
+            <!--     <DataGridTextColumn IsReadOnly="True" Header="Nation" Width="*" Binding="{Binding GridName}"/> -->
+            <!--     <DataGridTextColumn IsReadOnly="True" Header="Current region" Width=".35*" Binding="{Binding Region}"/> -->
+            <!--     <DataGridTemplateColumn Header="Login"> -->
+            <!--       <DataGridTemplateColumn.CellTemplate> -->
+            <!--         <DataTemplate> -->
+            <!--           <Button HorizontalAlignment="Center" Content="Login" Command="{Binding Login}" -->
+            <!--           Background="Transparent" IsEnabled="{Binding Parent.ButtonsEnabled}"/> -->
+            <!--         </DataTemplate> -->
+            <!--       </DataGridTemplateColumn.CellTemplate> -->
+            <!--     </DataGridTemplateColumn> -->
+            <!--     <DataGridTemplateColumn Header="Apply to WA"> -->
+            <!--       <DataGridTemplateColumn.CellTemplate> -->
+            <!--         <DataTemplate DataType="vm:NationGridViewModel"> -->
+            <!--           <Button HorizontalAlignment="Center" Content="Apply" Command="{Binding ApplyWa}" -->
+            <!--           Background="Transparent" IsEnabled="{Binding Parent.ButtonsEnabled}"/> -->
+            <!--         </DataTemplate> -->
+            <!--       </DataGridTemplateColumn.CellTemplate> -->
+            <!--     </DataGridTemplateColumn> -->
+            <!--     <DataGridTemplateColumn Header="Move to region"> -->
+            <!--       <DataGridTemplateColumn.CellTemplate> -->
+            <!--         <DataTemplate DataType="vm:NationGridViewModel"> -->
+            <!--           <Button HorizontalAlignment="Center" Content="Move" Command="{Binding MoveTo}" -->
+            <!--           CommandParameter="{Binding ElementName=regionTextBox, Path=Text}" -->
+            <!--           Background="Transparent" IsEnabled="{Binding Parent.ButtonsEnabled}"/> -->
+            <!--         </DataTemplate> -->
+            <!--       </DataGridTemplateColumn.CellTemplate> -->
+            <!--     </DataGridTemplateColumn> -->
+            <!--   </DataGrid.Columns> -->
+            <!-- </DataGrid> -->
         </DockPanel>
       </TabItem>
       <TabItem Header="Individual View">
