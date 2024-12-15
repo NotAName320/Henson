@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Data.Sqlite;
 
 namespace Henson.Models
@@ -39,50 +40,100 @@ namespace Henson.Models
             using var con = new SqliteConnection($"Data Source={DbPath}");
             con.Open();
 
-            string createTable = "CREATE TABLE IF NOT EXISTS nations (name varchar(40), pass text, flagUrl text, region text, locked integer DEFAULT 0, UNIQUE(name))";
+            const string createTable = """
+                                       CREATE TABLE IF NOT EXISTS nations
+                                       (
+                                           name varchar(40),
+                                           pass text,
+                                           flagUrl text,
+                                           region text,
+                                           locked integer DEFAULT 0,
+                                           groupName text DEFAULT NULL,
+                                           groupOrder integer DEFAULT 0,
+                                           UNIQUE(name)
+                                       );
+                                       CREATE TABLE IF NOT EXISTS groups
+                                       (
+                                           name text,
+                                           UNIQUE(name)
+                                       )
+                                       """;
             using SqliteCommand createTableCommand = new(createTable, con);
             createTableCommand.ExecuteNonQuery();
 
             //check if locked exists on upgrading and create it if it doesn't
-            string checkLockedExists = "SELECT EXISTS(SELECT 1 FROM (SELECT * FROM pragma_table_info('nations')) WHERE name='locked')";
+            const string checkLockedExists = "SELECT EXISTS(SELECT 1 FROM (SELECT * FROM pragma_table_info('nations')) WHERE name='locked')";
             using SqliteCommand checkLockedExistsCommand = new(checkLockedExists, con);
-            using SqliteDataReader reader = checkLockedExistsCommand.ExecuteReader();
+            using var checkLockedExistsReader = checkLockedExistsCommand.ExecuteReader();
 
-            if(reader.Read() && !reader.GetBoolean(0))
+            if(checkLockedExistsReader.Read() && !checkLockedExistsReader.GetBoolean(0))
             {
-                string createLocked = "ALTER TABLE nations ADD COLUMN locked integer DEFAULT 0";
+                const string createLocked = "ALTER TABLE nations ADD COLUMN locked integer DEFAULT 0";
                 using SqliteCommand createLockedCommand = new(createLocked, con);
                 createLockedCommand.ExecuteNonQuery();
+            }
+            
+            //do the same but for group name and group order
+            //yeah copying code is lazy idrc
+            const string checkGroupsExist = "SELECT EXISTS(SELECT 1 FROM (SELECT * FROM pragma_table_info('nations')) WHERE name='groupName')";
+            using SqliteCommand checkGroupsExistCommand = new(checkGroupsExist, con);
+            using var checkGroupsExistReader = checkGroupsExistCommand.ExecuteReader();
+
+            if(checkGroupsExistReader.Read() && !checkGroupsExistReader.GetBoolean(0))
+            {
+                const string createGroups = "ALTER TABLE nations ADD COLUMN groupName varchar(255) DEFAULT NULL; ALTER TABLE nations ADD COLUMN groupOrder integer DEFAULT 0";
+                using SqliteCommand createGroupsCommand = new(createGroups, con);
+                createGroupsCommand.ExecuteNonQuery();
+                
+                const string setInitialGroupOrders = "UPDATE nations SET groupOrder = ROWID";
+                using SqliteCommand setInitialGroupOrdersCommand = new(setInitialGroupOrders, con);
+                setInitialGroupOrdersCommand.ExecuteNonQuery();
             }
         }
 
         /// <summary>
-        /// Gets the list of existing nations from the database.
+        /// Gets the list of existing nations and groups from the database.
         /// </summary>
-        /// <returns>A tuple consisting of a list of <c>Nation</c> objects reflecting those stored in the database as well as
-        /// a list of strings of the names of locked nations.</returns>
-        public static (List<Nation> nations, List<string> locked) GetNations()
+        /// <returns>A dictionary describing the groups and nations, with ungrouped nations accessible with key Ungrouped.</returns>
+        public static Dictionary<string, List<(Nation nation, bool locked)>> GetNations()
         {
-            List<Nation> retVal = new();
-            List<string> lockedNations = new();
+            Dictionary<string, List<(Nation nation, bool locked)>> retVal = new() { { "Ungrouped", [] } };
 
             using var con = new SqliteConnection($"Data Source={DbPath}");
             con.Open();
 
-            string getNations = "SELECT * FROM nations";
-            var command = new SqliteCommand(getNations, con);
-            using var reader = command.ExecuteReader();
+            const string getGroups = "SELECT name FROM groups;";
+            var getGroupsCommand = new SqliteCommand(getGroups, con);
+            using var getGroupsReader = getGroupsCommand.ExecuteReader();
+            while(getGroupsReader.Read())
+            {
+                retVal.Add(getGroupsReader.GetString(0), []);
+            }
+
+            const string getNations = "SELECT * FROM nations ORDER BY groupOrder;";
+            var getNationsCommand = new SqliteCommand(getNations, con);
+            using var reader = getNationsCommand.ExecuteReader();
 
             while(reader.Read())
             {
-                retVal.Add(new Nation(reader.GetString(0), reader.GetString(1), reader.GetString(2), reader.GetString(3)));
-                if(reader.GetBoolean(4))
+                var nation = new Nation(reader.GetString(0), reader.GetString(1), reader.GetString(2),
+                    reader.GetString(3));
+                var foundGroup = false;
+                foreach(var group in retVal.Keys)
                 {
-                    lockedNations.Add(reader.GetString(0));
+                    if(reader.IsDBNull(5) || reader.GetString(5) != group) continue;
+                    foundGroup = true;
+                    retVal[group].Add((nation, reader.GetBoolean(4)));
+                    break;
+                }
+
+                if(!foundGroup)
+                {
+                    retVal["Ungrouped"].Add((nation, false));
                 }
             }
 
-            return (retVal, lockedNations);
+            return retVal;
         }
 
         /// <summary>

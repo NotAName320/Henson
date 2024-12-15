@@ -978,20 +978,33 @@ namespace Henson.ViewModels
         /// </summary>
         private void LoadNations()
         {
-            var (nations, locked) = DbClient.GetNations();
+            var nationDict = DbClient.GetNations();
 
-            var ungrouped = new NationGridEntryViewModel("Ungrouped", []);
-            var ungrouped2 = new NationGridEntryViewModel("Test Folder", []);
-
-            foreach(var n in nations)
+            NationGridEntryViewModel? ungrouped = null;
+            foreach(var kvp in nationDict)
             {
-                Nations.Add(new NationViewModel(n, false, locked.Contains(n.Name), this));
-                
-                ungrouped.AddIntoFolder(new NationGridEntryViewModel(representedNation:new NationViewModel(n, false, locked.Contains(n.Name), this)));
+                var folder = new NationGridEntryViewModel(kvp.Key, []);
+                foreach(var nation in kvp.Value)
+                {
+                    folder.AddIntoFolder(new NationGridEntryViewModel(
+                        representedNation: new NationViewModel(nation.nation, false, nation.locked, this)));
+                }
+
+                if(kvp.Key == "Ungrouped")
+                {
+                    ungrouped = folder;
+                }
+                else
+                {
+                    NationGroups.Add(folder);
+                }
             }
 
-            NationGroups.Add(ungrouped2);
-            NationGroups.Add(ungrouped);
+            //ensure ungrouped is always last
+            if(ungrouped != null)
+            {
+                NationGroups.Add(ungrouped);
+            }
         }
 
         /// <summary>
