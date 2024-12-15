@@ -1,4 +1,23 @@
-﻿using System;
+﻿/*
+View Model Representing Grid Row
+Copyright (C) 2023 NotAName320
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using DynamicData;
@@ -11,7 +30,7 @@ public class NationGridEntryViewModel : ViewModelBase
 {
     private readonly string? _name;
     public readonly ObservableCollection<NationGridEntryViewModel> Items;
-    public readonly NationGridViewModel? RepresentedNation;
+    public readonly NationViewModel? RepresentedNation;
 
     public string DisplayName => IsNation ? RepresentedNation!.GridName : "\ud83d\udcc1" + _name!;
     public bool IsNation => RepresentedNation != null;
@@ -31,7 +50,7 @@ public class NationGridEntryViewModel : ViewModelBase
 
     public NationGridEntryViewModel(string? name = null,
         ObservableCollection<NationGridEntryViewModel>? items = null,
-        NationGridViewModel? representedNation = null)
+        NationViewModel? representedNation = null)
     {
         _name = name;
         Items = items ?? [];

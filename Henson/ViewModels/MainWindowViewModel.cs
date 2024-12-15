@@ -241,7 +241,7 @@ namespace Henson.ViewModels
         /// <summary>
         /// Represents the nations loaded by the program.
         /// </summary>
-        private ObservableCollection<NationGridViewModel> Nations { get; } = new();
+        private ObservableCollection<NationViewModel> Nations { get; } = new();
 
         private ObservableCollection<NationGridEntryViewModel> NationGroups { get; } = [];
         public HierarchicalTreeDataGridSource<NationGridEntryViewModel> NationGroupDisplay { get; }
@@ -319,7 +319,7 @@ namespace Henson.ViewModels
                     {
                         if(Nations.Select(x => x.Name).Contains(n!.Name)) continue;
 
-                        Nations.Add(new NationGridViewModel(n, true, false, this));
+                        Nations.Add(new NationViewModel(n, true, false, this));
                         DbClient.InsertNation(n);
                     }
 
@@ -414,7 +414,7 @@ namespace Henson.ViewModels
                         $"flagUrl = '{n.FlagUrl}' " +
                         $"WHERE name = '{Nations[index].Name}'");
 
-                    Nations[index] = new NationGridViewModel(n, true, Nations[index].Locked, this);
+                    Nations[index] = new NationViewModel(n, true, Nations[index].Locked, this);
                 }
 
                 if(nations.Any(x => x == null))
@@ -593,7 +593,7 @@ namespace Henson.ViewModels
                                              $"flagUrl = '{n.FlagUrl}' " +
                                              $"WHERE name = '{Nations[index].Name}'");
 
-                    Nations[index] = new NationGridViewModel(n, true, Nations[index].Locked, this);
+                    Nations[index] = new NationViewModel(n, true, Nations[index].Locked, this);
                 }
 
                 selectedNations = Nations.Where(x => x.Checked && !x.Locked && x.Region != Settings.JumpPoint).ToList();
@@ -776,7 +776,7 @@ namespace Henson.ViewModels
         /// </summary>
         /// <param name="nation">The nation on which Login is being clicked.</param>
         /// <returns></returns>
-        public async Task OnNationLoginClick(NationGridViewModel nation)
+        public async Task OnNationLoginClick(NationViewModel nation)
         {
             if(await UserAgentNotSet()) return;
             var nationLogin = new NationLoginViewModel(nation.Name, nation.Pass);
@@ -822,7 +822,7 @@ namespace Henson.ViewModels
         /// </summary>
         /// <param name="nation">The nation on which Apply WA is being clicked.</param>
         /// <returns></returns>
-        public async Task OnNationApplyWAClick(NationGridViewModel nation)
+        public async Task OnNationApplyWAClick(NationViewModel nation)
         {
             if(await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
@@ -866,7 +866,7 @@ namespace Henson.ViewModels
         /// <param name="nation">The nation on which Move is being clicked.</param>
         /// <param name="region">The target region in the text box when Move was clicked.</param>
         /// <returns></returns>
-        public async Task OnNationMoveRegionClick(NationGridViewModel nation, string region)
+        public async Task OnNationMoveRegionClick(NationViewModel nation, string region)
         {
             if(await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
@@ -937,7 +937,7 @@ namespace Henson.ViewModels
         /// <param name="nation">The nation to be checked with the current login.</param>
         /// <returns>A boolean value representing whether or not the provided nation matches the
         /// current login.</returns>
-        private async Task<bool> NationEqualsLogin(NationGridViewModel nation)
+        private async Task<bool> NationEqualsLogin(NationViewModel nation)
         {
             if(nation.Name != _currentLoginUser)
             {
@@ -985,9 +985,9 @@ namespace Henson.ViewModels
 
             foreach(var n in nations)
             {
-                Nations.Add(new NationGridViewModel(n, false, locked.Contains(n.Name), this));
+                Nations.Add(new NationViewModel(n, false, locked.Contains(n.Name), this));
                 
-                ungrouped.AddIntoFolder(new NationGridEntryViewModel(representedNation:new NationGridViewModel(n, false, locked.Contains(n.Name), this)));
+                ungrouped.AddIntoFolder(new NationGridEntryViewModel(representedNation:new NationViewModel(n, false, locked.Contains(n.Name), this)));
             }
 
             NationGroups.Add(ungrouped2);

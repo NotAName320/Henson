@@ -160,7 +160,7 @@ namespace Henson.Models
         /// </summary>
         /// <param name="nations">A list of nations.</param>
         /// <returns>The name of the nation that is in the WA, or <c>null</c> if no nation was found.</returns>
-        public async Task<string?> FindWa(List<NationGridViewModel> nations)
+        public async Task<string?> FindWa(List<NationViewModel> nations)
         {
             var response = await ApiClient.MakeRequest(ApiLink + "?wa=1&q=members");
 
@@ -188,7 +188,7 @@ namespace Henson.Models
         /// </summary>
         /// <param name="nation">The nation to check.</param>
         /// <returns>The nation right back, or <c>null</c> if the nation didn't have perms.</returns>
-        public async Task<NationGridViewModel?> IsRoWithTagPerms(NationGridViewModel nation)
+        public async Task<NationViewModel?> IsRoWithTagPerms(NationViewModel nation)
         {
             var response = await ApiClient.MakeRequest(ApiLink + $"?region={nation.Region}&q=officers");
 
