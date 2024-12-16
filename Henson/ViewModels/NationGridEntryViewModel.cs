@@ -28,11 +28,12 @@ namespace Henson.ViewModels;
 
 public class NationGridEntryViewModel : ViewModelBase
 {
-    private readonly string? _name;
+    public readonly string Name;
     public readonly ObservableCollection<NationGridEntryViewModel> Items;
     public readonly NationViewModel? RepresentedNation;
-
-    public string DisplayName => IsNation ? RepresentedNation!.GridName : "\ud83d\udcc1" + _name!;
+    public bool Expanded { get; set; } // setter must exist here
+    
+    public string DisplayName => IsNation ? RepresentedNation!.GridName : "\ud83d\udcc1" + Name!;
     public bool IsNation => RepresentedNation != null;
     
     public bool IsSelected
@@ -50,11 +51,12 @@ public class NationGridEntryViewModel : ViewModelBase
 
     public NationGridEntryViewModel(string? name = null,
         ObservableCollection<NationGridEntryViewModel>? items = null,
-        NationViewModel? representedNation = null)
+        NationViewModel? representedNation = null, bool expanded = true)
     {
-        _name = name;
+        Name = name ?? representedNation?.Name ?? "bruh";
         Items = items ?? [];
         RepresentedNation = representedNation;
+        Expanded = expanded;
         
         //change folder check box if something moves into folder
         Items.CollectionChanged += (_, _) => this.RaisePropertyChanged(nameof(IsSelected));

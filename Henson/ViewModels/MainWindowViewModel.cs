@@ -280,12 +280,16 @@ namespace Henson.ViewModels
                     // new CheckBoxColumn<NationGridEntryViewModel>("", x => x.IsSelected, (o, v) => o.IsSelected = v),
                     new HierarchicalExpanderColumn<NationGridEntryViewModel>(
                         new TextColumn<NationGridEntryViewModel, string>("Name", x => x.DisplayName,
-                            width:GridLength.Parse("*")), x => x.Items),
+                            width:GridLength.Parse("*")), x => x.Items, isExpandedSelector: x => x.Expanded),
                     new TextColumn<NationGridEntryViewModel, string>("Region",
                         x => x.IsNation ? x.RepresentedNation!.Region : "", width:GridLength.Parse(".35*"))
                 },
                 Selection = null
             };
+
+            //change things when things change
+            NationGroupDisplay.RowExpanded += (_, args) => DbClient.StoreExpansionState(args.Row.Model.Name, true);
+            NationGroupDisplay.RowCollapsed += (_, args) => DbClient.StoreExpansionState(args.Row.Model.Name, false);
             
             AddNationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -983,8 +987,8 @@ namespace Henson.ViewModels
             NationGridEntryViewModel? ungrouped = null;
             foreach(var kvp in nationDict)
             {
-                var folder = new NationGridEntryViewModel(kvp.Key, []);
-                foreach(var nation in kvp.Value)
+                var folder = new NationGridEntryViewModel(kvp.Key, [], expanded: kvp.Value.expanded);
+                foreach(var nation in kvp.Value.nations)
                 {
                     folder.AddIntoFolder(new NationGridEntryViewModel(
                         representedNation: new NationViewModel(nation.nation, false, nation.locked, this)));
@@ -1004,6 +1008,17 @@ namespace Henson.ViewModels
             if(ungrouped != null)
             {
                 NationGroups.Add(ungrouped);
+            }
+            
+            foreach(var group in NationGroups)
+            {
+                group.Items.CollectionChanged += (_, args) =>
+                {
+                    if(args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+                    {
+                        DbClient.StoreGroupState(group.Name, group.Items.Select(x => x.Name).ToList());
+                    }
+                };
             }
         }
 

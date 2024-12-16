@@ -32,6 +32,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
+using Avalonia.Styling;
 using MsBox.Avalonia.Enums;
 
 namespace Henson.Views

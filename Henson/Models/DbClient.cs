@@ -20,7 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using System;
 using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Data.Sqlite;
 
 namespace Henson.Models
@@ -55,6 +54,7 @@ namespace Henson.Models
                                        CREATE TABLE IF NOT EXISTS groups
                                        (
                                            name text,
+                                           expanded integer DEFAULT 1,
                                            UNIQUE(name)
                                        )
                                        """;
@@ -95,19 +95,20 @@ namespace Henson.Models
         /// Gets the list of existing nations and groups from the database.
         /// </summary>
         /// <returns>A dictionary describing the groups and nations, with ungrouped nations accessible with key Ungrouped.</returns>
-        public static Dictionary<string, List<(Nation nation, bool locked)>> GetNations()
+        public static Dictionary<string, (List<(Nation nation, bool locked)> nations, bool expanded)> GetNations()
         {
-            Dictionary<string, List<(Nation nation, bool locked)>> retVal = new() { { "Ungrouped", [] } };
+            //maybe i should make a model for this
+            Dictionary<string, (List<(Nation nation, bool locked)> nations, bool expanded)> retVal = new() { { "Ungrouped", ([], false) } };
 
             using var con = new SqliteConnection($"Data Source={DbPath}");
             con.Open();
 
-            const string getGroups = "SELECT name FROM groups;";
+            const string getGroups = "SELECT * FROM groups;";
             var getGroupsCommand = new SqliteCommand(getGroups, con);
             using var getGroupsReader = getGroupsCommand.ExecuteReader();
             while(getGroupsReader.Read())
             {
-                retVal.Add(getGroupsReader.GetString(0), []);
+                retVal.Add(getGroupsReader.GetString(0), ([], getGroupsReader.GetBoolean(1)));
             }
 
             const string getNations = "SELECT * FROM nations ORDER BY groupOrder;";
@@ -123,13 +124,13 @@ namespace Henson.Models
                 {
                     if(reader.IsDBNull(5) || reader.GetString(5) != group) continue;
                     foundGroup = true;
-                    retVal[group].Add((nation, reader.GetBoolean(4)));
+                    retVal[group].nations.Add((nation, reader.GetBoolean(4)));
                     break;
                 }
 
                 if(!foundGroup)
                 {
-                    retVal["Ungrouped"].Add((nation, false));
+                    retVal["Ungrouped"].nations.Add((nation, false));
                 }
             }
 
@@ -146,7 +147,7 @@ namespace Henson.Models
             con.Open();
 
             //yeah yeah i know about sanitization and all that but riddle me this: why would you want to inject into a local sqlite file
-            string insertNation = $"INSERT INTO nations (name, pass, flagUrl, region) VALUES ('{nation.Name}', '{nation.Pass}', '{nation.FlagUrl}', '{nation.Region}')";
+            var insertNation = $"INSERT INTO nations (name, pass, flagUrl, region) VALUES ('{nation.Name}', '{nation.Pass}', '{nation.FlagUrl}', '{nation.Region}')";
             using SqliteCommand command = new(insertNation, con);
 
             try
@@ -165,7 +166,7 @@ namespace Henson.Models
             using var con = new SqliteConnection($"Data Source={DbPath}");
             con.Open();
 
-            string deleteNation = $"DELETE FROM nations WHERE name='{name}'";
+            var deleteNation = $"DELETE FROM nations WHERE name='{name}'";
             using SqliteCommand command = new(deleteNation, con);
             command.ExecuteNonQuery();
         }
@@ -181,6 +182,37 @@ namespace Henson.Models
 
             using SqliteCommand command = new(commandString, con);
             command.ExecuteNonQuery();
+        }
+
+        public static void StoreExpansionState(string group, bool expanded)
+        {
+            using var con = new SqliteConnection($"Data Source={DbPath}");
+            con.Open();
+
+            var intExpanded = expanded ? 1 : 0;
+            var modifyGroupExpand = $"UPDATE groups SET expanded = {intExpanded} WHERE name='{group}'";
+            using SqliteCommand command = new(modifyGroupExpand, con);
+            command.ExecuteNonQuery();
+        }
+
+        public static void StoreGroupState(string group, List<string> nations)
+        {
+            using var con = new SqliteConnection($"Data Source={DbPath}");
+            con.Open();
+
+            using var transaction = con.BeginTransaction();
+            var order = 0;
+            foreach(var nation in nations)
+            {
+                var groupOrNull = group == "Ungrouped" ? "NULL" : group;
+                var updateNationGroup =
+                    $"UPDATE nations SET groupOrder = {order}, groupName = '{groupOrNull}' WHERE name='{nation}'";
+                using SqliteCommand command = new(updateNationGroup, con, transaction);
+                command.ExecuteNonQuery();
+                order++;
+            }
+            
+            transaction.Commit();
         }
     }
 }
