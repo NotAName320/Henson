@@ -53,7 +53,7 @@ namespace Henson.Views
             SetClosing(false);
         }
 
-        private async Task GetConfigJson(InteractionContext<ViewModelBase, string?> interaction)
+        private async Task GetConfigJson(IInteractionContext<ViewModelBase, string?> interaction)
         {
             var topLevel = GetTopLevel(this);
             var result = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
@@ -71,7 +71,7 @@ namespace Henson.Views
             interaction.SetOutput(result.Count == 0 ? null : Uri.UnescapeDataString(result[0].Path.AbsolutePath));
         }
 
-        private async Task GetTextFile(InteractionContext<ViewModelBase, string?> interaction)
+        private async Task GetTextFile(IInteractionContext<ViewModelBase, string?> interaction)
         {
             var topLevel = GetTopLevel(this);
             var result = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
@@ -89,7 +89,7 @@ namespace Henson.Views
             interaction.SetOutput(result.Count == 0 ? null : Uri.UnescapeDataString(result[0].Path.AbsolutePath));
         }
 
-        private async Task ShowMessageBoxDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
+        private async Task ShowMessageBoxDialog(IInteractionContext<MessageBoxViewModel, ButtonResult> interaction)
         {
             var parameters = interaction.Input.Params;
 

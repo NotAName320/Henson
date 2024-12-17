@@ -46,7 +46,7 @@ public partial class FilterNationsWindow : ReactiveWindow<FilterNationsWindowVie
         SetClosing(false);
     }
 
-    private async Task ShowMessageBoxDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
+    private async Task ShowMessageBoxDialog(IInteractionContext<MessageBoxViewModel, ButtonResult> interaction)
     {
         var parameters = interaction.Input.Params;
 

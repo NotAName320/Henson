@@ -57,7 +57,7 @@ namespace Henson.Views
             });
         }
 
-        private async Task ShowAddNationDialog(InteractionContext<AddNationWindowViewModel, List<NationLoginViewModel>?> interaction)
+        private async Task ShowAddNationDialog(IInteractionContext<AddNationWindowViewModel, List<NationLoginViewModel>?> interaction)
         {
             var dialog = new AddNationWindow
             {
@@ -68,7 +68,7 @@ namespace Henson.Views
             interaction.SetOutput(result);
         }
 
-        private async Task ShowPrepSelectedDialog(InteractionContext<PrepSelectedWindowViewModel, Unit> interaction)
+        private async Task ShowPrepSelectedDialog(IInteractionContext<PrepSelectedWindowViewModel, Unit> interaction)
         {
             var dialog = new PrepSelectedWindow
             {
@@ -79,7 +79,7 @@ namespace Henson.Views
             interaction.SetOutput(result);
         }
 
-        private async Task ShowTagSelectedDialog(InteractionContext<TagSelectedWindowViewModel, Unit> interaction)
+        private async Task ShowTagSelectedDialog(IInteractionContext<TagSelectedWindowViewModel, Unit> interaction)
         {
             var dialog = new TagSelectedWindow
             {
@@ -90,7 +90,7 @@ namespace Henson.Views
             interaction.SetOutput(result);
         }
 
-        private async Task ShowMessageBoxDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
+        private async Task ShowMessageBoxDialog(IInteractionContext<MessageBoxViewModel, ButtonResult> interaction)
         {
             var parameters = interaction.Input.Params;
 
@@ -105,7 +105,7 @@ namespace Henson.Views
         }
         
         
-        private async Task ShowFilePickerDialog(InteractionContext<ViewModelBase, string?> interaction)
+        private async Task ShowFilePickerDialog(IInteractionContext<ViewModelBase, string?> interaction)
         {
             var topLevel = GetTopLevel(this);
             var result = await topLevel!.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
@@ -122,7 +122,7 @@ namespace Henson.Views
             interaction.SetOutput(result == null ? null : Uri.UnescapeDataString(result.Path.AbsolutePath));
         }
 
-        private async Task ShowVerifyUserDialog(InteractionContext<VerifyUserWindowViewModel, string?> interaction)
+        private async Task ShowVerifyUserDialog(IInteractionContext<VerifyUserWindowViewModel, string?> interaction)
         {
             var dialog = new VerifyUserWindow
             {
@@ -135,7 +135,7 @@ namespace Henson.Views
         }
 
         private async Task ShowFilterNationsDialog(
-            InteractionContext<FilterNationsWindowViewModel, (int, string, bool?, bool)?>
+            IInteractionContext<FilterNationsWindowViewModel, (int, string, bool?, bool)?>
                 interaction)
         {
             var dialog = new FilterNationsWindow

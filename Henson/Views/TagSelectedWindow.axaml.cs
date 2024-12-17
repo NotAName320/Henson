@@ -42,7 +42,7 @@ namespace Henson.Views
             this.WhenActivated(d => d(ViewModel!.FilePickerDialog.RegisterHandler(AddFilePicker)));
         }
 
-        private async Task ShowMessageBoxDialog(InteractionContext<MessageBoxViewModel, ButtonResult> interaction)
+        private async Task ShowMessageBoxDialog(IInteractionContext<MessageBoxViewModel, ButtonResult> interaction)
         {
             var parameters = interaction.Input.Params;
 
@@ -56,7 +56,7 @@ namespace Henson.Views
             interaction.SetOutput(result);
         }
 
-        private async Task AddFilePicker(InteractionContext<ViewModelBase, string?> interaction)
+        private async Task AddFilePicker(IInteractionContext<ViewModelBase, string?> interaction)
         {
             var topLevel = GetTopLevel(this);
             var result = await topLevel!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
