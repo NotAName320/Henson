@@ -42,6 +42,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls.Models.TreeDataGrid;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Newtonsoft.Json;
@@ -240,7 +241,10 @@ namespace Henson.ViewModels
         /// <summary>
         /// Represents the nations loaded by the program.
         /// </summary>
-        private ObservableCollection<NationGridViewModel> Nations { get; } = new();
+        private ObservableCollection<NationViewModel> Nations { get; } = new();
+
+        private ObservableCollection<NationGridEntryViewModel> NationGroups { get; } = [];
+        public HierarchicalTreeDataGridSource<NationGridEntryViewModel> NationGroupDisplay { get; }
 
         /// <summary>
         /// Represents the state of the input in the settings tab and not what current settings are loaded/saved.
@@ -266,6 +270,27 @@ namespace Henson.ViewModels
             DbClient.CreateDbIfNotExists();
             RxApp.MainThreadScheduler.Schedule(LoadNations);
 
+            NationGroupDisplay = new HierarchicalTreeDataGridSource<NationGridEntryViewModel>(NationGroups)
+            {
+                Columns =
+                {
+                    new TemplateColumn<NationGridEntryViewModel>("", "CheckBoxCell"),
+                    // See https://github.com/AvaloniaUI/Avalonia.Controls.TreeDataGrid/issues/128#issuecomment-2220595762
+                    // When resolved, remove template and replace with below code
+                    // new CheckBoxColumn<NationGridEntryViewModel>("", x => x.IsSelected, (o, v) => o.IsSelected = v),
+                    new HierarchicalExpanderColumn<NationGridEntryViewModel>(
+                        new TextColumn<NationGridEntryViewModel, string>("Name", x => x.DisplayName,
+                            width:GridLength.Parse("*")), x => x.Items, isExpandedSelector: x => x.Expanded),
+                    new TextColumn<NationGridEntryViewModel, string>("Region",
+                        x => x.IsNation ? x.RepresentedNation!.Region : "", width:GridLength.Parse(".35*"))
+                },
+                Selection = null
+            };
+
+            //change things when things change
+            NationGroupDisplay.RowExpanded += (_, args) => DbClient.StoreExpansionState(args.Row.Model.Name, true);
+            NationGroupDisplay.RowCollapsed += (_, args) => DbClient.StoreExpansionState(args.Row.Model.Name, false);
+            
             AddNationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if(await UserAgentNotSet()) return;
@@ -298,7 +323,7 @@ namespace Henson.ViewModels
                     {
                         if(Nations.Select(x => x.Name).Contains(n!.Name)) continue;
 
-                        Nations.Add(new NationGridViewModel(n, true, false, this));
+                        Nations.Add(new NationViewModel(n, true, false, this));
                         DbClient.InsertNation(n);
                     }
 
@@ -393,7 +418,7 @@ namespace Henson.ViewModels
                         $"flagUrl = '{n.FlagUrl}' " +
                         $"WHERE name = '{Nations[index].Name}'");
 
-                    Nations[index] = new NationGridViewModel(n, true, Nations[index].Locked, this);
+                    Nations[index] = new NationViewModel(n, true, Nations[index].Locked, this);
                 }
 
                 if(nations.Any(x => x == null))
@@ -572,7 +597,7 @@ namespace Henson.ViewModels
                                              $"flagUrl = '{n.FlagUrl}' " +
                                              $"WHERE name = '{Nations[index].Name}'");
 
-                    Nations[index] = new NationGridViewModel(n, true, Nations[index].Locked, this);
+                    Nations[index] = new NationViewModel(n, true, Nations[index].Locked, this);
                 }
 
                 selectedNations = Nations.Where(x => x.Checked && !x.Locked && x.Region != Settings.JumpPoint).ToList();
@@ -626,7 +651,7 @@ namespace Henson.ViewModels
             this.WhenAnyValue(x => x.ButtonsEnabled, x => x.AnyNationSelected).Select(_ => ButtonsEnabled && AnyNationSelected)
                 .ToProperty(this, x => x.NationSelectedAndNoSiteRequests, out _nationSelectedAndNoSiteRequests);
         }
-
+        
         /// <summary>
         /// Locks selected nations, or unlocks if all selected nations are locked.
         /// </summary>
@@ -661,10 +686,10 @@ namespace Henson.ViewModels
         /// </summary>
         public void OnSelectNationsClick()
         {
-            bool oppositeAllTrueOrFalse = !Nations.All(x => x.Checked);
-            foreach(var nation in Nations)
+            bool oppositeAllTrueOrFalse = !NationGroups.All(x => x.IsSelected);
+            foreach(var nation in NationGroups)
             {
-                nation.Checked = oppositeAllTrueOrFalse;
+                nation.IsSelected = oppositeAllTrueOrFalse;
             }
         }
 
@@ -755,7 +780,7 @@ namespace Henson.ViewModels
         /// </summary>
         /// <param name="nation">The nation on which Login is being clicked.</param>
         /// <returns></returns>
-        public async Task OnNationLoginClick(NationGridViewModel nation)
+        public async Task OnNationLoginClick(NationViewModel nation)
         {
             if(await UserAgentNotSet()) return;
             var nationLogin = new NationLoginViewModel(nation.Name, nation.Pass);
@@ -801,7 +826,7 @@ namespace Henson.ViewModels
         /// </summary>
         /// <param name="nation">The nation on which Apply WA is being clicked.</param>
         /// <returns></returns>
-        public async Task OnNationApplyWAClick(NationGridViewModel nation)
+        public async Task OnNationApplyWAClick(NationViewModel nation)
         {
             if(await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
@@ -845,7 +870,7 @@ namespace Henson.ViewModels
         /// <param name="nation">The nation on which Move is being clicked.</param>
         /// <param name="region">The target region in the text box when Move was clicked.</param>
         /// <returns></returns>
-        public async Task OnNationMoveRegionClick(NationGridViewModel nation, string region)
+        public async Task OnNationMoveRegionClick(NationViewModel nation, string region)
         {
             if(await UserAgentNotSet()) return;
             if(!await NationEqualsLogin(nation)) return;
@@ -916,7 +941,7 @@ namespace Henson.ViewModels
         /// <param name="nation">The nation to be checked with the current login.</param>
         /// <returns>A boolean value representing whether or not the provided nation matches the
         /// current login.</returns>
-        private async Task<bool> NationEqualsLogin(NationGridViewModel nation)
+        private async Task<bool> NationEqualsLogin(NationViewModel nation)
         {
             if(nation.Name != _currentLoginUser)
             {
@@ -957,11 +982,43 @@ namespace Henson.ViewModels
         /// </summary>
         private void LoadNations()
         {
-            var (nations, locked) = DbClient.GetNations();
+            var nationDict = DbClient.GetNations();
 
-            foreach(var n in nations)
+            NationGridEntryViewModel? ungrouped = null;
+            foreach(var kvp in nationDict)
             {
-                Nations.Add(new NationGridViewModel(n, false, locked.Contains(n.Name), this));
+                var folder = new NationGridEntryViewModel(kvp.Key, [], expanded: kvp.Value.expanded);
+                foreach(var nation in kvp.Value.nations)
+                {
+                    folder.AddIntoFolder(new NationGridEntryViewModel(
+                        representedNation: new NationViewModel(nation.nation, false, nation.locked, this)));
+                }
+
+                if(kvp.Key == "Ungrouped")
+                {
+                    ungrouped = folder;
+                }
+                else
+                {
+                    NationGroups.Add(folder);
+                }
+            }
+
+            //ensure ungrouped is always last
+            if(ungrouped != null)
+            {
+                NationGroups.Add(ungrouped);
+            }
+            
+            foreach(var group in NationGroups)
+            {
+                group.Items.CollectionChanged += (_, args) =>
+                {
+                    if(args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+                    {
+                        DbClient.StoreGroupState(group.Name, group.Items.Select(x => x.Name).ToList());
+                    }
+                };
             }
         }
 

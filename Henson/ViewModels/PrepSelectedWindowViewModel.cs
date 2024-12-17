@@ -54,7 +54,7 @@ namespace Henson.ViewModels
         /// <summary>
         /// The list of all nations loaded by Henson.
         /// </summary>
-        private readonly List<NationGridViewModel> _nations;
+        private readonly List<NationViewModel> _nations;
 
         /// <summary>
         /// A list of nations selected by the user.
@@ -200,7 +200,7 @@ namespace Henson.ViewModels
         /// <param name="enable"/>
         /// <param name="tint"/>
         /// <param name="opacity"/>
-        public PrepSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string target,
+        public PrepSelectedWindowViewModel(List<NationViewModel> nations, NsClient client, string target,
             IBrush background, bool enable, IBrush tint,
             double opacity)
         {

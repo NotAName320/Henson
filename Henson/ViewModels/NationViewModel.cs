@@ -1,5 +1,5 @@
 ﻿/*
-View Model representing nation in grid
+View Model representing Nation
 Copyright (C) 2023 NotAName320
 
 This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@ using System.Windows.Input;
 
 namespace Henson.ViewModels
 {
-    public class NationGridViewModel : ViewModelBase
+    public class NationViewModel : ViewModelBase
     {
         public string Name => _nation.Name;
         public string Pass => _nation.Pass;
@@ -66,7 +66,7 @@ namespace Henson.ViewModels
 
         private readonly Nation _nation;
 
-        public NationGridViewModel(Nation nation, bool @checked, bool locked, MainWindowViewModel parent)
+        public NationViewModel(Nation nation, bool @checked, bool locked, MainWindowViewModel parent)
         {
             _nation = nation;
             this._checked = @checked;

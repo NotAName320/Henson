@@ -298,7 +298,7 @@ namespace Henson.ViewModels
         /// <summary>
         /// The list of nations with RO perms to tag.
         /// </summary>
-        private readonly List<NationGridViewModel> _nationsToTag;
+        private readonly List<NationViewModel> _nationsToTag;
 
         /// <summary>
         /// The index that the user is on for a specific subtask.
@@ -354,7 +354,7 @@ namespace Henson.ViewModels
         private static readonly ILog Log =
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
         
-        public TagSelectedWindowViewModel(List<NationGridViewModel> nations, NsClient client, string whitelist,
+        public TagSelectedWindowViewModel(List<NationViewModel> nations, NsClient client, string whitelist,
             IBrush background, bool enable, IBrush tint, double opacity)
         {
             (BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity) = (background, enable, tint, opacity);
@@ -488,7 +488,7 @@ namespace Henson.ViewModels
                     return;
                 }
 
-                NationGridViewModel currentNation = _nationsToTag[LoginIndex];
+                NationViewModel currentNation = _nationsToTag[LoginIndex];
 
                 ButtonsEnabled = false;
                 await Task.Delay(100);

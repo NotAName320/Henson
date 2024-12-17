@@ -30,11 +30,11 @@ namespace Henson.ViewModels
     public static class DesignData
     {
         public static readonly PrepSelectedWindowViewModel PrepDesignVm =
-            new([new NationGridViewModel(new Nation("Test1", "1", "1", "test region"), true, false, null!)], null!, "",
+            new([new NationViewModel(new Nation("Test1", "1", "1", "test region"), true, false, null!)], null!, "",
                 Brushes.White, false, Brushes.White, 0.65);
 
         public static readonly TagSelectedWindowViewModel TagDesignVm =
-            new([new NationGridViewModel(new Nation("Test1", "1", "1", "test region"), true, false, null!)], null!, "",
+            new([new NationViewModel(new Nation("Test1", "1", "1", "test region"), true, false, null!)], null!, "",
                 Brushes.White, false, Brushes.White, 0.65);
     }
     

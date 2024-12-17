@@ -30,7 +30,9 @@ using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Avalonia.Input;
 using Avalonia.Platform.Storage;
+using Avalonia.Styling;
 using MsBox.Avalonia.Enums;
 
 namespace Henson.Views
@@ -147,13 +149,45 @@ namespace Henson.Views
         
         private void NationList_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            NationList.SelectedItem = null;
+            //NationList.SelectedItem = null;
         }
 
         private void WindowBase_OnOpened(object? sender, EventArgs e)
         {
             //cant change theme without window opening
             ViewModel!.SetSettings();
+        }
+
+        private void NationTree_OnRowDrop(object? sender, TreeDataGridRowDragEventArgs e)
+        {
+            var targetModel = (NationGridEntryViewModel?)e.TargetRow.Model;
+            
+            //nations can only be moved into between/within folders
+            if(targetModel == null ||
+               (e.Position is TreeDataGridRowDropPosition.Before or TreeDataGridRowDropPosition.After
+                && !targetModel.IsNation))
+            {
+                e.Inner.DragEffects = DragDropEffects.None;
+            }
+            // if dragging over nation, put it after the nation in the same folder
+            else if(e.Position is TreeDataGridRowDropPosition.Inside && targetModel.IsNation)
+            {
+                e.Position = TreeDataGridRowDropPosition.After;
+            }
+        }
+
+        private void NationTree_OnRowDragStarted(object? sender, TreeDataGridRowDragStartedEventArgs e)
+        {
+            foreach(var model in e.Models)
+            {
+                var targetModel = (NationGridEntryViewModel)model;
+                
+                //folders cannot be dragged
+                if(!targetModel.IsNation)
+                {
+                    e.AllowedEffects = DragDropEffects.None;
+                }
+            }
         }
     }
 }
