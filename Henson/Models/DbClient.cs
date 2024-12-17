@@ -204,10 +204,12 @@ namespace Henson.Models
             var order = 0;
             foreach(var nation in nations)
             {
-                var groupOrNull = group == "Ungrouped" ? "NULL" : group;
+                var groupOrNull = group == "Ungrouped" ? null : group;
                 var updateNationGroup =
-                    $"UPDATE nations SET groupOrder = {order}, groupName = '{groupOrNull}' WHERE name='{nation}'";
+                    $"UPDATE nations SET groupOrder = {order}, groupName = @Group WHERE name='{nation}'";
                 using SqliteCommand command = new(updateNationGroup, con, transaction);
+                //escape this cause you can really put anything as group name
+                command.Parameters.AddWithValue("@Group", groupOrNull);
                 command.ExecuteNonQuery();
                 order++;
             }
