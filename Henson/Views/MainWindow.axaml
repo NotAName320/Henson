@@ -59,17 +59,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
         <TabControl Grid.Row="0">
       <TabItem Header="Quick View">
         <DockPanel>
-          <DockPanel DockPanel.Dock="Top">
-            <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)" IsEnabled="{Binding ButtonsEnabled}"/>
-            <Button Command="{Binding FindWaCommand}" Content="Find WA" IsEnabled="{Binding ButtonsEnabled}"/>
-            <Button Command="{Binding OnSelectNationsClick}" Content="Select All"/>
-            <Button Command="{Binding FilterNationsCommand}" Content="Filter"/>
-            <Button Command="{Binding RemoveSelectedCommand}" Content="Remove" IsEnabled="{Binding AnyNationSelected}"/>
-            <Button Command="{Binding ExportSelectedCommand}" Content="Export" IsEnabled="{Binding AnyNationSelected}"/>
-            <Button Command="{Binding OnLockSelectedClick}" Content="Lock/Unlock" IsEnabled="{Binding AnyNationSelected}"/>
-            <Button Command="{Binding PingSelectedCommand}" Content="Ping" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
-            <Button Command="{Binding PrepSelectedCommand}" Content="Prep" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
-            <Button Command="{Binding TagSelectedCommand}" Content="Tag" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
+          <DockPanel DockPanel.Dock="Top" LastChildFill="False">
+            <DockPanel DockPanel.Dock="Left">
+              <Button Command="{Binding AddNationCommand}" Content="Add Nation(s)" IsEnabled="{Binding ButtonsEnabled}"/>
+              <Button Command="{Binding FindWaCommand}" Content="Find WA" IsEnabled="{Binding ButtonsEnabled}"/>
+              <Button Command="{Binding OnSelectNationsClick}" Content="Select All"/>
+              <Button Command="{Binding FilterNationsCommand}" Content="Filter"/>
+              <Button Command="{Binding RemoveSelectedCommand}" Content="Remove" IsEnabled="{Binding AnyNationSelected}"/>
+              <Button Command="{Binding ExportSelectedCommand}" Content="Export" IsEnabled="{Binding AnyNationSelected}"/>
+              <Button Command="{Binding OnLockSelectedClick}" Content="Lock/Unlock" IsEnabled="{Binding AnyNationSelected}"/>
+              <Button Command="{Binding PingSelectedCommand}" Content="Ping" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
+              <Button Command="{Binding PrepSelectedCommand}" Content="Prep" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
+              <Button Command="{Binding TagSelectedCommand}" Content="Tag" IsEnabled="{Binding NationSelectedAndNoSiteRequests}"/>
+            </DockPanel>
+            <DockPanel DockPanel.Dock="Right">
+              <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Folder Controls:</TextBlock>
+              <Button Command="{Binding AddFolderCommand}" Content="Add"/>
+              <Button Command="{Binding RemoveFolderCommand}" Content="Remove" IsEnabled="{Binding OnlyOneFolderSelected}"/>
+              <Button Command="{Binding RenameFolderCommand}" Content="Rename" IsEnabled="{Binding OnlyOneFolderSelected}"/>
+            </DockPanel>
           </DockPanel>
           <TreeDataGrid Name="NationTree" Source="{Binding NationGroupDisplay}" CanUserResizeColumns="False"
                         CanUserSortColumns="False" AutoDragDropRows="True" RowDrop="NationTree_OnRowDrop"

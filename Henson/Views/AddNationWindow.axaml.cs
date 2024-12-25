@@ -18,39 +18,26 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 using Avalonia.Controls;
-using Avalonia.Media.Imaging;
-using Avalonia.Platform;
-using Avalonia.ReactiveUI;
 using Henson.ViewModels;
 using ReactiveUI;
 using System;
-using System.Media;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Platform.Storage;
 using MsBox.Avalonia.Enums;
 
 namespace Henson.Views
 {
-    public partial class AddNationWindow : ReactiveWindow<AddNationWindowViewModel>
+    public partial class AddNationWindow : HensonWindow<AddNationWindowViewModel>
     {
         public AddNationWindow()
         {
             InitializeComponent();
             this.WhenActivated(d => d(ViewModel!.ConfigPickerDialog.RegisterHandler(GetConfigJson)));
             this.WhenActivated(d => d(ViewModel!.TextFilePickerDialog.RegisterHandler(GetTextFile)));
-            this.WhenActivated(d => d(ViewModel!.MessageBoxDialog.RegisterHandler(ShowMessageBoxDialog)));
             this.WhenActivated(d => d(ViewModel!.ConfigPickerCommand.Subscribe(Close)));
             this.WhenActivated(d => d(ViewModel!.TextPickerCommand.Subscribe(Close)));
             this.WhenActivated(d => d(ViewModel!.ImportOneCommand.Subscribe(Close)));
             this.WhenActivated(d => d(ViewModel!.ImportManyCommand.Subscribe(Close)));
-        }
-
-        protected override void OnClosing(WindowClosingEventArgs e)
-        {
-            base.OnClosing(e);
-            //Spent like 4 hours figuring out that I needed the below line lol
-            SetClosing(false);
         }
 
         private async Task GetConfigJson(IInteractionContext<ViewModelBase, string?> interaction)
@@ -89,19 +76,17 @@ namespace Henson.Views
             interaction.SetOutput(result.Count == 0 ? null : Uri.UnescapeDataString(result[0].Path.AbsolutePath));
         }
 
-        private async Task ShowMessageBoxDialog(IInteractionContext<MessageBoxViewModel, ButtonResult> interaction)
+        protected override Task ShowMessageBoxDialog(IInteractionContext<MessageBoxViewModel, ButtonResult> interaction)
         {
-            var parameters = interaction.Input.Params;
-
-            parameters.WindowIcon = new WindowIcon(new Bitmap(AssetLoader.Open(new Uri("avares://Henson/Assets/henson-icon.ico"))));
-            parameters.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-
-            var messageBox = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard(parameters);
             SetClosing(true);
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-
-            var result = await messageBox.ShowWindowDialogAsync(this);
-            interaction.SetOutput(result);
+            return base.ShowMessageBoxDialog(interaction);
+        }
+        
+        protected override void OnClosing(WindowClosingEventArgs e)
+        {
+            base.OnClosing(e);
+            //Spent like 4 hours figuring out that I needed the below line lol
+            SetClosing(false);
         }
 
         private void SetClosing(bool value)

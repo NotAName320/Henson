@@ -21,13 +21,9 @@ using MsBox.Avalonia.Dto;
 
 namespace Henson.ViewModels
 {
-    public class MessageBoxViewModel : ViewModelBase
+    public class MessageBoxViewModel(MessageBoxStandardParams messageParams, Styling styling) : ViewModelBase
     {
-        public MessageBoxStandardParams Params { get; set; }
-
-        public MessageBoxViewModel(MessageBoxStandardParams messageParams)
-        {
-            Params = messageParams;
-        }
+        public MessageBoxStandardParams Params { get; set; } = messageParams;
+        public Styling WindowStyling { get; set; } = styling;
     }
 }

@@ -20,7 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.Controls;
-using Avalonia.Media;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
 using ReactiveUI;
@@ -53,10 +52,9 @@ namespace Henson.ViewModels
         private int? IntNumNations =>
             NumNations == "" ? int.MaxValue : int.TryParse(NumNations, out var i) && i > 0 ? i : null;
 
-        public FilterNationsWindowViewModel(string regionName, IBrush background, bool enable, IBrush tint,
-            double opacity)
+        public FilterNationsWindowViewModel(string regionName, Styling styling)
         {
-            (BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity) = (background, enable, tint, opacity);
+            (BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity) = styling;
             AcrylicTransparency = EnableAcrylic ? [WindowTransparencyLevel.AcrylicBlur] : [];
             RegionName = regionName;
 
@@ -73,7 +71,7 @@ namespace Henson.ViewModels
                     ContentTitle = "No Number Inputted",
                     ContentMessage = "Please input a valid number.",
                     Icon = Icon.Error
-                });
+                }, styling);
                 await MessageBoxDialog.Handle(messageBoxDialog);
 
                 return null;

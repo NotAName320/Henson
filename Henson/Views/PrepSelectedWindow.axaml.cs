@@ -17,41 +17,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-using Avalonia.Controls;
-using Avalonia.Platform;
-using Avalonia.ReactiveUI;
 using Henson.ViewModels;
-using ReactiveUI;
-using System.Media;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using System;
 using Avalonia.Input;
-using Avalonia.Media.Imaging;
-using MsBox.Avalonia.Enums;
 
 namespace Henson.Views
 {
-    public partial class PrepSelectedWindow : ReactiveWindow<PrepSelectedWindowViewModel>
+    public partial class PrepSelectedWindow : HensonWindow<PrepSelectedWindowViewModel>
     {
         public PrepSelectedWindow()
         {
             InitializeComponent();
-            this.WhenActivated(d => d(ViewModel!.MessageBoxDialog.RegisterHandler(ShowMessageBoxDialog)));
-        }
-
-        private async Task ShowMessageBoxDialog(IInteractionContext<MessageBoxViewModel, ButtonResult> interaction)
-        {
-            var parameters = interaction.Input.Params;
-
-            parameters.WindowIcon = new WindowIcon(new Bitmap(AssetLoader.Open(new Uri("avares://Henson/Assets/henson-icon.ico"))));
-            parameters.WindowStartupLocation = WindowStartupLocation.CenterOwner;
-
-            var messageBox = MsBox.Avalonia.MessageBoxManager.GetMessageBoxStandard(interaction.Input.Params);
-            if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) SystemSounds.Beep.Play();
-
-            var result = await messageBox.ShowWindowDialogAsync(this);
-            interaction.SetOutput(result);
         }
         
         private void InputElement_OnKeyUp(object? sender, KeyEventArgs e)

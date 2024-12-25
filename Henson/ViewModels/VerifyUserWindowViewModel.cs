@@ -17,12 +17,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-using System.Reactive;
-using System.Reactive.Linq;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Enums;
-using ReactiveUI;
-
 namespace Henson.ViewModels
 {
     public class VerifyUserWindowViewModel : ViewModelBase
@@ -35,24 +29,24 @@ namespace Henson.ViewModels
         /// <summary>
         /// Fired when the Submit button is clicked.
         /// </summary>
-        public ReactiveCommand<Unit, string?> SubmitCommand { get; }
+        //public ReactiveCommand<Unit, string?> SubmitCommand { get; }
         
 
         public VerifyUserWindowViewModel()
         {
-            SubmitCommand = ReactiveCommand.CreateFromTask(async () =>
-            {
-                if(Checksum != "") return Checksum;
-                var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
-                {
-                    ContentTitle = "No Checksum Provided",
-                    ContentMessage = "Please go to the link provided and get your code.",
-                    Icon = Icon.Error,
-                });
-                await MessageBoxDialog.Handle(messageDialog);
-                    
-                return null;
-            });
+            // SubmitCommand = ReactiveCommand.CreateFromTask(async () =>
+            // {
+            //     if(Checksum != "") return Checksum;
+            //     var messageDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+            //     {
+            //         ContentTitle = "No Checksum Provided",
+            //         ContentMessage = "Please go to the link provided and get your code.",
+            //         Icon = Icon.Error,
+            //     });
+            //     await MessageBoxDialog.Handle(messageDialog);
+            //         
+            //     return null;
+            // });
         }
     }
 }

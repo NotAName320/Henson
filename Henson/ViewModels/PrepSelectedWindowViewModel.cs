@@ -29,7 +29,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
-using Avalonia.Media;
 using MsBox.Avalonia.Enums;
 
 namespace Henson.ViewModels
@@ -201,10 +200,9 @@ namespace Henson.ViewModels
         /// <param name="tint"/>
         /// <param name="opacity"/>
         public PrepSelectedWindowViewModel(List<NationViewModel> nations, NsClient client, string target,
-            IBrush background, bool enable, IBrush tint,
-            double opacity)
+            Styling styling)
         {
-            (BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity) = (background, enable, tint, opacity);
+            (BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity) = styling;
             AcrylicTransparency = EnableAcrylic ? [WindowTransparencyLevel.AcrylicBlur] : [];
             _nations = nations;
             _selectedNations = _nations.Where(x => x.Checked && !x.Locked).Select(x => new NationLoginViewModel(x.Name, x.Pass)).ToList();
@@ -220,7 +218,7 @@ namespace Henson.ViewModels
                         ContentTitle = "Logins Complete",
                         ContentMessage = $"All nations have been prepped. Please close the window now.",
                         Icon = Icon.Info,
-                    });
+                    }, styling);
                     await MessageBoxDialog.Handle(dialog);
                     return;
                 }
@@ -303,7 +301,7 @@ namespace Henson.ViewModels
                                 ContentTitle = "Target Region Not Set",
                                 ContentMessage = "Please set a target region.",
                                 Icon = Icon.Error,
-                            });
+                            }, styling);
                             await MessageBoxDialog.Handle(dialog);
                             ButtonsEnabled = true;
                             return;
@@ -344,7 +342,7 @@ namespace Henson.ViewModels
                         ContentMessage = $"The following nations failed to be prepped ({_selectedNations.Count-_prepSuccesses}/{_selectedNations.Count}):" +
                         $"\n{_failedLogins}\n\nCheck the log for more info.",
                         Icon = Icon.Warning,
-                    });
+                    }, styling);
                     await MessageBoxDialog.Handle(dialog);
 
                 }

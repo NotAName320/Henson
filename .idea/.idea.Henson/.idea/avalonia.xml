@@ -4,6 +4,7 @@
     <option name="projectPerEditor">
       <map>
         <entry key="Henson/App.axaml" value="Henson/Henson.csproj" />
+        <entry key="Henson/Views/AddFolderWindow.axaml" value="Henson/Henson.csproj" />
         <entry key="Henson/Views/AddNationWindow.axaml" value="Henson/Henson.csproj" />
         <entry key="Henson/Views/FilterNationsWindow.axaml" value="Henson/Henson.csproj" />
         <entry key="Henson/Views/MainWindow.axaml" value="Henson/Henson.csproj" />

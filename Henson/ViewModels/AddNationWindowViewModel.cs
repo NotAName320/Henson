@@ -28,7 +28,6 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.Controls;
-using Avalonia.Media;
 using log4net;
 using MsBox.Avalonia.Enums;
 
@@ -89,9 +88,9 @@ namespace Henson.ViewModels
         /// <summary>
         /// Constructs a new <c>AddWindowViewModel</c>.
         /// </summary>
-        public AddNationWindowViewModel(IBrush background, bool enable, IBrush tint, double opacity)
+        public AddNationWindowViewModel(Styling styling)
         {
-            (BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity) = (background, enable, tint, opacity);
+            (BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity) = styling;
             AcrylicTransparency = EnableAcrylic ? [WindowTransparencyLevel.AcrylicBlur] : [];
             ConfigPickerCommand = ReactiveCommand.CreateFromTask(async () =>
             {
@@ -111,7 +110,7 @@ namespace Henson.ViewModels
                         ContentTitle = "Config Processing Error",
                         ContentMessage = "The config file was invalid.",
                         Icon = Icon.Error,
-                    });
+                    }, styling);
                     await MessageBoxDialog.Handle(messageDialog);
                     
                     return null;
@@ -119,7 +118,6 @@ namespace Henson.ViewModels
 
                 return jsonReader.Items.Select(keyValue => new NationLoginViewModel(keyValue.Key, keyValue.Value))
                     .ToList();
-
             });
 
             TextPickerCommand = ReactiveCommand.CreateFromTask(async () =>
@@ -131,7 +129,7 @@ namespace Henson.ViewModels
                         ContentTitle = "No Password Set",
                         ContentMessage = "Please input a password before selecting a file.",
                         Icon = Icon.Error,
-                    });
+                    }, styling);
                     await MessageBoxDialog.Handle(messageDialog);
 
                     return null;
@@ -156,7 +154,7 @@ namespace Henson.ViewModels
                         ContentTitle = "Error",
                         ContentMessage = "Please enter a username and/or password.",
                         Icon = Icon.Error,
-                    });
+                    }, styling);
                     await MessageBoxDialog.Handle(dialog);
 
                     return null;
@@ -174,7 +172,7 @@ namespace Henson.ViewModels
                         ContentTitle = "Error",
                         ContentMessage = "Please enter a username, password, and/or range (e.g. 1-50).",
                         Icon = Icon.Error,
-                    });
+                    }, styling);
                     await MessageBoxDialog.Handle(errorDialog);
 
                     return null;
@@ -208,7 +206,7 @@ namespace Henson.ViewModels
                     ContentTitle = "Error",
                     ContentMessage = "Please enter a valid range format (e.g. 1-50).",
                     Icon = Icon.Error,
-                });
+                }, styling);
                 await MessageBoxDialog.Handle(rangeDialog);
 
                 return null;
@@ -226,7 +224,7 @@ namespace Henson.ViewModels
                                      "Pupeptname ^ and Puppetname % become Puppetname I and Puppetname 1st\n" +
                                      "respectively.",
                     Icon = Icon.Info,
-                });
+                }, styling);
                 await MessageBoxDialog.Handle(helpDialog);
             });
         }

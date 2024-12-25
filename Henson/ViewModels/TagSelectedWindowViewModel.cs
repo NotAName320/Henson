@@ -27,7 +27,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Avalonia.Controls;
-using Avalonia.Media;
 using DynamicData.Binding;
 using Henson.Models;
 using log4net;
@@ -355,9 +354,9 @@ namespace Henson.ViewModels
             LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod()!.DeclaringType);
         
         public TagSelectedWindowViewModel(List<NationViewModel> nations, NsClient client, string whitelist,
-            IBrush background, bool enable, IBrush tint, double opacity)
+            Styling styling)
         {
-            (BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity) = (background, enable, tint, opacity);
+            (BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity) = styling;
             AcrylicTransparency = EnableAcrylic ? [WindowTransparencyLevel.AcrylicBlur] : [];
             _nationsToTag = nations;
             _client = client;
@@ -370,7 +369,7 @@ namespace Henson.ViewModels
                     ContentTitle = "Embassies",
                     ContentMessage = "Enter regions separated by commas\n(e.g. Red Front, Ijaka, Agheasma).",
                     Icon = Icon.Info,
-                });
+                }, styling);
                 await MessageBoxDialog.Handle(messageDialog);
             });
 
@@ -399,7 +398,7 @@ namespace Henson.ViewModels
                         ContentTitle = "Nothing Selected",
                         ContentMessage = "Please select a tag to add/remove.",
                         Icon = Icon.Error,
-                    });
+                    }, styling);
                     await MessageBoxDialog.Handle(dialog);
                     return;
                 }
@@ -424,7 +423,7 @@ namespace Henson.ViewModels
                         ContentTitle = "Nothing Selected",
                         ContentMessage = "Please select something to do to the regions.",
                         Icon = Icon.Error,
-                    });
+                    }, styling);
                     await MessageBoxDialog.Handle(dialog);
                     return;
 
@@ -437,7 +436,7 @@ namespace Henson.ViewModels
                         ContentTitle = "No WFE",
                         ContentMessage = "Please set a WFE to tag regions with.",
                         Icon = Icon.Error,
-                    });
+                    }, styling);
                     await MessageBoxDialog.Handle(dialog);
                     return;
                 }
@@ -449,7 +448,7 @@ namespace Henson.ViewModels
                         ContentTitle = "No Banner/Flag",
                         ContentMessage = "Please upload both a banner/flag to tag regions with.",
                         Icon = Icon.Error,
-                    });
+                    }, styling);
                     await MessageBoxDialog.Handle(dialog);
                     return;
                 }
@@ -483,7 +482,7 @@ namespace Henson.ViewModels
                         ContentTitle = "Logins Complete",
                         ContentMessage = messageContent,
                         Icon = Icon.Info,
-                    });
+                    }, styling);
                     await MessageBoxDialog.Handle(dialog);
                     return;
                 }

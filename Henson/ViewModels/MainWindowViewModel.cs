@@ -97,6 +97,12 @@ namespace Henson.ViewModels
         /// Fired when the Filter button in quick view is clicked.
         /// </summary>
         public ICommand FilterNationsCommand { get; }
+        
+        public ICommand AddFolderCommand { get; }
+        
+        public ICommand RemoveFolderCommand { get; }
+        
+        public ICommand RenameFolderCommand { get; }
 
         /// <summary>
         /// This interaction opens the Add Nation Dialog and returns a list of NationLoginViewModels
@@ -133,6 +139,8 @@ namespace Henson.ViewModels
 
         public Interaction<FilterNationsWindowViewModel, (int numNations, string regionName, bool? notIn, bool
             withLocked)?> FilterNationsDialog { get; } = new();
+        
+        public Interaction<AddFolderWindowViewModel, string?> AddFolderDialog { get; } = new();
 
         private static readonly Dictionary<int, string> NumToTheme = new()
         {
@@ -228,10 +236,18 @@ namespace Henson.ViewModels
         /// </summary>
         public bool NationSelectedAndNoSiteRequests => _nationSelectedAndNoSiteRequests.Value;
         private readonly ObservableAsPropertyHelper<bool> _nationSelectedAndNoSiteRequests;
+
+        /// <summary>
+        /// A boolean representation of whether only one folder is selected.
+        /// </summary>
+        public bool OnlyOneFolderSelected => _onlyOneFolderSelected.Value;
+        private readonly ObservableAsPropertyHelper<bool> _onlyOneFolderSelected;
         
         private string _currentLocalId = ""; //should probably store that in the object or the chk here for constitency
 
         private string _currentPin = "";
+
+        private Styling WindowStyling => (BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity);
 
         /// <summary>
         /// An object storing the UserAgent and using it to make requests to NationStates via both API and site.
@@ -294,7 +310,7 @@ namespace Henson.ViewModels
             AddNationCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 if(await UserAgentNotSet()) return;
-                var dialog = new AddNationWindowViewModel(BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity);
+                var dialog = new AddNationWindowViewModel(WindowStyling);
                 var result = await AddNationDialog.Handle(dialog);
 
                 if(result != null)
@@ -314,7 +330,7 @@ namespace Henson.ViewModels
                             ContentTitle = "Warning",
                             ContentMessage = "One or more nation(s) failed to add, probably due to an invalid username/password combo.",
                             Icon = Icon.Warning,
-                        });
+                        }, WindowStyling);
                         await MessageBoxDialog.Handle(messageBoxDialog);
                         nations = nations.Where(x => x != null).ToList();
                     }
@@ -375,7 +391,7 @@ namespace Henson.ViewModels
                     ContentMessage = "Are you sure you want to remove the selected nations' logins from Henson?",
                     Icon = Icon.Info,
                     ButtonDefinitions = ButtonEnum.YesNo,
-                });
+                }, WindowStyling);
                 var result = await MessageBoxDialog.Handle(dialog);
 
                 if(result == ButtonResult.Yes)
@@ -436,7 +452,7 @@ namespace Henson.ViewModels
                         ContentMessage = "One or more nation(s) failed to ping, probably due to an invalid username/password combo. " +
                         "They have been selected.",
                         Icon = Icon.Warning,
-                    });
+                    }, WindowStyling);
                     await MessageBoxDialog.Handle(dialog);
                 }
                 else
@@ -448,7 +464,7 @@ namespace Henson.ViewModels
                         ContentTitle = "Success",
                         ContentMessage = "All nations pinged successfully.",
                         Icon = Icon.Info,
-                    });
+                    }, WindowStyling);
                     await MessageBoxDialog.Handle(dialog);
                 }
                 ButtonsEnabled = true;
@@ -474,7 +490,7 @@ namespace Henson.ViewModels
                         ContentTitle = "WA Nation Found",
                         ContentMessage = $"Your WA nation is {result}.",
                         Icon = Icon.Info,
-                    });
+                    }, WindowStyling);
                     await MessageBoxDialog.Handle(dialog);
                 }
                 else
@@ -486,15 +502,14 @@ namespace Henson.ViewModels
                         ContentTitle = "WA Nation Not Found",
                         ContentMessage = "Your WA nation was not found.",
                         Icon = Icon.Warning,
-                    });
+                    }, WindowStyling);
                     await MessageBoxDialog.Handle(dialog);
                 }
             });
 
             FilterNationsCommand = ReactiveCommand.CreateFromTask(async () =>
             {
-                FilterNationsWindowViewModel dialog = new(Settings.JumpPoint, BackgroundColor, EnableAcrylic,
-                    AcrylicTint, AcrylicOpacity);
+                FilterNationsWindowViewModel dialog = new(Settings.JumpPoint, WindowStyling);
 
                 var (numNations, regionName, notIn, withLocked) = await FilterNationsDialog.Handle(dialog) ?? default;
 
@@ -538,7 +553,7 @@ namespace Henson.ViewModels
                         ContentTitle = "No Nations Selected",
                         ContentMessage = "Please select some (unlocked) nations first.",
                         Icon = Icon.Info,
-                    });
+                    }, WindowStyling);
                     await MessageBoxDialog.Handle(messageDialog);
                     return;
                 }
@@ -547,8 +562,7 @@ namespace Henson.ViewModels
                 await Task.Delay(100);
 
                 var dialog = new PrepSelectedWindowViewModel(Nations.ToList(), Client,
-                    TargetRegion == "" ? Settings.JumpPoint : TargetRegion, BackgroundColor, EnableAcrylic,
-                    AcrylicTint, AcrylicOpacity);
+                    TargetRegion == "" ? Settings.JumpPoint : TargetRegion, WindowStyling);
                 await PrepSelectedDialog.Handle(dialog);
 
                 foreach(var n in Nations)
@@ -572,7 +586,7 @@ namespace Henson.ViewModels
                         ContentTitle = "No Nations Selected",
                         ContentMessage = "Please select some (unlocked) nations not in the JP first.",
                         Icon = Icon.Info,
-                    });
+                    }, WindowStyling);
                     await MessageBoxDialog.Handle(messageDialog);
                     return;
                 }
@@ -617,7 +631,7 @@ namespace Henson.ViewModels
                         ContentTitle = "No Taggable Regions",
                         ContentMessage = "None of the selected nations were in regions they could tag.",
                         Icon = Icon.Info,
-                    });
+                    }, WindowStyling);
                     await MessageBoxDialog.Handle(messageDialog);
                     return;
                 }
@@ -625,7 +639,7 @@ namespace Henson.ViewModels
                 FooterText = "Opening tag window...";
 
                 var dialog = new TagSelectedWindowViewModel(taggableNations, Client, Settings.EmbWhitelist,
-                    BackgroundColor, EnableAcrylic, AcrylicTint, AcrylicOpacity);
+                    WindowStyling);
                 await TagSelectedDialog.Handle(dialog);
 
                 FooterText = "Regions tagged!";
@@ -638,18 +652,156 @@ namespace Henson.ViewModels
                     ContentTitle = "Embassy Whitelist",
                     ContentMessage = "Enter regions separated by commas\n(e.g. Red Front, Ijaka, Agheasma).",
                     Icon = Icon.Info,
-                });
+                }, WindowStyling);
                 await MessageBoxDialog.Handle(messageDialog);
             });
 
+            AddFolderCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                var dialog = new AddFolderWindowViewModel(NationGroups.Select(x => x.Name), WindowStyling);
+                var result = await AddFolderDialog.Handle(dialog);
+
+                if(result is null) return;
+                
+                NationGridEntryViewModel newFolder = new(result, []);
+
+                newFolder.Items.CollectionChanged += (_, args) =>
+                {
+                    if(args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+                    {
+                        DbClient.StoreGroupState(newFolder.Name, newFolder.Items.Select(x => x.Name).ToList());
+                    }
+                };
+                
+                NationGroups.Insert(NationGroups.Count-1, newFolder);
+                DbClient.AddGroup(newFolder.Name);
+                FooterText = "Folder added!";
+            });
+            
+            RemoveFolderCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                NationGridEntryViewModel? removedFolder = null;
+                foreach(var group in NationGroups)
+                {
+                    if(group.TrueSelected)
+                    {
+                        removedFolder = group;
+                    }
+                }
+
+                if(removedFolder is null)
+                {
+                    var noFolderSelectedDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "No Folder Selected",
+                        ContentMessage = "No folder was detected as selected.\nThis error should probably not happen. " +
+                                         "Let Nota know.",
+                        Icon = Icon.Error,
+                    }, WindowStyling);
+                    await MessageBoxDialog.Handle(noFolderSelectedDialog);
+                    return;
+                }
+
+                if(removedFolder.Name == "Ungrouped")
+                {
+                    var ungroupedFolderSelectedDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Ungrouped Folder Selected",
+                        ContentMessage = "Ungrouped was detected as selected.\nThis error should probably not happen. " +
+                                         "Let Nota know.",
+                        Icon = Icon.Error,
+                    }, WindowStyling);
+                    await MessageBoxDialog.Handle(ungroupedFolderSelectedDialog);
+                    return;
+                }
+                
+                var confirmDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Confirm Removal",
+                    ContentMessage = "Are you sure you want to remove folder " + removedFolder.Name + "?",
+                    Icon = Icon.Error,
+                    ButtonDefinitions = ButtonEnum.YesNo
+                }, WindowStyling);
+                var result = await MessageBoxDialog.Handle(confirmDialog);
+                if(result == ButtonResult.No) return;
+
+                var ungrouped = NationGroups.First(x => x.Name == "Ungrouped");
+                ungrouped.Items.AddRange(removedFolder.Items);
+                NationGroups.Remove(removedFolder);
+                DbClient.RemoveGroup(removedFolder.Name);
+                FooterText = "Folder removed!";
+            });
+
+            RenameFolderCommand = ReactiveCommand.CreateFromTask(async () =>
+            {
+                NationGridEntryViewModel? removedFolder = null;
+                foreach(var group in NationGroups)
+                {
+                    if(group.TrueSelected)
+                    {
+                        removedFolder = group;
+                    }
+                }
+
+                if(removedFolder is null)
+                {
+                    var noFolderSelectedDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "No Folder Selected",
+                        ContentMessage = "No folder was detected as selected.\nThis error should probably not happen. " +
+                                         "Let Nota know.",
+                        Icon = Icon.Error,
+                    }, WindowStyling);
+                    await MessageBoxDialog.Handle(noFolderSelectedDialog);
+                    return;
+                }
+
+                if(removedFolder.Name == "Ungrouped")
+                {
+                    var ungroupedFolderSelectedDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Ungrouped Folder Selected",
+                        ContentMessage = "Ungrouped was detected as selected.\nThis error should probably not happen. " +
+                                         "Let Nota know.",
+                        Icon = Icon.Error,
+                    }, WindowStyling);
+                    await MessageBoxDialog.Handle(ungroupedFolderSelectedDialog);
+                    return;
+                }
+            });
+
             //When any nation is checked or unchecked see if any nation is checked at all and set that value to a property
-            Nations.ToObservableChangeSet().AutoRefresh(x => x.Checked).ToCollection()
-                   .Select(x => x.Any(y => y.Checked)).ToProperty(this, x => x.AnyNationSelected, out _anyNationSelected);
+            NationGroups.ToObservableChangeSet().AutoRefresh(x => x.IsSelected).ToCollection()
+                   .Select(x => x.Any(y => y.Items.Any(z => z.IsSelected)))
+                   .ToProperty(this, x => x.AnyNationSelected, out _anyNationSelected);
 
             //Combine ButtonsEnabled property with AnyNationSelected property to get property
             //for buttons that need to be disabled in both situations
-            this.WhenAnyValue(x => x.ButtonsEnabled, x => x.AnyNationSelected).Select(_ => ButtonsEnabled && AnyNationSelected)
+            this.WhenAnyValue(x => x.ButtonsEnabled, x => x.AnyNationSelected)
+                .Select(_ => ButtonsEnabled && AnyNationSelected)
                 .ToProperty(this, x => x.NationSelectedAndNoSiteRequests, out _nationSelectedAndNoSiteRequests);
+            
+            //Only enable Remove and Rename buttons when there's exactly one folder selected and it isn't the null group
+             NationGroups.ToObservableChangeSet().AutoRefresh(x => x.IsSelected).ToCollection()
+                 .Select(_ =>
+                 {
+                     //very inefficient. bah!
+                     var selectedNations = GetSelectedNations();
+                     if(selectedNations.Count == 0) 
+                     {
+                         return NationGroups.Count(x => x.TrueSelected) == 1 &&
+                                NationGroups.First(x => x.TrueSelected).Name != "Ungrouped";
+                     }
+                     
+                     var firstSelectedFolder = GetFolderFromNation(selectedNations[0].Name);
+                     if(firstSelectedFolder is null) return false;
+                     
+                     return firstSelectedFolder.Name != "Ungrouped" &&
+                            firstSelectedFolder.Items.All(selectedNations.Contains) && 
+                            firstSelectedFolder.Items.Count == selectedNations.Count &&
+                            NationGroups.Count(x => x.TrueSelected) == 1;
+                 })
+                 .ToProperty(this, x => x.OnlyOneFolderSelected, out _onlyOneFolderSelected);
         }
         
         /// <summary>
@@ -666,7 +818,7 @@ namespace Henson.ViewModels
                     ContentTitle = "No Nations Selected",
                     ContentMessage = "Please select some nations first.",
                     Icon = Icon.Info,
-                });
+                }, WindowStyling);
                 await MessageBoxDialog.Handle(dialog);
                 return;
             }
@@ -815,7 +967,7 @@ namespace Henson.ViewModels
                     ContentTitle = "Login Failed",
                     ContentMessage = "The login failed, probably due to an invalid username/password combination.",
                     Icon = Icon.Error,
-                });
+                }, WindowStyling);
                 await MessageBoxDialog.Handle(dialog);
             }
             ButtonsEnabled = true;
@@ -858,7 +1010,7 @@ namespace Henson.ViewModels
                     ContentTitle = "WA Application Failed",
                     ContentMessage = "Please log in again.",
                     Icon = Icon.Error,
-                });
+                }, WindowStyling);
                 await MessageBoxDialog.Handle(dialog);
             }
             ButtonsEnabled = true;
@@ -883,7 +1035,7 @@ namespace Henson.ViewModels
                     ContentTitle = "Target Region Not Set",
                     ContentMessage = "Please set a target region (or a jump point in settings).",
                     Icon = Icon.Error,
-                });
+                }, WindowStyling);
                 await MessageBoxDialog.Handle(dialog);
                 return;
             }
@@ -895,7 +1047,7 @@ namespace Henson.ViewModels
                     ContentTitle = "Nation Already In Region",
                     ContentMessage = $"Your nation is already in the region {nation.Region}.",
                     Icon = Icon.Info,
-                });
+                }, WindowStyling);
 
                 await MessageBoxDialog.Handle(dialog);
                 return;
@@ -928,7 +1080,7 @@ namespace Henson.ViewModels
                     ContentTitle = "Moving Region Failed",
                     ContentMessage = "Moving to the region failed.",
                     Icon = Icon.Error,
-                });
+                }, WindowStyling);
                 await MessageBoxDialog.Handle(dialog);
             }
             ButtonsEnabled = true;
@@ -950,7 +1102,7 @@ namespace Henson.ViewModels
                     ContentTitle = "Current Login Doesn't Match",
                     ContentMessage = "Please log in with the the account you are trying to perform this action with.",
                     Icon = Icon.Error,
-                });
+                }, WindowStyling);
                 await MessageBoxDialog.Handle(dialog);
                 return false;
             }
@@ -970,7 +1122,7 @@ namespace Henson.ViewModels
                     ContentTitle = "Main Nation Not Set",
                     ContentMessage = "Please go to the Settings tab to set the Main Nation.",
                     Icon = Icon.Error,
-                });
+                }, WindowStyling);
                 await MessageBoxDialog.Handle(dialog);
                 return true;
             }
@@ -1202,7 +1354,7 @@ namespace Henson.ViewModels
                 "You can get it at https://github.com/NotAName320/Henson/releases.\n\n" +
                 "Updating immediately is always recommended to ensure site rules compliance.",
                 Icon = Icon.Info,
-            });
+            }, WindowStyling);
             await MessageBoxDialog.Handle(dialog);
 
             //opens web browser, works on windows and linux (IDK about mac)
@@ -1225,7 +1377,7 @@ namespace Henson.ViewModels
                 ContentTitle = "Main Nation Empty",
                 ContentMessage = "You must set a main nation in Settings before being able to use the features of Henson.",
                 Icon = Icon.Warning,
-            });
+            }, WindowStyling);
             await MessageBoxDialog.Handle(dialog);
         }
 
@@ -1240,13 +1392,33 @@ namespace Henson.ViewModels
                 ContentTitle = "Another Instance Running",
                 ContentMessage = "Another instance of Henson is already running on this computer.",
                 Icon = Icon.Error,
-            });
+            }, WindowStyling);
             await MessageBoxDialog.Handle(dialog);
             
             if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopApp)
             {
                 desktopApp.Shutdown();
             }
+        }
+
+        private List<NationGridEntryViewModel> GetSelectedNations()
+        {
+            List<NationGridEntryViewModel> retVal = [];
+            retVal.AddRange(from @group in NationGroups from nation in @group.Items where nation.IsSelected select nation);
+            return retVal;
+        }
+
+        private NationGridEntryViewModel? GetFolderFromNation(string nationName)
+        {
+            foreach(var group in NationGroups)
+            {
+                if(group.Items.Any(nation => nation.Name == nationName))
+                {
+                    return group;
+                }
+            }
+
+            return null;
         }
     }
 }
