@@ -1,6 +1,6 @@
 ﻿/*
-Filter Nations Window control
-Copyright (C) 2023 NotAName320
+Add Folder Window control
+Copyright (C) 2023-24 NotAName320
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,27 +17,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 
-using System;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using Henson.ViewModels;
-using MsBox.Avalonia.Enums;
 using ReactiveUI;
+using System;
+using System.Threading.Tasks;
+using MsBox.Avalonia.Enums;
 
 namespace Henson.Views;
 
-public partial class FilterNationsWindow : HensonWindow<FilterNationsWindowViewModel>
+public partial class AddFolderWindow : HensonWindow<AddFolderWindowViewModel>
 {
-    public FilterNationsWindow()
+    public AddFolderWindow()
     {
         InitializeComponent();
-        this.WhenActivated(d => d(ViewModel!.FilterCommand.Subscribe(Close)));
-    }
-
-    protected override void OnClosing(WindowClosingEventArgs e)
-    {
-        base.OnClosing(e);
-        SetClosing(false);
+        this.WhenActivated(d => d(ViewModel!.AddFolderCommand.Subscribe(Close)));
+        this.WhenActivated(d => d(ViewModel!.CancelCommand.Subscribe(Close)));
     }
 
     protected override Task ShowMessageBoxDialog(IInteractionContext<MessageBoxViewModel, ButtonResult> interaction)
@@ -45,18 +40,16 @@ public partial class FilterNationsWindow : HensonWindow<FilterNationsWindowViewM
         SetClosing(true);
         return base.ShowMessageBoxDialog(interaction);
     }
+
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        base.OnClosing(e);
+        //Spent like 4 hours figuring out that I needed the below line lol
+        SetClosing(false);
+    }
     
     private void SetClosing(bool value)
     {
         Closing += (_, e) => { e.Cancel = value; };
-    }
-    
-    /// <summary>
-    /// Im gonna be real no idea why this is necessary but apparently it stops a compile time error so.
-    /// </summary>
-    /// <param name="dialogResult"></param>
-    private void Close((int, string, bool?, bool)? dialogResult)
-    {
-        Close((object?)dialogResult);
     }
 }

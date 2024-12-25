@@ -20,7 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using Avalonia.ReactiveUI;
 using Henson.ViewModels;
 using ReactiveUI;
 using System;
@@ -32,12 +31,11 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Input;
 using Avalonia.Platform.Storage;
-using Avalonia.Styling;
 using MsBox.Avalonia.Enums;
 
 namespace Henson.Views
 {
-    public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
+    public partial class MainWindow : HensonWindow<MainWindowViewModel>
     {
         public MainWindow()
         {
@@ -45,10 +43,10 @@ namespace Henson.Views
             this.WhenActivated(d => d(ViewModel!.AddNationDialog.RegisterHandler(ShowAddNationDialog)));
             this.WhenActivated(d => d(ViewModel!.PrepSelectedDialog.RegisterHandler(ShowPrepSelectedDialog)));
             this.WhenActivated(d => d(ViewModel!.TagSelectedDialog.RegisterHandler(ShowTagSelectedDialog)));
-            this.WhenActivated(d => d(ViewModel!.MessageBoxDialog.RegisterHandler(ShowMessageBoxDialog)));
             this.WhenActivated(d => d(ViewModel!.FileSaveDialog.RegisterHandler(ShowFilePickerDialog)));
             this.WhenActivated(d => d(ViewModel!.VerifyUserDialog.RegisterHandler(ShowVerifyUserDialog)));
             this.WhenActivated(d => d(ViewModel!.FilterNationsDialog.RegisterHandler(ShowFilterNationsDialog)));
+            this.WhenActivated(d => d(ViewModel!.AddFolderDialog.RegisterHandler(ShowAddFolderDialog)));
             this.WhenActivated(d =>
             {
                 d(ViewModel!.PerformChecks.RegisterHandler(ctx => ctx.SetOutput(Unit.Default)));
@@ -146,6 +144,17 @@ namespace Henson.Views
             var result = await dialog.ShowDialog<(int, string, bool?, bool)?>(this);
             interaction.SetOutput(result);
         }
+        private async Task ShowAddFolderDialog(IInteractionContext<AddFolderWindowViewModel, string?> interaction)
+        {
+            var dialog = new AddFolderWindow
+            {
+                DataContext = interaction.Input
+            };
+
+            var result = await dialog.ShowDialog<string?>(this);
+            interaction.SetOutput(result);
+        }
+
         
         private void NationList_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
         {

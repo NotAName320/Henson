@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+global using Styling = (Avalonia.Media.IBrush background, bool enable, Avalonia.Media.IBrush tint, double opacity);
 
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;

@@ -31,11 +31,11 @@ namespace Henson.ViewModels
     {
         public static readonly PrepSelectedWindowViewModel PrepDesignVm =
             new([new NationViewModel(new Nation("Test1", "1", "1", "test region"), true, false, null!)], null!, "",
-                Brushes.White, false, Brushes.White, 0.65);
+                (Brushes.White, false, Brushes.White, 0.65));
 
         public static readonly TagSelectedWindowViewModel TagDesignVm =
             new([new NationViewModel(new Nation("Test1", "1", "1", "test region"), true, false, null!)], null!, "",
-                Brushes.White, false, Brushes.White, 0.65);
+                (Brushes.White, false, Brushes.White, 0.65));
     }
     
     public class ViewModelBase : ReactiveObject

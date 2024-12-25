@@ -1,0 +1,78 @@
+﻿<!--
+Layout of Add Folder Window
+Copyright (C) 2023 NotAName320
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Henson.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="125"
+        x:Class="Henson.Views.AddFolderWindow"
+        Title="Add Folder" Icon="/Assets/henson-icon.ico"
+        WindowStartupLocation="CenterOwner"
+        Width="300" Height="125" CanResize="False"
+        MinWidth="300" MinHeight="125"
+        MaxWidth="300" MaxHeight="125"
+        ExtendClientAreaToDecorationsHint="True"
+        Background="{Binding BackgroundColor}"
+        TransparencyLevelHint="{Binding AcrylicTransparency}">
+    
+    <Design.DataContext>
+        <vm:AddFolderWindowViewModel>
+            <x:Arguments>
+                <SolidColorBrush Color="White"/>
+                <x:Boolean>False</x:Boolean>
+                <SolidColorBrush Color="White"/>
+                <x:Double>0.65</x:Double>
+            </x:Arguments>
+        </vm:AddFolderWindowViewModel>
+    </Design.DataContext>
+
+    <DockPanel>
+        <ExperimentalAcrylicBorder IsHitTestVisible="False" IsVisible="{Binding EnableAcrylic}">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial
+                    BackgroundSource="Digger"
+                    TintColor="{Binding AcrylicTint}"
+                    TintOpacity="1"
+                    MaterialOpacity="{Binding AcrylicOpacity}"/>
+            </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
+        <StackPanel HorizontalAlignment="Left" Margin="10,10,0,0" Orientation="Horizontal"
+                    VerticalAlignment="Top" IsHitTestVisible="False" DockPanel.Dock="Top"
+                    IsVisible="{x:Static vm:ViewModelBase.IsNotLinux}">
+            <Image Source="/Assets/henson-icon.ico" Width="16" Margin="0,0,10,1"/>
+            <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=Title}"
+                       VerticalAlignment="Center"/>
+        </StackPanel>
+        <Grid RowDefinitions="*,Auto,Auto,Auto,*">
+            <DockPanel Dock="Left" Grid.Row="1">
+                <TextBlock VerticalAlignment="Center" Margin="10">Enter a Folder Name:</TextBlock>
+            </DockPanel>
+            <DockPanel Dock="Left" Grid.Row="2">
+                <TextBox HorizontalAlignment="Left" Margin="10,0,10,10"
+                         MinWidth="280" MaxWidth="280" Text="{Binding FolderNameBox}"/>
+            </DockPanel>
+            <DockPanel HorizontalAlignment="Center" Grid.Row="3" LastChildFill="False">
+                <Button HorizontalAlignment="Center" Margin="0,0,5,0" Command="{Binding AddFolderCommand}">Add</Button>
+                <Button HorizontalAlignment="Center" Margin="5,0,0,0" Command="{Binding CancelCommand}">Cancel</Button>
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>

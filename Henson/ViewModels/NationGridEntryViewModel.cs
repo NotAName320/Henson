@@ -28,14 +28,26 @@ namespace Henson.ViewModels;
 
 public class NationGridEntryViewModel : ViewModelBase
 {
-    public readonly string Name;
+    public string Name { get; private set; }
     public readonly ObservableCollection<NationGridEntryViewModel> Items;
     public readonly NationViewModel? RepresentedNation;
     public bool Expanded { get; set; } // setter must exist here
+
+    private bool _trueSelected;
+    public bool TrueSelected // AHHHHHHHHHHHHHH WHY DOES THIS NEED TO EXIST
+    {
+        get => _trueSelected;
+        private set => this.RaiseAndSetIfChanged(ref _trueSelected, value);
+    }
     
     public string DisplayName => IsNation ? RepresentedNation!.GridName : "\ud83d\udcc1" + Name!;
     public bool IsNation => RepresentedNation != null;
     
+    /// <summary>
+    /// Whether the grid row is selected. For some reason, also emits a change notification whenever one of its children
+    /// is selected. I can't be assed to debug this, and it turns out to actually be slightly useful when programming
+    /// event-based things at the MainWindow layer, so its a feature now, sure.
+    /// </summary>
     public bool IsSelected
     {
         get => IsNation ? RepresentedNation!.Checked : Items.All(x => x.IsSelected) && Items.Count != 0;
@@ -45,6 +57,7 @@ public class NationGridEntryViewModel : ViewModelBase
             {
                 RepresentedNation!.Checked = value;
             }
+
             this.RaisePropertyChanged();
         }
     }
@@ -63,7 +76,13 @@ public class NationGridEntryViewModel : ViewModelBase
         
         //change folder check box if child checkbox is checked
         Items.ToObservableChangeSet().AutoRefresh(x => x.IsSelected)
-            .Subscribe(_ => this.RaisePropertyChanged(nameof(IsSelected)));
+            .Subscribe(_ =>
+            {
+                TrueSelected = IsSelected;
+                this.RaisePropertyChanged(nameof(IsSelected));
+            });
+        
+        RepresentedNation?.WhenPropertyChanged(x => x.Name).Subscribe(_ => Name = RepresentedNation.Name);
     }
     
     /// <summary>
@@ -84,6 +103,10 @@ public class NationGridEntryViewModel : ViewModelBase
         if(IsNation) return;
 
         var opposite = !IsSelected;
+        if(Items.Count == 0)
+        {
+            TrueSelected = !TrueSelected;
+        }
         foreach(var nation in Items)
         {
             nation.IsSelected = opposite;

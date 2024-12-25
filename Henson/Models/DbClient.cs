@@ -98,7 +98,7 @@ namespace Henson.Models
         public static Dictionary<string, (List<(Nation nation, bool locked)> nations, bool expanded)> GetNations()
         {
             //maybe i should make a model for this
-            Dictionary<string, (List<(Nation nation, bool locked)> nations, bool expanded)> retVal = new() { { "Ungrouped", ([], false) } };
+            Dictionary<string, (List<(Nation nation, bool locked)> nations, bool expanded)> retVal = new() { { "Ungrouped", ([], true) } };
 
             using var con = new SqliteConnection($"Data Source={DbPath}");
             con.Open();
@@ -204,17 +204,26 @@ namespace Henson.Models
             var order = 0;
             foreach(var nation in nations)
             {
-                var groupOrNull = group == "Ungrouped" ? null : group;
                 var updateNationGroup =
                     $"UPDATE nations SET groupOrder = {order}, groupName = @Group WHERE name='{nation}'";
                 using SqliteCommand command = new(updateNationGroup, con, transaction);
                 //escape this cause you can really put anything as group name
-                command.Parameters.AddWithValue("@Group", groupOrNull);
+                command.Parameters.AddWithValue("@Group", group == "Ungrouped" ? DBNull.Value : group);
                 command.ExecuteNonQuery();
                 order++;
             }
             
             transaction.Commit();
+        }
+
+        public static void AddGroup(string group)
+        {
+            using var con = new SqliteConnection($"Data Source={DbPath}");
+            con.Open();
+            
+            using var command = new SqliteCommand("INSERT INTO groups (name) VALUES (@Group)", con);
+            command.Parameters.AddWithValue("@Group", group);
+            command.ExecuteNonQuery();
         }
     }
 }
