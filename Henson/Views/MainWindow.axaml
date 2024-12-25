@@ -75,8 +75,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
             <DockPanel DockPanel.Dock="Right">
               <TextBlock VerticalAlignment="Center" Margin="0,0,10,0">Folder Controls:</TextBlock>
               <Button Command="{Binding AddFolderCommand}" Content="Add"/>
-              <Button Command="{Binding TagSelectedCommand}" Content="Remove" IsEnabled="{Binding OnlyOneFolderSelected}"/>
-              <Button Command="{Binding TagSelectedCommand}" Content="Rename" IsEnabled="{Binding OnlyOneFolderSelected}"/>
+              <Button Command="{Binding RemoveFolderCommand}" Content="Remove" IsEnabled="{Binding OnlyOneFolderSelected}"/>
+              <Button Command="{Binding RenameFolderCommand}" Content="Rename" IsEnabled="{Binding OnlyOneFolderSelected}"/>
             </DockPanel>
           </DockPanel>
           <TreeDataGrid Name="NationTree" Source="{Binding NationGroupDisplay}" CanUserResizeColumns="False"

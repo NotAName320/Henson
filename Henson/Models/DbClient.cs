@@ -130,7 +130,7 @@ namespace Henson.Models
 
                 if(!foundGroup)
                 {
-                    retVal["Ungrouped"].nations.Add((nation, false));
+                    retVal["Ungrouped"].nations.Add((nation, reader.GetBoolean(4)));
                 }
             }
 
@@ -222,6 +222,16 @@ namespace Henson.Models
             con.Open();
             
             using var command = new SqliteCommand("INSERT INTO groups (name) VALUES (@Group)", con);
+            command.Parameters.AddWithValue("@Group", group);
+            command.ExecuteNonQuery();
+        }
+        
+        public static void RemoveGroup(string group)
+        {
+            using var con = new SqliteConnection($"Data Source={DbPath}");
+            con.Open();
+            
+            using var command = new SqliteCommand("DELETE FROM groups WHERE name = @Group", con);
             command.Parameters.AddWithValue("@Group", group);
             command.ExecuteNonQuery();
         }

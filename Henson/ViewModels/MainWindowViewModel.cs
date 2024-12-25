@@ -675,16 +675,99 @@ namespace Henson.ViewModels
                 
                 NationGroups.Insert(NationGroups.Count-1, newFolder);
                 DbClient.AddGroup(newFolder.Name);
+                FooterText = "Folder added!";
             });
             
             RemoveFolderCommand = ReactiveCommand.CreateFromTask(async () =>
             {
+                NationGridEntryViewModel? removedFolder = null;
+                foreach(var group in NationGroups)
+                {
+                    if(group.TrueSelected)
+                    {
+                        removedFolder = group;
+                    }
+                }
 
+                if(removedFolder is null)
+                {
+                    var noFolderSelectedDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "No Folder Selected",
+                        ContentMessage = "No folder was detected as selected.\nThis error should probably not happen. " +
+                                         "Let Nota know.",
+                        Icon = Icon.Error,
+                    }, WindowStyling);
+                    await MessageBoxDialog.Handle(noFolderSelectedDialog);
+                    return;
+                }
+
+                if(removedFolder.Name == "Ungrouped")
+                {
+                    var ungroupedFolderSelectedDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Ungrouped Folder Selected",
+                        ContentMessage = "Ungrouped was detected as selected.\nThis error should probably not happen. " +
+                                         "Let Nota know.",
+                        Icon = Icon.Error,
+                    }, WindowStyling);
+                    await MessageBoxDialog.Handle(ungroupedFolderSelectedDialog);
+                    return;
+                }
+                
+                var confirmDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                {
+                    ContentTitle = "Confirm Removal",
+                    ContentMessage = "Are you sure you want to remove folder " + removedFolder.Name + "?",
+                    Icon = Icon.Error,
+                    ButtonDefinitions = ButtonEnum.YesNo
+                }, WindowStyling);
+                var result = await MessageBoxDialog.Handle(confirmDialog);
+                if(result == ButtonResult.No) return;
+
+                var ungrouped = NationGroups.First(x => x.Name == "Ungrouped");
+                ungrouped.Items.AddRange(removedFolder.Items);
+                NationGroups.Remove(removedFolder);
+                DbClient.RemoveGroup(removedFolder.Name);
+                FooterText = "Folder removed!";
             });
 
             RenameFolderCommand = ReactiveCommand.CreateFromTask(async () =>
             {
+                NationGridEntryViewModel? removedFolder = null;
+                foreach(var group in NationGroups)
+                {
+                    if(group.TrueSelected)
+                    {
+                        removedFolder = group;
+                    }
+                }
 
+                if(removedFolder is null)
+                {
+                    var noFolderSelectedDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "No Folder Selected",
+                        ContentMessage = "No folder was detected as selected.\nThis error should probably not happen. " +
+                                         "Let Nota know.",
+                        Icon = Icon.Error,
+                    }, WindowStyling);
+                    await MessageBoxDialog.Handle(noFolderSelectedDialog);
+                    return;
+                }
+
+                if(removedFolder.Name == "Ungrouped")
+                {
+                    var ungroupedFolderSelectedDialog = new MessageBoxViewModel(new MessageBoxStandardParams
+                    {
+                        ContentTitle = "Ungrouped Folder Selected",
+                        ContentMessage = "Ungrouped was detected as selected.\nThis error should probably not happen. " +
+                                         "Let Nota know.",
+                        Icon = Icon.Error,
+                    }, WindowStyling);
+                    await MessageBoxDialog.Handle(ungroupedFolderSelectedDialog);
+                    return;
+                }
             });
 
             //When any nation is checked or unchecked see if any nation is checked at all and set that value to a property
@@ -704,7 +787,11 @@ namespace Henson.ViewModels
                  {
                      //very inefficient. bah!
                      var selectedNations = GetSelectedNations();
-                     if(selectedNations.Count == 0) return NationGroups.Count(x => x.TrueSelected) == 1;
+                     if(selectedNations.Count == 0) 
+                     {
+                         return NationGroups.Count(x => x.TrueSelected) == 1 &&
+                                NationGroups.First(x => x.TrueSelected).Name != "Ungrouped";
+                     }
                      
                      var firstSelectedFolder = GetFolderFromNation(selectedNations[0].Name);
                      if(firstSelectedFolder is null) return false;
